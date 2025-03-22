@@ -1,0 +1,15 @@
+{
+    "Lua.workspace.library": [
+        "SNIP",
+        "${addons}/garrysmod/module/library"
+    ],
+    "Lua.runtime.version": "LuaJIT",
+    "Lua.runtime.special": {
+        "include": "dofile",
+        "IncludeCS": "dofile"
+    },
+    "Lua.runtime.nonstandardSymbol": [
+        "continue",
+        "/**/"
+    ]
+}
