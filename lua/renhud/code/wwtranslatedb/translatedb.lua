@@ -1,12 +1,12 @@
 -- Based on Code/wwtranslatedb/translatedb.cpp
 
----@class Renegade
----@field TranslateDB TranslateDB
+--- @class Renegade
+--- @field TranslateDB TranslateDB
 
 CNC_RENEGADE.TranslateDB = CNC_RENEGADE.TranslateDB or {}
 
----@class TranslateDB
-local LIB = CNC_RENEGADE.TranslateDB
+--- @class TranslateDB
+local STATIC = CNC_RENEGADE.TranslateDB
 
 local strings = {
     [ "IDS_Power_up_DataDisc_01" ] = "Data Disc",
@@ -23,6 +23,6 @@ local strings = {
     [ "IDS_Power_up_Health_Upgrade" ] = "Augmented Health",
 }
 
-function LIB.GetString( id )
+function STATIC.GetString( id )
     return strings[ id ] or "UNKNOWN STRING ID"
 end
