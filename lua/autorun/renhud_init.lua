@@ -1,5 +1,6 @@
 if CLIENT then
-    ---@class Renegade
+    --- The table containing all addon content for Command and Conquer: Renegade
+    --- @class Renegade
     CNC_RENEGADE = CNC_RENEGADE or {}
 end
 
@@ -13,6 +14,8 @@ local function RunCS( filePath )
 end
 
 local clientScripts = {
+    -- Lua Libraries
+    "renhud/lua-libraries/robustclass.lua",
 
     -- data/*
     "renhud/data/style-manager.lua",
