@@ -27,6 +27,7 @@ local clientScripts = {
     "renhud/lua-libraries/typecheck.lua",
 
     -- code/ww3d2/*
+    "renhud/code/ww3d2/render-2d.lua",
     "renhud/code/ww3d2/render-2d-sentence.lua",
 
     -- code/combat/*
