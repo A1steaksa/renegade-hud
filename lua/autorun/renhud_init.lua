@@ -23,6 +23,9 @@ local clientScripts = {
     -- code/wmath/*
     "renhud/code/wwmath/rect.lua",
 
+    -- Lua Library that relies on rect
+    "renhud/lua-libraries/typecheck.lua",
+
     -- code/ww3d2/*
     "renhud/code/ww3d2/render-2d-sentence.lua",
 
