@@ -1,410 +1,423 @@
--- Based on Code/WWMath/rect.h
+-- Based on RectInstance within Code/WWMath/rect.cpp/h
 
---- @class Renegade
---- @field Rect Rect
+local STATIC, INSTANCE
 
-CNC_RENEGADE.Rect = CNC_RENEGADE.Rect or {}
+--[[ Class Setup ]] do
 
---- @class Rect
-local STATIC = CNC_RENEGADE.Rect
+    --- The instanced components of Rect
+    --- @class RectInstance
+    INSTANCE = robustclass.Register( "Renegade_Rect" )
 
---- @class RectInstance
---- @field Left number
---- @field Top number
---- @field Right number
---- @field Bottom number
-local INSTANCE = robustclass.Register( "Renegade_Rect" )
-INSTANCE.__index = INSTANCE
-INSTANCE.IsRect = true
+    --- The static components of Rect
+    --- @class Rect
+    --- @field Instance RectInstance The Metatable used by RectInstance
+    STATIC = CNC_RENEGADE.Rect or {}
+    CNC_RENEGADE.Rect = STATIC
 
---- Constructs a new Rect
---- @param ... any
---- @overload fun( rectToCopy: Rect ): RectInstance Creates a new RectInstance by copying the values of an existing one
---- @overload fun( topLeft: Vector, bottomRight: Vector ): RectInstance Creates a new RectInstance from Vectors that define its top-left and bottom-right corners
---- @overload fun( left: number, top: number, right: number, bottom: number ): RectInstance Creates a new Rect from the horizontal and vertical coordinates of its four edges
-function INSTANCE:Renegade_Rect( ... )
-    local args = { ... }
-    local argCount = select( "#", ... )
+    STATIC.Instance = INSTANCE
+    INSTANCE.Static = STATIC
+end
 
-    -- An empty Rect
-    if argCount == 0 then
-        self:Replace( 0, 0, 0, 0 )
-        return
+--[[ Static Functions and Variables ]] do
+
+    ---@param arg any
+    ---@return boolean `true` if the passed argument is a Rect, `false` otherwise
+    function STATIC.IsRect( arg )
+        if not istable( arg ) then return false end
+        if getmetatable( arg ) ~= CNC_RENEGADE.Rect.Instance then return false end
+
+        return arg.IsRect
+    end
+end
+
+--[[ Instanced Functions and Variables ]] do
+
+    --- [[ Public ]]
+
+    --- @class RectInstance
+    --- @field Left number
+    --- @field Top number
+    --- @field Right number
+    --- @field Bottom number
+
+    INSTANCE.IsRect = true
+
+    --- Constructs a new Rect
+    --- @param ... any
+    --- @overload fun( rectToCopy: Rect ): RectInstance Creates a new RectInstance by copying the values of an existing one
+    --- @overload fun( topLeft: Vector, bottomRight: Vector ): RectInstance Creates a new RectInstance from Vectors that define its top-left and bottom-right corners
+    --- @overload fun( left: number, top: number, right: number, bottom: number ): RectInstance Creates a new Rect from the horizontal and vertical coordinates of its four edges
+    function INSTANCE:Renegade_Rect( ... )
+        local args = { ... }
+        local argCount = select( "#", ... )
+
+        -- An empty Rect
+        if argCount == 0 then
+            self:Replace( 0, 0, 0, 0 )
+            return
+        end
+
+        local firstArg  = args[1]
+        local secondArg = args[2]
+        local thirdArg  = args[3]
+        local fourthArg = args[4]
+
+        -- Copying another Rect
+        if argCount == 1 then
+            if not istable( firstArg ) then
+                error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "table", type( firstArg ) ) )
+            end
+
+            if not firstArg.IsRect then
+                error( "C&C Renegade Rect constructor argument 1: provided table is not Rect" )
+            end
+
+            --- @cast firstArg RectInstance
+            self:Copy( firstArg )
+
+            return
+        end
+
+        -- Creating from top-left and bottom-right Vectors
+        if argCount == 2 then
+            if not isvector( firstArg ) then
+                error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "vector", type( firstArg ) ) )
+            end
+
+            if not isvector( secondArg ) then
+                error( string.format( "C&C Renegade Rect constructor argument 2: expected %s but got %s", "vector", type( secondArg ) ) )
+            end
+
+            --- @cast firstArg Vector
+            --- @cast secondArg Vector
+            self:ReplaceVectors( firstArg, secondArg )
+
+            return
+        end
+
+        -- Creating from edge positions
+        if argCount == 4 then
+            if not isnumber( firstArg ) then
+                error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "number", type( firstArg ) ) )
+            end
+
+            if not isnumber( secondArg ) then
+                error( string.format( "C&C Renegade Rect constructor argument 2: expected %s but got %s", "number", type( secondArg ) ) )
+            end
+
+            if not isnumber( thirdArg ) then
+                error( string.format( "C&C Renegade Rect constructor argument 3: expected %s but got %s", "number", type( thirdArg ) ) )
+            end
+
+            if not isnumber( fourthArg ) then
+                error( string.format( "C&C Renegade Rect constructor argument 4: expected %s but got %s", "number", type( fourthArg ) ) )
+            end
+
+            --- @cast firstArg  number
+            --- @cast secondArg number
+            --- @cast thirdArg  number
+            --- @cast fourthArg number
+            self:Replace( firstArg, secondArg, thirdArg, fourthArg )
+
+            return
+        end
+
+        error( "C&C Renegade Rect constructor received an invalid number of arguments" )
     end
 
-    local firstArg  = args[1]
-    local secondArg = args[2]
-    local thirdArg  = args[3]
-    local fourthArg = args[4]
+    --[[ Assignment ]] do
 
-    -- Copying another Rect
-    if argCount == 1 then
-        if not istable( firstArg ) then
-            error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "table", type( firstArg ) ) )
+        --- Replaces this Rectangle's values with a given Rectangle's
+        --- @param rectangle RectInstance The Rectangle to copy the values of
+        function INSTANCE:Copy( rectangle )
+            self.Left   = rectangle.Left
+            self.Top    = rectangle.Top
+            self.Right  = rectangle.Right
+            self.Bottom = rectangle.Bottom
         end
 
-        if not firstArg.IsRect then
-            error( "C&C Renegade Rect constructor argument 1: provided table is not Rect" )
+        --- Replaces this Rectangle's values with new ones
+        --- @param left number The new horizontal position of the left edge of the Rectangle, in pixels
+        --- @param top number The new vertical position of the top edge of the Rectangle, in pixels
+        --- @param right number The new horizontal position of the right edge of the Rectangle, in pixels
+        --- @param bottom number The new vertical position of the bottom edge of the Rectangle, in pixels
+        function INSTANCE:Replace( left, top, right, bottom )
+            self.Left    = left
+            self.Top     = top
+            self.Right   = right
+            self.Bottom  = bottom
         end
 
-        --- @cast firstArg RectInstance
-        self:Copy( firstArg )
-
-        return
+        --- Replaces this Rectangle's values with new ones based on Vectors representing opposing corners
+        --- @param topLeft Vector The new position of the top-left corner of the Rectangle, in pixels
+        --- @param bottomRight Vector The new position of the bottom-right corner of the Rectangle, in pixels
+        function INSTANCE:ReplaceVectors( topLeft, bottomRight )
+            self.Left    = topLeft.x
+            self.Top     = topLeft.y
+            self.Right   = bottomRight.x
+            self.Bottom  = bottomRight.y
+        end
     end
 
-    -- Creating from top-left and bottom-right Vectors
-    if argCount == 2 then
-        if not isvector( firstArg ) then
-            error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "vector", type( firstArg ) ) )
+    --[[ Access ]] do
+
+        --- @return number Width The width of the Rectangle, in pixels
+        function INSTANCE:Width()
+            return self.Right - self.Left
         end
 
-        if not isvector( secondArg ) then
-            error( string.format( "C&C Renegade Rect constructor argument 2: expected %s but got %s", "vector", type( secondArg ) ) )
+        --- @return number Height The height of the Rectangle, in pixels
+        function INSTANCE:Height()
+            return self.Bottom - self.Top
         end
 
-        --- @cast firstArg Vector
-        --- @cast secondArg Vector
-        self:ReplaceVectors( firstArg, secondArg )
+        --- @return Vector center The center of the Rectangle
+        function INSTANCE:Center()
+            return Vector(
+                ( self.Left + self.Right ) / 2,
+                ( self.Top + self.Bottom ) / 2
+            )
+        end
 
-        return
+        --- @return Vector extents The offset from the center of the Rectangle to reach its corners
+        function INSTANCE:Extent()
+            return Vector(
+                ( self.Right - self.Left ) / 2,
+                ( self.Bottom - self.Top ) / 2
+            )
+        end
+
+        --- @return Vector upperLeft The top-left corner of the Rectangle
+        function INSTANCE:UpperLeft()
+            return Vector( self.Left, self.Top )
+        end
+
+        --- @return Vector lowerRight The bottom-right corner of the Rectangle
+        function INSTANCE:LowerRight()
+            return Vector( self.Right, self.Bottom )
+        end
+
+        --- @return Vector upperRight The top-right corner of the Rectangle
+        function INSTANCE:UpperRight()
+            return Vector( self.Right, self.Top )
+        end
+
+        --- @return Vector lowerLeft The bottom-left corner of the Rectangle
+        function INSTANCE:LowerLeft()
+            return Vector( self.Left, self.Bottom )
+        end
     end
 
-    -- Creating from edge positions
-    if argCount == 4 then
-        if not isnumber( firstArg ) then
-            error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "number", type( firstArg ) ) )
+    --[[ Scaling ]] do
+        --- Scales this Rectangle by a number
+        --- @param a number|RectInstance
+        --- @param b number|RectInstance
+        --- @return RectInstance result A new Rectangle containing the result of the scaling
+        function INSTANCE.__mul( a, b )
+            local aIsTable = istable( a )
+
+            local rectangle = aIsTable and a or b
+            --- @cast rectangle RectInstance
+
+            local scale = aIsTable and b or a
+            --- @cast scale number
+
+            local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
+            newRectangle:Scale( scale )
+
+            return newRectangle
         end
 
-        if not isnumber( secondArg ) then
-            error( string.format( "C&C Renegade Rect constructor argument 2: expected %s but got %s", "number", type( secondArg ) ) )
+        --- Scales this Rectangle by the inverse of a number
+        --- @param a RectInstance|number
+        --- @param b RectInstance|number
+        --- @return RectInstance result A new Rectangle containing the result of the scaling
+        function INSTANCE.__div( a, b )
+            local aIsTable = istable( a )
+
+            local rectangle = aIsTable and a or b
+            --- @cast rectangle RectInstance
+
+            local scale = aIsTable and b or a
+            --- @cast scale number
+
+            local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
+            newRectangle:Scale( 1 / scale )
+
+            return newRectangle
         end
 
-        if not isnumber( thirdArg ) then
-            error( string.format( "C&C Renegade Rect constructor argument 3: expected %s but got %s", "number", type( thirdArg ) ) )
+        --- Scales the Rectangle relative to its center position
+        --- @param scale number The amount to multiply each edge position by
+        --- @return RectInstance self The Rectangle that was modified, to allow call chaining
+        function INSTANCE:ScaleRelativeCenter( scale )
+            --- @cast self RectInstance
+
+            local center = self:Center()
+
+            -- Move the Rectangle to be relative to 0,0
+            -- This makes scaling it easier
+            self = self - center
+
+            self:Scale( scale )
+
+            -- Move the now-scaled Rectangle back to where it was
+            self = self + center
+
+            return self
         end
 
-        if not isnumber( fourthArg ) then
-            error( string.format( "C&C Renegade Rect constructor argument 4: expected %s but got %s", "number", type( fourthArg ) ) )
+        --- Scales all of the Rectangle's edge positions by a scalar.
+        --- @param scale number The amount to multiply each edge position by
+        --- @return RectInstance self The Rectangle that was modified, to allow call chaining
+        function INSTANCE:Scale( scale )
+            self.Left   = self.Left   * scale
+            self.Top    = self.Top    * scale
+            self.Right  = self.Right  * scale
+            self.Bottom = self.Bottom * scale
+
+            return self
         end
 
-        --- @cast firstArg  number
-        --- @cast secondArg number
-        --- @cast thirdArg  number
-        --- @cast fourthArg number
-        self:Replace( firstArg, secondArg, thirdArg, fourthArg )
+        --- Scales a Rectangle's Top and Bottom edges by the Y component of a given Vector 
+        --- and its Left and Right edges by the X component of that same Vector.
+        --- @param scale Vector The scalar that the Rectangle's edges will be scaled by
+        --- @return RectInstance self The Rectangle that was modified, to allow call chaining
+        function INSTANCE:ScaleVector( scale )
+            self.Left   = self.Left   * scale.x
+            self.Top    = self.Top    * scale.y
+            self.Right  = self.Right  * scale.x
+            self.Bottom = self.Bottom * scale.y
 
-        return
+            return self
+        end
+
+        --- Scales a Rectangle's Top and Bottom edges by the Y component of a given Vector 
+        --- and its Left and Right edges by the X component of that same Vector.
+        --- @param scale Vector The scalar that the Rectangle's edges will be scaled by
+        --- @return RectInstance self The Rectangle that was modified, to allow call chaining
+        function INSTANCE:InverseScaleVector( scale )
+            self.Left   = self.Left   / scale.x
+            self.Top    = self.Top    / scale.y
+            self.Right  = self.Right  / scale.x
+            self.Bottom = self.Bottom / scale.y
+
+            return self
+        end
     end
 
-    error( "C&C Renegade Rect constructor received an invalid number of arguments" )
+    --[[ Offset ]] do
+
+        --- Moves the Rectangle's edge positions based on a given Vector
+        --- @param a RectInstance|Vector
+        --- @param b RectInstance|Vector
+        --- @return RectInstance result A new Rectangle containing the result of the offset
+        function INSTANCE.__add( a, b )
+            local aIsTable = istable( a )
+
+            local rectangle = aIsTable and a or b
+            --- @cast rectangle RectInstance
+
+            local offset = aIsTable and b or a
+            --- @cast offset Vector
+
+            local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
+
+            newRectangle.Left   = newRectangle.Left   + offset.x
+            newRectangle.Top    = newRectangle.Top    + offset.y
+            newRectangle.Right  = newRectangle.Right  + offset.x
+            newRectangle.Bottom = newRectangle.Bottom + offset.y
+
+            return newRectangle
+        end
+
+        --- Moves the Rectangle's edge positions based on the negation of a given Vector
+        --- @param a RectInstance|Vector
+        --- @param b RectInstance|Vector
+        --- @return RectInstance result A new Rectangle containing the result of the offset
+        function INSTANCE.__sub( a, b )
+            local aIsTable = istable( a )
+
+            local rectangle = aIsTable and a or b
+            --- @cast rectangle RectInstance
+
+            local offset = aIsTable and b or a
+            --- @cast offset Vector
+
+            local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
+
+            newRectangle.Left   = newRectangle.Left   - offset.x
+            newRectangle.Top    = newRectangle.Top    - offset.y
+            newRectangle.Right  = newRectangle.Right  - offset.x
+            newRectangle.Bottom = newRectangle.Bottom - offset.y
+
+            return newRectangle
+        end
+    end
+
+    --- Enlarges this Rectangle's horizontal and vertical edges by an amount
+    --- specified on the X and Y axes, respectively, of a given Vector
+    --- @param offsets Vector The per-axis amount to expand the borders of the Rectangle
+    function INSTANCE:Inflate( offsets )
+        self.Left   = self.Left   - offsets.x
+        self.Top    = self.Top    - offsets.y
+        self.Right  = self.Right  + offsets.x
+        self.Bottom = self.Bottom + offsets.y
+    end
+
+    --- Creates a new Rectangle that contains the bounds of this and another Rectangle
+    --- @param rectangle RectInstance The other Rectangle whose bounds the new Rectangle should contain
+    --- @return RectInstance # A new Rectangle containing this Rectangle and the given Rectangle
+    function INSTANCE:Union( rectangle )
+        local newRectangle = robustclass.New( "Renegade_Rect", self )
+
+        newRectangle.Left   = math.min( newRectangle.Left,   rectangle.Left   )
+        newRectangle.Top    = math.min( newRectangle.Top,    rectangle.Top    )
+        newRectangle.Right  = math.max( newRectangle.Right,  rectangle.Right  )
+        newRectangle.Bottom = math.max( newRectangle.Bottom, rectangle.Bottom )
+
+        return newRectangle
+    end
+
+    --- Moves the Rectangle's edge positions based on the negation of a given Vector
+    --- @param a RectInstance
+    --- @param b RectInstance
+    --- @return boolean
+    function INSTANCE.__eq( a, b )
+        if getmetatable( a ) ~= INSTANCE or getmetatable( b ) ~= INSTANCE then return false end
+        return  a.Left   == b.Left   and
+                a.Top    == b.Top    and
+                a.Right  == b.Right  and
+                a.Bottom == b.Bottom
+    end
+
+    --- Determines if this Rectangle contains a given point
+    --- @param pos Vector The position to be compared against this Rectangle
+    --- @return boolean
+    function INSTANCE:Contains( pos )
+        return  pos.x >= self.Left  and
+                pos.x <= self.Right and
+                pos.y >= self.Top   and
+                pos.y <= self.Bottom
+    end
+
+    --- Aligns this Rectangle's edges with a grid with a cell size indicated by a given Vector
+    --- @param units Vector The size of each grid cell
+    function INSTANCE:SnapToUnits( units )
+        self.Left   = math.floor( ( self.Left   / units.x + 0.5 ) * units.x )
+        self.Right  = math.floor( ( self.Right  / units.x + 0.5 ) * units.x )
+        self.Top    = math.floor( ( self.Top    / units.y + 0.5 ) * units.y )
+        self.Bottom = math.floor( ( self.Bottom / units.y + 0.5 ) * units.y )
+    end
+
+    function INSTANCE.__tostring( self )
+        return
+        "Rect: "   ..
+        "Left: "   .. ( self.Left   or "nil" ) .. ", " ..
+        "Top: "    .. ( self.Top    or "nil" ) .. ", " ..
+        "Right: "  .. ( self.Right  or "nil" ) .. ", " ..
+        "Bottom: " .. ( self.Bottom or "nil" ) .. ", " ..
+        "Width: "  .. self:Width()             .. ", " ..
+        "Height: " .. self:Height()
+    end
 end
-
-
---#region Assignment
-
---- Replaces this Rectangle's values with a given Rectangle's
---- @param rectangle RectInstance The Rectangle to copy the values of
-function INSTANCE:Copy( rectangle )
-    self.Left   = rectangle.Left
-    self.Top    = rectangle.Top
-    self.Right  = rectangle.Right
-    self.Bottom = rectangle.Bottom
-end
-
---- Replaces this Rectangle's values with new ones
---- @param left number The new horizontal position of the left edge of the Rectangle, in pixels
---- @param top number The new vertical position of the top edge of the Rectangle, in pixels
---- @param right number The new horizontal position of the right edge of the Rectangle, in pixels
---- @param bottom number The new vertical position of the bottom edge of the Rectangle, in pixels
-function INSTANCE:Replace( left, top, right, bottom )
-    self.Left    = left
-    self.Top     = top
-    self.Right   = right
-    self.Bottom  = bottom
-end
-
---- Replaces this Rectangle's values with new ones based on Vectors representing opposing corners
---- @param topLeft Vector The new position of the top-left corner of the Rectangle, in pixels
---- @param bottomRight Vector The new position of the bottom-right corner of the Rectangle, in pixels
-function INSTANCE:ReplaceVectors( topLeft, bottomRight )
-    self.Left    = topLeft.x
-    self.Top     = topLeft.y
-    self.Right   = bottomRight.x
-    self.Bottom  = bottomRight.y
-end
---#endregion
-
---#region Access
-
---- @return number Width The width of the Rectangle, in pixels
-function INSTANCE:Width()
-    return self.Right - self.Left
-end
-
---- @return number Height The height of the Rectangle, in pixels
-function INSTANCE:Height()
-    return self.Bottom - self.Top
-end
-
---- @return Vector center The center of the Rectangle
-function INSTANCE:Center()
-    return Vector(
-        ( self.Left + self.Right ) / 2,
-        ( self.Top + self.Bottom ) / 2
-    )
-end
-
---- @return Vector extents The offset from the center of the Rectangle to reach its corners
-function INSTANCE:Extent()
-    return Vector(
-        ( self.Right - self.Left ) / 2,
-        ( self.Bottom - self.Top ) / 2
-    )
-end
-
---- @return Vector upperLeft The top-left corner of the Rectangle
-function INSTANCE:UpperLeft()
-    return Vector( self.Left, self.Top )
-end
-
---- @return Vector lowerRight The bottom-right corner of the Rectangle
-function INSTANCE:LowerRight()
-    return Vector( self.Right, self.Bottom )
-end
-
---- @return Vector upperRight The top-right corner of the Rectangle
-function INSTANCE:UpperRight()
-    return Vector( self.Right, self.Top )
-end
-
---- @return Vector lowerLeft The bottom-left corner of the Rectangle
-function INSTANCE:LowerLeft()
-    return Vector( self.Left, self.Bottom )
-end
-
---#endregion
-
---#region Scaling
-
---- Scales this Rectangle by a number
---- @param a number|RectInstance
---- @param b number|RectInstance
---- @return RectInstance result A new Rectangle containing the result of the scaling
-function INSTANCE.__mul( a, b )
-    local aIsTable = istable( a )
-
-    local rectangle = aIsTable and a or b
-    --- @cast rectangle RectInstance
-
-    local scale = aIsTable and b or a
-    --- @cast scale number
-
-    local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
-    newRectangle:Scale( scale )
-
-    return newRectangle
-end
-
---- Scales this Rectangle by the inverse of a number
---- @param a RectInstance|number
---- @param b RectInstance|number
---- @return RectInstance result A new Rectangle containing the result of the scaling
-function INSTANCE.__div( a, b )
-    local aIsTable = istable( a )
-
-    local rectangle = aIsTable and a or b
-    --- @cast rectangle RectInstance
-
-    local scale = aIsTable and b or a
-    --- @cast scale number
-
-    local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
-    newRectangle:Scale( 1 / scale )
-
-    return newRectangle
-end
-
---- Scales the Rectangle relative to its center position
---- @param scale number The amount to multiply each edge position by
---- @return RectInstance self The Rectangle that was modified, to allow call chaining
-function INSTANCE:ScaleRelativeCenter( scale )
-    --- @cast self RectInstance
-
-    local center = self:Center()
-
-    -- Move the Rectangle to be relative to 0,0
-    -- This makes scaling it easier
-    self = self - center
-
-    self:Scale( scale )
-
-    -- Move the now-scaled Rectangle back to where it was
-    self = self + center
-
-    return self
-end
-
---- Scales all of the Rectangle's edge positions by a scalar.
---- @param scale number The amount to multiply each edge position by
---- @return RectInstance self The Rectangle that was modified, to allow call chaining
-function INSTANCE:Scale( scale )
-    self.Left   = self.Left   * scale
-    self.Top    = self.Top    * scale
-    self.Right  = self.Right  * scale
-    self.Bottom = self.Bottom * scale
-
-    return self
-end
-
---- Scales a Rectangle's Top and Bottom edges by the Y component of a given Vector 
---- and its Left and Right edges by the X component of that same Vector.
---- @param scale Vector The scalar that the Rectangle's edges will be scaled by
---- @return RectInstance self The Rectangle that was modified, to allow call chaining
-function INSTANCE:ScaleVector( scale )
-    self.Left   = self.Left   * scale.x
-    self.Top    = self.Top    * scale.y
-    self.Right  = self.Right  * scale.x
-    self.Bottom = self.Bottom * scale.y
-
-    return self
-end
-
---- Scales a Rectangle's Top and Bottom edges by the Y component of a given Vector 
---- and its Left and Right edges by the X component of that same Vector.
---- @param scale Vector The scalar that the Rectangle's edges will be scaled by
---- @return RectInstance self The Rectangle that was modified, to allow call chaining
-function INSTANCE:InverseScaleVector( scale )
-    self.Left   = self.Left   / scale.x
-    self.Top    = self.Top    / scale.y
-    self.Right  = self.Right  / scale.x
-    self.Bottom = self.Bottom / scale.y
-
-    return self
-end
-
---#endregion
-
-
---#region Offset
-
---- Moves the Rectangle's edge positions based on a given Vector
---- @param a RectInstance|Vector
---- @param b RectInstance|Vector
---- @return RectInstance result A new Rectangle containing the result of the offset
-function INSTANCE.__add( a, b )
-    local aIsTable = istable( a )
-
-    local rectangle = aIsTable and a or b
-    --- @cast rectangle RectInstance
-
-    local offset = aIsTable and b or a
-    --- @cast offset Vector
-
-    local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
-
-    newRectangle.Left   = newRectangle.Left   + offset.x
-    newRectangle.Top    = newRectangle.Top    + offset.y
-    newRectangle.Right  = newRectangle.Right  + offset.x
-    newRectangle.Bottom = newRectangle.Bottom + offset.y
-
-    return newRectangle
-end
-
-print( INSTANCE )
-
---- Moves the Rectangle's edge positions based on the negation of a given Vector
---- @param a RectInstance|Vector
---- @param b RectInstance|Vector
---- @return RectInstance result A new Rectangle containing the result of the offset
-function INSTANCE.__sub( a, b )
-    local aIsTable = istable( a )
-
-    local rectangle = aIsTable and a or b
-    --- @cast rectangle RectInstance
-
-    local offset = aIsTable and b or a
-    --- @cast offset Vector
-
-    local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
-
-    newRectangle.Left   = newRectangle.Left   - offset.x
-    newRectangle.Top    = newRectangle.Top    - offset.y
-    newRectangle.Right  = newRectangle.Right  - offset.x
-    newRectangle.Bottom = newRectangle.Bottom - offset.y
-
-    return newRectangle
-end
-
---#endregion
-
---#region Misc
-
---- Enlarges this Rectangle's horizontal and vertical edges by an amount
---- specified on the X and Y axes, respectively, of a given Vector
---- @param offsets Vector The per-axis amount to expand the borders of the Rectangle
-function INSTANCE:Inflate( offsets )
-    self.Left   = self.Left   - offsets.x
-    self.Top    = self.Top    - offsets.y
-    self.Right  = self.Right  + offsets.x
-    self.Bottom = self.Bottom + offsets.y
-end
-
---- Creates a new Rectangle that contains the bounds of this and another Rectangle
---- @param rectangle RectInstance The other Rectangle whose bounds the new Rectangle should contain
---- @return RectInstance # A new Rectangle containing this Rectangle and the given Rectangle
-function INSTANCE:Union( rectangle )
-    local newRectangle = robustclass.New( "Renegade_Rect", self )
-
-    newRectangle.Left   = math.min( newRectangle.Left,   rectangle.Left   )
-    newRectangle.Top    = math.min( newRectangle.Top,    rectangle.Top    )
-    newRectangle.Right  = math.max( newRectangle.Right,  rectangle.Right  )
-    newRectangle.Bottom = math.max( newRectangle.Bottom, rectangle.Bottom )
-
-    return newRectangle
-end
-
---- Moves the Rectangle's edge positions based on the negation of a given Vector
---- @param a RectInstance
---- @param b RectInstance
---- @return boolean
-function INSTANCE.__eq( a, b )
-    if getmetatable( a ) ~= INSTANCE or getmetatable( b ) ~= INSTANCE then return false end
-    return  a.Left   == b.Left   and
-            a.Top    == b.Top    and
-            a.Right  == b.Right  and
-            a.Bottom == b.Bottom
-end
-
---- Determines if this Rectangle contains a given point
---- @param pos Vector The position to be compared against this Rectangle
---- @return boolean
-function INSTANCE:Contains( pos )
-    return  pos.x >= self.Left  and
-            pos.x <= self.Right and
-            pos.y >= self.Top   and
-            pos.y <= self.Bottom
-end
-
---- Aligns this Rectangle's edges with a grid with a cell size indicated by a given Vector
---- @param units Vector The size of each grid cell
-function INSTANCE:SnapToUnits( units )
-    self.Left   = math.floor( ( self.Left   / units.x + 0.5 ) * units.x )
-    self.Right  = math.floor( ( self.Right  / units.x + 0.5 ) * units.x )
-    self.Top    = math.floor( ( self.Top    / units.y + 0.5 ) * units.y )
-    self.Bottom = math.floor( ( self.Bottom / units.y + 0.5 ) * units.y )
-end
-
-
-function INSTANCE.__tostring( self )
-    return
-    "Rect: "   ..
-    "Left: "   .. ( self.Left   or "nil" ) .. ", " ..
-    "Top: "    .. ( self.Top    or "nil" ) .. ", " ..
-    "Right: "  .. ( self.Right  or "nil" ) .. ", " ..
-    "Bottom: " .. ( self.Bottom or "nil" ) .. ", " ..
-    "Width: "  .. self:Width()             .. ", " ..
-    "Height: " .. self:Height()
-end
-
---#endregion
