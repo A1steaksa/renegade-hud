@@ -73,6 +73,8 @@ The HUD is made up of a few discrete sections within `Code/Combat/hud.cpp`:
 
 Two vertical lists of recently acquired items and objectives on the left and right edges of the screen.
 
+![Powerup Lists](https://github.com/user-attachments/assets/d730b43e-718d-4e85-967c-43a76180f14d)
+
 Up to 5 icons can be displayed on a list at any given time.  When an item has been visible for a few moments, its opacity begins to fade and all icons above it slide downward to replace it.
 
 The left list contains notifications of new objectives, health and armor upgrades, and map visibility updates.
@@ -81,9 +83,11 @@ The right list contains health, armor, weapon, and ammo pickup notifications.
 
 Each list item is comprised of an icon, text, and a numerical quantity, though which elements are displayed and how they are formatted changes between the left and right lists.  Aside from these cosmetic differences, there are no functional differences between the two lists.
 
+![Pointing out the elements of a powerup list element](https://github.com/user-attachments/assets/50607005-15e5-494e-8b54-c38e907d346c)
+
 ## Weapon Info
 
-Displays the a green icon of the currently equipped weapon, the name of that weapon, the number of rounds in the weapon, and how much reserve ammunition of this weaopn's type you have.
+Displays a green icon of the currently equipped weapon, the name of that weapon, the number of rounds in the weapon, and how much reserve ammunition of this weaopn's type you have.
 
 ## HUD Help Text
 
