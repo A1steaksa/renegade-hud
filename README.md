@@ -71,6 +71,8 @@ The HUD is made up of a few discrete sections within `Code/Combat/hud.cpp`:
 
 ## Powerups
 
+[Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L280-L569)
+
 Two vertical lists of recently acquired items and objectives on the left and right edges of the screen.
 
 ![Powerup Lists](https://github.com/user-attachments/assets/d730b43e-718d-4e85-967c-43a76180f14d)
