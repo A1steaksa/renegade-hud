@@ -75,7 +75,11 @@ Two vertical lists of recently acquired items and objectives on the left and rig
 
 ![Powerup Lists](https://github.com/user-attachments/assets/d730b43e-718d-4e85-967c-43a76180f14d)
 
-Up to 5 icons can be displayed on a list at any given time.  When an item has been visible for a few moments, its opacity begins to fade and all icons above it slide downward to replace it.
+Up to 5 icons 
+    ([`MAX_ICONS`](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L310))
+can be displayed on a list at any given time.  When an item has been visible for 6 seconds 
+    ([`POWERUP_TIME`](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L311))
+, its opacity begins to fade and all icons above it slide downward to replace it.
 
 The left list contains notifications of new objectives, health and armor upgrades, and map visibility updates.
 
