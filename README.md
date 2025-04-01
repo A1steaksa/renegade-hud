@@ -85,7 +85,10 @@ The left list contains notifications of new objectives, health and armor upgrade
 
 The right list contains health, armor, weapon, and ammo pickup notifications.
 
-Each list item is comprised of an icon, text, and a numerical quantity, though which elements are displayed and how they are formatted changes between the left and right lists.  Aside from these cosmetic differences, there are no functional differences between the two lists.
+Each list item is comprised of:
+* The name of the item or objective that was acquired
+* A numerical quantity called "number" or "count" in the original code (On the right list only)
+* The icon for the item or objective (Vertex colored green on the right list)
 
 ![Pointing out the elements of a powerup list element](https://github.com/user-attachments/assets/50607005-15e5-494e-8b54-c38e907d346c)
 
