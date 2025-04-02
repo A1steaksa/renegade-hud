@@ -59,7 +59,7 @@ The core of the HUD lives in `Code/Combat/hud.cpp/h` which depends on:
 
 The HUD is made up of a few discrete sections within `Code/Combat/hud.cpp`:
 
-* Powerup (Pickups) Notification Feed
+* Powerup Notification Feed
 * Weapon Info
 * HUD Help Text
 * Weapon Chart Display
@@ -69,13 +69,13 @@ The HUD is made up of a few discrete sections within `Code/Combat/hud.cpp`:
 * Health and Armor Info Display
 * Reticles
 
-## Powerups
+## Powerup Notification Feed
 
 [Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L280-L569)
 
 Two vertical lists of recently acquired items and objectives on the left and right edges of the screen.
 
-![Powerup Lists](https://github.com/user-attachments/assets/d730b43e-718d-4e85-967c-43a76180f14d)
+![Pointing out the location of the powerup lists](https://github.com/user-attachments/assets/d730b43e-718d-4e85-967c-43a76180f14d)
 
 Up to 5 icons 
     ([`MAX_ICONS`](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L310))
@@ -96,11 +96,46 @@ Each list item is comprised of:
 
 ## Weapon Info
 
-Displays a green icon of the currently equipped weapon, the name of that weapon, the number of rounds in the weapon, and how much reserve ammunition of this weaopn's type you have.
+[Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L572-L963)
+
+Displays the currently equipped weapon and its ammo.
+
+![Pointing out the location of the weapon info display](https://github.com/user-attachments/assets/5ea08ace-2fff-4d8f-8bcd-7fabeec5cb0e)
+
+The elements of the weapon info display are:
+* The green icon for the currently equipped weapon
+* The name of the weapon
+* The amount of ammo remaining in the weapon
+* The amount of ammo of this weapon's type that the player has in reserve
+
+![Pointing out the elements of the weapon info display](https://github.com/user-attachments/assets/ccab928f-c956-4a90-ab04-502e9516a73b)
 
 ## HUD Help Text
 
+[Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L593-L697)
+
+Green help text that appears slightly above the center of the screen to inform the player of information that can't easily be communicated with iconography alone.
+
+![Pointing out the location of the help text](https://github.com/user-attachments/assets/efe4b98b-d5fa-4b14-baa0-591009d94443)
+
+After the text has been on-screen for 2 seconds
+([`HUD_HELP_TEXT_DISPLAY_TIME`](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L615)),
+it begins to fade away over the course of 2 additional seconds
+([`HUD_HELP_TEXT_FADE_TIME`](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L614)).
+
 ## Weapon Chart Display
+
+[Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L966-L1197)
+
+Shows the weapons in the player's inventory while switching weapons to help the player navigate their inventory.
+
+![Pointing out the location of the weapon chart](https://github.com/user-attachments/assets/383d6b23-36de-45ad-aacc-f7e9703cff2f)
+
+The elements of the weapon chart are:
+* The column header (The number key the column corresponds to)
+* Green icons for each weaopn (More opaque if it's the icon of the currently selected weapon)
+
+![Pointing out the elements of the weapon chart](https://github.com/user-attachments/assets/77dbd9fb-cae3-48c4-ad25-0495b85409c9)
 
 ## Damage Indicator
 
