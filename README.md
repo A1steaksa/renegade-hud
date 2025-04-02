@@ -75,7 +75,7 @@ The HUD is made up of a few discrete sections within `Code/Combat/hud.cpp`:
 
 Two vertical lists of recently acquired items and objectives on the left and right edges of the screen.
 
-![Pointing out the location of the powerup lists](https://github.com/user-attachments/assets/d730b43e-718d-4e85-967c-43a76180f14d)
+![Pointing out the location of the powerup lists](https://github.com/user-attachments/assets/9e28d522-89e5-481c-bca1-4f8dd292469a)
 
 Up to 5 icons 
     ([`MAX_ICONS`](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L310))
@@ -92,7 +92,7 @@ Each list item is comprised of:
 * A numerical quantity called "number" or "count" in the original code. (Visible on the right list only)
 * The icon for the item or objective called "texture" in the original code. (Vertex colored green on the right list)
 
-![Pointing out the elements of a powerup list element](https://github.com/user-attachments/assets/50607005-15e5-494e-8b54-c38e907d346c)
+![Pointing out the elements of a powerup list element](https://github.com/user-attachments/assets/6186098f-0853-4b5e-a6db-287906a768e1)
 
 ## Weapon Info
 
@@ -100,7 +100,7 @@ Each list item is comprised of:
 
 Displays the currently equipped weapon and its ammo.
 
-![Pointing out the location of the weapon info display](https://github.com/user-attachments/assets/5ea08ace-2fff-4d8f-8bcd-7fabeec5cb0e)
+![Pointing out the location of the weapon info display](https://github.com/user-attachments/assets/ba450c1f-96fc-42b5-a653-ca17658dcdc4)
 
 The elements of the weapon info display are:
 * The green icon for the currently equipped weapon
@@ -108,7 +108,7 @@ The elements of the weapon info display are:
 * The amount of ammo remaining in the weapon
 * The amount of ammo of this weapon's type that the player has in reserve
 
-![Pointing out the elements of the weapon info display](https://github.com/user-attachments/assets/ccab928f-c956-4a90-ab04-502e9516a73b)
+![Pointing out the elements of the weapon info display](https://github.com/user-attachments/assets/3f2f0aec-59dc-401b-b793-e578d6606059)
 
 ## HUD Help Text
 
@@ -129,7 +129,7 @@ it begins to fade away over the course of 2 additional seconds
 
 Shows the weapons in the player's inventory while switching weapons to help the player navigate their inventory.
 
-![Pointing out the location of the weapon chart](https://github.com/user-attachments/assets/383d6b23-36de-45ad-aacc-f7e9703cff2f)
+![Pointing out the location of the weapon chart](https://github.com/user-attachments/assets/2793be57-d746-4aea-abfb-30d38f62d1db)
 
 The elements of the weapon chart are:
 * The column header (The number key the column corresponds to)
