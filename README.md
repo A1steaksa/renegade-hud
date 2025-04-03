@@ -66,7 +66,7 @@ The HUD is made up of a few discrete sections within `Code/Combat/hud.cpp`:
 * Damage Indicator
 * Target Display
 * Objective Display
-* Health and Armor Info Display
+* Info Display
 * Reticles
 
 ## Powerup Notification Feed
@@ -74,6 +74,11 @@ The HUD is made up of a few discrete sections within `Code/Combat/hud.cpp`:
 [Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L280-L569)
 
 Two vertical lists of recently acquired items and objectives on the left and right edges of the screen.
+
+<details>
+    <summary>
+        View Details
+    </summary>
 
 ![Pointing out the location of the powerup lists](https://github.com/user-attachments/assets/9e28d522-89e5-481c-bca1-4f8dd292469a)
 
@@ -94,11 +99,18 @@ Each list item is comprised of:
 
 ![Pointing out the elements of a powerup list element](https://github.com/user-attachments/assets/6186098f-0853-4b5e-a6db-287906a768e1)
 
+</details>
+
 ## Weapon Info
 
 [Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L572-L963)
 
 Displays the currently equipped weapon and its ammo.
+
+<details>
+    <summary>
+        View Details
+    </summary>
 
 ![Pointing out the location of the weapon info display](https://github.com/user-attachments/assets/ba450c1f-96fc-42b5-a653-ca17658dcdc4)
 
@@ -110,11 +122,18 @@ The elements of the weapon info display are:
 
 ![Pointing out the elements of the weapon info display](https://github.com/user-attachments/assets/3f2f0aec-59dc-401b-b793-e578d6606059)
 
+</details>
+
 ## HUD Help Text
 
 [Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L593-L697)
 
 Green help text that appears slightly above the center of the screen to inform the player of information that can't easily be communicated with iconography alone.
+
+<details>
+    <summary>
+        View Details
+    </summary>
 
 ![Pointing out the location of the help text](https://github.com/user-attachments/assets/efe4b98b-d5fa-4b14-baa0-591009d94443)
 
@@ -123,11 +142,18 @@ After the text has been on-screen for 2 seconds
 it begins to fade away over the course of 2 additional seconds
 ([`HUD_HELP_TEXT_FADE_TIME`](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L614)).
 
+</details>
+
 ## Weapon Chart Display
 
 [Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L966-L1197)
 
 Shows the weapons in the player's inventory while switching weapons to help the player navigate their inventory.
+
+<details>
+    <summary>
+        View Details
+    </summary>
 
 ![Pointing out the location of the weapon chart](https://github.com/user-attachments/assets/2793be57-d746-4aea-abfb-30d38f62d1db)
 
@@ -137,12 +163,87 @@ The elements of the weapon chart are:
 
 ![Pointing out the elements of the weapon chart](https://github.com/user-attachments/assets/77dbd9fb-cae3-48c4-ad25-0495b85409c9)
 
+</details>
+
 ## Damage Indicator
+
+[Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L1199-L1363)
+
+Shows the direction of incoming damage that the player receives to give them higher situational awareness.
+
+<details>
+    <summary>
+        View Details
+    </summary>
+
+![Pointing out the location of the damage indicators](https://github.com/user-attachments/assets/192b286a-12b1-4020-981e-b7c44fdca8a0)
+    
+</details>
 
 ## Target Display
 
+[Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L1365-L1801)
+
+A box drawn for several seconds around the damagable entity that was most recently looked at which provides information about that entity.
+
+<details>
+    <summary>
+        View Details
+    </summary>
+
+![Pointing out the location of the target display](https://github.com/user-attachments/assets/b0a94b29-5eb5-432a-a9d1-e9fd621084bc)
+
+The target display is made up of a few key elements:
+* Chevrons that indicate the corners of a box drawn around the target, colored green, red, or white depending on if the enemy is friendly, enemy, or neutral
+* The icon for the team that the target is aligned with (Nod, GDI, or Civilian)
+* A segmented health bar indicating the target's current health and armor as a percentage of their total maximum health and armor
+* The name of the target
+
+![Pointing out the elements of the target display](https://github.com/user-attachments/assets/cbda4744-21fe-4226-ab07-f38ebff50c29)
+
+</details>
+
 ## Objective Display
 
-## Health and Armor Info Display
+[Original code available here]()
+
+Brief description
+
+<details>
+    <summary>
+        View Details
+    </summary>
+
+![Pointing out the location of the objective display]()
+    
+</details>
+
+## Info Display
+
+[Original code available here]()
+
+Brief description
+
+<details>
+    <summary>
+        View Details
+    </summary>
+
+![Pointing out the location of the info display]()
+    
+</details>
 
 ## Reticles
+
+[Original code available here]()
+
+Brief description
+
+<details>
+    <summary>
+        View Details
+    </summary>
+
+![Pointing out the location of the reticles]()
+    
+</details>
