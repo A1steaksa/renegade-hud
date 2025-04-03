@@ -205,7 +205,7 @@ The target display is made up of a few key elements:
 
 ## Objective Display
 
-[Original code available here]()
+[Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L1853-L2104)
 
 Brief description
 
@@ -220,7 +220,7 @@ Brief description
 
 ## Info Display
 
-[Original code available here]()
+[Original code available here](https://github.com/A1steaksa/CnC_Renegade/blob/d0e4fde48468faee2ea84e35c21874647a5bbded/Code/Combat/hud.cpp#L2106-L2716)
 
 Brief description
 
