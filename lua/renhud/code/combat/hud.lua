@@ -15,6 +15,7 @@ end
 --#region Localization
 
 local combatManager     = CNC_RENEGADE.CombatManager
+local rect              = CNC_RENEGADE.Rect
 local styleManager      = CNC_RENEGADE.StyleManager
 local render2d          = CNC_RENEGADE.Render2d
 local render2dSentence  = CNC_RENEGADE.Render2DSentence
@@ -195,7 +196,7 @@ end
         --- @field Timer number
         --- @field Material IMaterial
 
-        local POWERUP_PIXEL_UV_64X64 = robustclass.New( "Renegade_Rect", 0, 0, 64, 65 )
+        local POWERUP_PIXEL_UV_64X64 = rect.New( 0, 0, 64, 65 )
         local POWERUP_OFFSET_10X40 = Vector( 10, 40 )
 
         STATIC.MaxPowerupIcons = 5
@@ -240,7 +241,7 @@ end
             end
             data.UV = uvs or pixelUvs
 
-            data.IconBox = robustclass.New( "Renegade_Rect", pixelUvs )
+            data.IconBox = rect.New( pixelUvs )
             data.IconBox = data.IconBox + offset + Vector( 0, -40.0 ) - data.IconBox:UpperLeft()
 
             data.Name = name
@@ -281,7 +282,7 @@ end
                 animationTimer = 0
             end
 
-            local box = robustclass.New( "Renegade_Rect", STATIC.PowerupBoxUvUpperLeft, STATIC.PowerupBoxUvLowerRight )
+            local box = rect.New( STATIC.PowerupBoxUvUpperLeft, STATIC.PowerupBoxUvLowerRight )
             local start = Vector( ScrW(),  ScrH() ) - STATIC.PowerupBoxBase
             box = box + start - box:LowerLeft()
 
@@ -493,12 +494,12 @@ end
         local WEAPON_DISPLAY_WEAPON_OFFSET = Vector( 100, 110 )
 
         function STATIC.WeaponInit()
-            STATIC.WeaponBoxRenderer = robustclass.New( "Renegade_Render2d" )
+            STATIC.WeaponBoxRenderer = render2d.New()
             STATIC.WeaponBoxRenderer:SetMaterial( STATIC.Materials.Hud.Main )
             STATIC.WeaponBoxRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
 
-            local boxUv = robustclass.New( "Renegade_Rect", STATIC.WeaponBoxUvUpperLeft, STATIC.WeaponBoxUvLowerRight )
-            local drawBox = robustclass.New( "Renegade_Rect", boxUv )
+            local boxUv = rect.New( STATIC.WeaponBoxUvUpperLeft, STATIC.WeaponBoxUvLowerRight )
+            local drawBox = rect.New( boxUv )
             boxUv = boxUv / 256
             drawBox = drawBox + Vector( ScrW(), ScrH() ) - WEAPON_DISPLAY_WEAPON_OFFSET - drawBox:UpperLeft()
             --- @cast drawBox RectInstance
