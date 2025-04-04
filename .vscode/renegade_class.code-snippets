@@ -87,12 +87,44 @@
 		]
 	},
 
+	"Section": {
+		"prefix": "section",
+		"description": "A section with a self-contained scope",
+		"body": [
+			"--[[ $1 ]] do",
+			"    $0",
+			"end"
+		  ],
+	},
+
 	"Class Method": {
 		"prefix": "method",
 		"description": "A Lua Class method template",
 		"body": [
 			"function ${1|INSTANCE:,STATIC.|}${2:FunctionName}(${3: ... })",
 			"    ${0:error( \"Function not yet implemented\" )}",
+			"end"
+		]
+	},
+
+	"Static Getter": {
+		"prefix": "gets",
+		"description": "Creates a static method that returns a variable",
+		"body": [
+			"--- @return $1",
+			"function STATIC.${2:FunctionName}()",
+			"    return STATIC.$3",
+			"end"
+		]
+	},
+
+	"Static Setter": {
+		"prefix": "sets",
+		"description": "Creates a static method that takes in a value and sets a variable to it",
+		"body": [
+			"--- @param ${1:ParameterName} ${2:ParameterType}",
+			"function STATIC.${3:FunctionName}( $1 )",
+			"    STATIC.$4 = $1",
 			"end"
 		]
 	}
