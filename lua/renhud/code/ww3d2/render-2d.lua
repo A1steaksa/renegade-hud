@@ -104,8 +104,6 @@ end
         -- Build the mesh if it's out of date
         if self.ShouldRebuildMesh then
 
-            print( "Building mesh" )
-
             -- Sanity check
             if #self.Vertices ~= #self.Uvs or #self.Uvs ~= #self.Colors then
                 error( string.format( "Render2d:Render has mismatch in list counts: Vertices (%d), UVs (%d), Colors (%d)", #self.Vertices, #self.Uvs, #self.Colors ) )
@@ -130,8 +128,6 @@ end
                 local vertex = self.Vertices[i]
                 local uv     = self.Uvs[i]
                 local color  = self.Colors[i]
-
-                print( i .. ". ", vertex, uv, color )
 
                 mesh.Position( vertex )
                 mesh.TexCoord( 0, uv.x, uv.y )
@@ -198,11 +194,6 @@ end
     function INSTANCE:GetShader()
         return self.Shader
     end
-
-    -- Render2DClass::Add_Quad( const Vector2 & v0, const Vector2 & v1, const Vector2 & v2, const Vector2 & v3, const RectClass & uv, unsigned long color )
-    -- Render2DClass::Add_Quad( const RectClass & screen, const RectClass & uv, unsigned long color )
-    -- Render2DClass::Add_Quad( const Vector2 & v0, const Vector2 & v1, const Vector2 & v2, const Vector2 & v3, unsigned long color )
-    -- Render2DClass::Add_Quad( const RectClass & screen, unsigned long color )
 
     --- Adds a Quad to this renderer
     --- @param ... any
@@ -556,6 +547,7 @@ end
             if not STATIC.BiasAdd then
                 STATIC.UpdateBiasAdd()
             end
+
             self.BiasedCoordinateOffset = self.BiasedCoordinateOffset + STATIC.BiasAdd
         end
     end
