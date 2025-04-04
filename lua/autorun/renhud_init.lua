@@ -38,7 +38,10 @@ local clientScripts = {
     "renhud/code/combat/combat-manager.lua",
     "renhud/code/combat/hud.lua",
     "renhud/code/combat/objectives.lua",
-    
+
+    -- Update global settings
+    "renhud/updated-global-settings.lua",
+
     -- code/combat/wwtranslatedb/*
     "renhud/code/wwtranslatedb/translatedb.lua"
 }
