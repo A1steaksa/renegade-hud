@@ -60,6 +60,7 @@ if SERVER then
         -- HUD Materials
         "materials/renhud/font6x8.png",
         "materials/renhud/font12x16.png",
+        "materials/renhud/hd_reticle.png",
         "materials/renhud/hd_reticle_hit.png",
         "materials/renhud/hud_armedal.png",
         "materials/renhud/hud_armor1.png",
