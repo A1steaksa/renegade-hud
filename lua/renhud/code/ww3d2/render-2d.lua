@@ -24,6 +24,13 @@ end
 
     --[[ Public ]]
 
+    --- Creates a new Render2d
+    --- @param material IMaterial?
+    --- @return Render2dInstance
+    function STATIC.New( material )
+        return robustclass.New( "Renegade_Render2d", material )
+    end
+
     --- @return unknown
     function STATIC.GetDefaultShader()
         error( "Function not yet implemented" )
