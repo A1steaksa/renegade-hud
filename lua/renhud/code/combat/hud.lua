@@ -14,6 +14,7 @@ end
 
 --#region Localization
 
+local globalSettings    = CNC_RENEGADE.GlobalSettings
 local combatManager     = CNC_RENEGADE.CombatManager
 local rect              = CNC_RENEGADE.Rect
 local styleManager      = CNC_RENEGADE.StyleManager
@@ -63,7 +64,10 @@ end
 
         local function LoadMaterial( fileName )
             local filepath = "renhud/" .. fileName .. ".png"
-            return Material( filepath, "" )
+
+            local loadedMaterial = Material( filepath, "" )
+
+            return loadedMaterial
         end
 
         STATIC.Materials = {}
@@ -78,6 +82,8 @@ end
         STATIC.Materials.Hud = {}
         STATIC.Materials.Hud.Main       = LoadMaterial( "hud_main" )
         STATIC.Materials.Hud.ChatPBox   = LoadMaterial( "hud_chatpbox" )
+        STATIC.Materials.Hud.Reticle    = LoadMaterial( "hd_reticle" )
+        STATIC.Materials.Hud.ReticleHit = LoadMaterial( "hd_reticle_hit" )
 
         -- Objective Pickups
         STATIC.Materials.Pickups = {}
@@ -119,10 +125,7 @@ end
             -- STATIC.ObjectiveInit()
 
             -- STATIC.HudHelpTextInit()
-
-
         end
-
     end
 
     function STATIC.Think()
@@ -133,12 +136,13 @@ end
         -- render.PushFilterMin( TEXFILTER.POINT )
         -- render.PushFilterMag( TEXFILTER.POINT )
 
-        -- STATIC.InfoRender()
         STATIC.PowerupRender()
         STATIC.WeaponRender()
         -- STATIC.WeaponChartRender()
+        -- STATIC.InfoRender()
         -- STATIC.DamageRender()
         -- STATIC.TargetRender()
+        -- STATIC.HudHelpTextRender()
         -- STATIC.ObjectiveRender()
 
         -- render.PopFilterMag()
@@ -520,5 +524,4 @@ end
     function STATIC.DamageRender()
         error( "Function not yet implemented" )
     end
-
 end
