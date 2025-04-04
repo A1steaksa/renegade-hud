@@ -89,9 +89,13 @@ end
 
         if self.Mesh then
             self.Mesh:Destroy()
+            self.Mesh = nil
         end
 
-        self.Mesh = Mesh()
+        self.Vertices = {}
+        self.Uvs = {}
+        self.Colors = {}
+        self.ShouldRebuildMesh = true
 
         self:UpdateBias()
     end
