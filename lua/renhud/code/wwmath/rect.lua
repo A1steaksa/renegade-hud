@@ -51,8 +51,7 @@ end
     INSTANCE.IsRect = true
 
     --- Constructs a new Rect
-    --- @param ... any
-    --- @overload fun( rectToCopy: Rect ): RectInstance Creates a new RectInstance by copying the values of an existing one
+    --- @overload fun( rectToCopy: RectInstance ): RectInstance Creates a new RectInstance by copying the values of an existing one
     --- @overload fun( topLeft: Vector, bottomRight: Vector ): RectInstance Creates a new RectInstance from Vectors that define its top-left and bottom-right corners
     --- @overload fun( left: number, top: number, right: number, bottom: number ): RectInstance Creates a new Rect from the horizontal and vertical coordinates of its four edges
     function INSTANCE:Renegade_Rect( ... )
