@@ -14,6 +14,7 @@ end
 
 --#region Localization
 
+local combatManager     = CNC_RENEGADE.CombatManager
 local styleManager      = CNC_RENEGADE.StyleManager
 local render2d          = CNC_RENEGADE.Render2d
 local render2dSentence  = CNC_RENEGADE.Render2DSentence
@@ -520,5 +521,3 @@ end
     end
 
 end
-
-STATIC.Init( true )

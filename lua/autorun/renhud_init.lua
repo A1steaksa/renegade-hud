@@ -88,3 +88,8 @@ if SERVER then
         resource.AddFile( file )
     end
 end
+
+-- Kick things off
+if CLIENT then
+    CNC_RENEGADE.CombatManager.Init( true )
+end
