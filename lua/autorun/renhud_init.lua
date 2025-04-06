@@ -29,6 +29,7 @@ local clientScripts = {
     -- code/ww3d2/*
     "renhud/code/ww3d2/ww3d.lua",
     "renhud/code/ww3d2/render-2d.lua",
+    "renhud/code/ww3d2/font-3d-data.lua",
     "renhud/code/ww3d2/font-3d.lua",
     "renhud/code/ww3d2/render-2d-sentence.lua",
     "renhud/code/ww3d2/render-2d-text.lua",
