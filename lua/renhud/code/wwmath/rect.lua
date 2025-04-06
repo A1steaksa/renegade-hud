@@ -1,4 +1,4 @@
--- Based on RectInstance within Code/WWMath/rect.cpp/h
+-- Based on RectInstance within Code/WWMath/rect.h
 
 local STATIC, INSTANCE
 
@@ -320,12 +320,21 @@ end
         --- @param b RectInstance|Vector
         --- @return RectInstance result A new Rectangle containing the result of the offset
         function INSTANCE.__add( a, b )
-            local aIsTable = istable( a )
+            local aIsRect = STATIC.IsRect( a )
+            local bIsRect = STATIC.IsRect( b )
 
-            local rectangle = aIsTable and a or b
+            -- Adding two RectInstances together results in a union
+            if aIsRect and bIsRect then
+                --- @cast a RectInstance
+                --- @cast b RectInstance
+
+                return a:Union( b )
+            end
+
+            local rectangle = aIsRect and a or b
             --- @cast rectangle RectInstance
 
-            local offset = aIsTable and b or a
+            local offset = aIsRect and b or a
             --- @cast offset Vector
 
             local newRectangle = robustclass.New( "Renegade_Rect", rectangle )
