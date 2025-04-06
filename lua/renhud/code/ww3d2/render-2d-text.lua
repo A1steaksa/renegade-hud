@@ -15,11 +15,27 @@ local STATIC = CNC_RENEGADE.Render2dText or setmetatable( {}, CNC_RENEGADE.Rende
 CNC_RENEGADE.Render2dText = STATIC
 -- #endregion
 
+--#region Imports
+
+local rect = CNC_RENEGADE.Rect
+
+--#endregion
+
 --[[ Static Functions and Variables ]] do
     --- @class Render2dText
+
+    --- Creates a new Render2dTextInstance
+    --- @param font Font3dInstance?
+    --- @return Render2dTextInstance
+    function STATIC.New( font )
+        return robustclass.New( "Renegade_Render2dText", font )
+    end
 end
 
 --[[ Instanced Functions and Variables ]] do
+
+    --[[ Public ]]
+
     --- @class Render2dTextInstance
     --- @field Font Font3dInstance
     --- @field Location Vector
@@ -31,10 +47,21 @@ end
     --- @field ClipRect RectInstance
     --- @field IsClippedEnabled boolean
 
-    --- Constructs a new  Render2DTextInstance
-    --- @param material IMaterial?
-    function INSTANCE:Renegade_Render2dText( material )
-        print( "Render 2D Text instance constructor called", material )
+    --- Constructs a new Render2DTextInstance
+    --- @param font Font3dInstance
+    function INSTANCE:Renegade_Render2dText( font )
+        self.Location = Vector( 0, 0 )
+        self.Cursor = Vector( 0, 0 )
+        self.WrapWidth = 0
+        self.ClipRect = rect.New( 0, 0, 0, 0 )
+        self.IsClippedEnabled = false
+        self.Font = nil
+
+        self:Reset()
+
+        self:SetFont( font )
+
+        self:SetCoordinateRange( rect.New( -320, -240, 320, 240 ) )
     end
 
     function INSTANCE:Reset()
@@ -45,6 +72,7 @@ end
         self.DrawExtents  = robustclass.New( "Renegade_Rect", 0, 0, 0, 0 )
         self.TotalExtents = robustclass.New( "Renegade_Rect", 0, 0, 0, 0 )
         self.ClipRect     = robustclass.New( "Renegade_Rect", 0, 0, 0, 0 )
+        self.IsClippedEnabled = false
     end
 
     ---@return Font3dInstance
@@ -52,9 +80,58 @@ end
         return self.Font
     end
 
-    ---@param font string
+    ---@param font Font3dInstance
     function INSTANCE:SetFont( font )
-        error( "Function not implemented" )
+        self.Font = font
+        self:SetMaterial( font:PeekMaterial() )
+
+        self.BlockUv = font:GetCharUv( string.char( 0 ) )
+
+        -- "Inset it a bit to be sure we have no edge problems" -Code/ww3d2/render2d.cpp#655
+        self.BlockUv:Inflate( Vector(
+            -self.BlockUv:Width() / 4,
+            -self.BlockUv:Height() / 4
+        ) )
+    end
+
+    ---@param char string
+    ---@param color Color
+    function INSTANCE:DrawChar( char, color )
+        local cursor = self.Cursor
+        local font = self.Font
+
+        local charSpacing = font:GetCharSpacing( char )
+        local charHeight = font:GetCharHeight()
+
+        local isClipped = false
+        if self.IsClippedEnabled and (
+            cursor.x < self.ClipRect.Left or
+            cursor.x + charSpacing < self.ClipRect.Right or
+            cursor.y < self.ClipRect.Top or
+            cursor.y + charHeight < self.ClipRect.Bottom
+        ) then
+            isClipped = true
+        end
+
+        if char ~= " " and not isClipped then
+            local charRect = rect.New(
+                cursor.x,
+                cursor.y,
+                cursor.x + font:GetCharWidth( char ),
+                cursor.y + charHeight
+            )
+
+            local charUv = font:GetCharUv( char )
+
+            self:InternalAddQuadVertices( charRect )
+            self:InternalAddQuadUvs( charUv )
+            self:InternalAddQuadColors( color )
+
+            self.DrawExtents = self.DrawExtents + charRect
+            self.TotalExtents = self.TotalExtents + charRect
+        end
+
+        cursor.x = cursor.x + charSpacing
     end
 
     ---@param pos Vector
@@ -84,15 +161,49 @@ end
     end
 
     --- @param text string
-    --- @param color Color
+    --- @param color Color? [Default: White]
     function INSTANCE:DrawText( text, color )
-        error( "Function not implemented" )
+        if not color then
+            color = Color( 255, 255, 255 )
+        end
+
+        local font = self.Font
+
+        -- Reset extents
+        self.DrawExtents = rect.New( self.Location, self.Location )
+        if self.TotalExtents:Width() == 0 then
+            self.TotalExtents = rect.New( self.Location, self.Location )
+        end
+
+        for _, char in ipairs( string.Explode( "", text ) ) do
+
+            -- Check if we need to move to a new line
+            local wrap = char == "\n"
+
+            -- If we're at a space and the next word would put us past our max width, wrap
+            -- if char == " " and self.WrapWidth > 0 then
+            --     -- TODO: Implement this
+            -- end
+
+            if wrap then
+                self.Cursor.y = self.Cursor.y + font:GetCharHeight()
+                self.Cursor.x = self.Location.x
+            else
+                self:DrawChar( char, color )
+            end
+        end
+
+        self.ShouldRebuildMesh = true
     end
 
-    --- @param screen RectInstance
+    --- @param blockRect RectInstance
     --- @param color Color
-    function INSTANCE:DrawBlock( screen, color )
-        error( "Function not implemented" )
+    function INSTANCE:DrawBlock( blockRect, color )
+        self:InternalAddQuadVertices( blockRect )
+        self:InternalAddQuadUvs( self.BlockUv )
+        self:InternalAddQuadColors( color )
+
+        self.TotalExtents = self.TotalExtents + blockRect
     end
 
     --- @return RectInstance
@@ -113,6 +224,17 @@ end
     --- @param text string
     --- @return Vector
     function INSTANCE:GetTextExtents( text )
-        error( "Function not implemented" )
+        local font = self.Font
+        local extent = Vector( 0, font:GetCharHeight() )
+
+        if text then
+            for _, char in ipairs( string.Explode( "", text ) ) do
+                if char ~= "\n" then
+                    extent.x = extent.x + font:GetCharSpacing( char )
+                end
+            end
+        end
+
+        return extent
     end
 end
