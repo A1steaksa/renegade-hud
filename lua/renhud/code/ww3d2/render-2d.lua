@@ -461,10 +461,8 @@ end
             local vector = firstArg
 
             convertedVert = Vector(
-                -- math.floor( vector.x * self.CoordinateScale.x + self.BiasedCoordinateOffset.x ),
-                -- math.floor( vector.y * self.CoordinateScale.y + self.BiasedCoordinateOffset.y )
-                vector.x / self.CoordinateScale.x + self.BiasedCoordinateOffset.x,
-                vector.y / self.CoordinateScale.y + self.BiasedCoordinateOffset.y
+                vector.x / self.CoordinateScale.x,
+                vector.y / self.CoordinateScale.y
             )
         elseif argCount == 2 then
             typecheck( "Render2d:ConvertVert", 1, "number", firstArg )
@@ -477,18 +475,16 @@ end
             local y = secondArg
 
             convertedVert = Vector(
-                -- math.floor( x * self.CoordinateScale.x + self.BiasedCoordinateOffset.x ),
-                -- math.floor( y * self.CoordinateScale.y + self.BiasedCoordinateOffset.y )
-                x / self.CoordinateScale.x + self.BiasedCoordinateOffset.x,
-                y / self.CoordinateScale.y + self.BiasedCoordinateOffset.y
+                x / self.CoordinateScale.x,
+                y / self.CoordinateScale.y
             )
         else
             error( string.format( "Render2d:ConvertVert received an invalid number of arguments (%d)", argCount ) )
         end
 
         -- Convert from whatever weird coordinate space this renderer is using to Garry's Mod's screen pixel coordinate space
-        convertedVert.x = convertedVert.x * STATIC.GetScreenResolution():Width()
-        convertedVert.y = convertedVert.y * STATIC.GetScreenResolution():Height()
+        convertedVert.x = ( convertedVert.x * STATIC.GetScreenResolution():Width() ) + self.BiasedCoordinateOffset.x
+        convertedVert.y = ( convertedVert.y * STATIC.GetScreenResolution():Height() ) + self.BiasedCoordinateOffset.y
 
         return convertedVert
     end
