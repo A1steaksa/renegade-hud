@@ -216,6 +216,11 @@ end
     end
 
     --[[ Scaling ]] do
+
+        --- @class RectInstance
+        --- @operator mul( number ): RectInstance
+        --- @operator div( number ): RectInstance
+
         --- Scales this Rectangle by a number
         --- @param a number|RectInstance
         --- @param b number|RectInstance
@@ -314,6 +319,12 @@ end
     end
 
     --[[ Offset ]] do
+
+        --- @class RectInstance
+        --- @operator add( number ): RectInstance
+        --- @operator add( RectInstance ): RectInstance
+        --- @operator sub( number ): RectInstance
+        --- @operator sub( RectInstance ): RectInstance
 
         --- Moves the Rectangle's edge positions based on a given Vector
         --- @param a RectInstance|Vector
