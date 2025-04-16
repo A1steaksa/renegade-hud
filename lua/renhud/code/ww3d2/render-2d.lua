@@ -206,7 +206,7 @@ end
     --- Originally called `Peek_Texture`
     --- @returns IMaterial
     function INSTANCE:PeekMaterial()
-        error( "Function not yet implemented" )
+        return self.Material
     end
 
     --- @param isAdditive boolean
