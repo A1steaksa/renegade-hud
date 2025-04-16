@@ -24,4 +24,5 @@ STATIC.Colors.HealthLow          = Color( 255,   0, 0   )
 STATIC.Colors.Enemy              = Color( 255,   0, 0   )
 STATIC.Colors.Friendly           = Color(   0, 255, 0   )
 STATIC.Colors.NoRelation         = Color( 255, 255, 255 )
+STATIC.Colors.ReticleBusy        = Color( 255, 255, 0   )
 --#endregion

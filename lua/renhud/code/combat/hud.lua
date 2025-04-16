@@ -12,14 +12,15 @@ local STATIC
     CNC_RENEGADE.Hud = STATIC
 end
 
---#region Localization
+--#region Imports
 
 local globalSettings    = CNC_RENEGADE.GlobalSettings
 local combatManager     = CNC_RENEGADE.CombatManager
 local rect              = CNC_RENEGADE.Rect
 local styleManager      = CNC_RENEGADE.StyleManager
 local render2d          = CNC_RENEGADE.Render2d
-local render2dSentence  = CNC_RENEGADE.Render2DSentence
+local render2dText      = CNC_RENEGADE.Render2dText
+local font3d            = CNC_RENEGADE.Font3d
 local translateDb       = CNC_RENEGADE.TranslateDB
 local objectiveManager  = CNC_RENEGADE.ObjectiveManager
 --#endregion
@@ -57,8 +58,11 @@ local objectiveManager  = CNC_RENEGADE.ObjectiveManager
         return hudElements[ name ]
     end )
 end
+local reloadingActivity = 183
 
 --[[ Static Functions and Variables ]] do
+
+    local RETICLE_WIDTH, RETICLE_HEIGHT  = 64, 64
 
     --[[ Load Materials ]] do
 
@@ -113,7 +117,7 @@ end
 
     --- @param renderAvailable boolean
     function STATIC.Init( renderAvailable )
-        
+        STATIC.ReticleInit()
         if renderAvailable then
             -- SniperHudClass.Init()
             STATIC.PowerupInit()
@@ -126,17 +130,75 @@ end
 
             -- STATIC.HudHelpTextInit()
         end
+        STATIC.HasInit = true
     end
 
     function STATIC.Think()
-        error( "Function not yet implemented" )
+        if not STATIC.HasInit then return end
+        --[[ Reticle ]] do
+            local reticleColor = globalSettings.Colors.NoRelation
+
+            -- TODO:
+            --[[
+                if ( HUDInfo::Get_Weapon_Target_Object() != NULL ) {
+                    reticle_color = HUDGlobalSettingsDef::Get_Instance()->Get_Friendly_Color().Convert_To_ARGB();
+                    PhysicalGameObj * pgo = HUDInfo::Get_Weapon_Target_Object()->As_PhysicalGameObj();
+                    if ( pgo && pgo->Is_Enemy( star ) ) {
+                        reticle_color = HUDGlobalSettingsDef::Get_Instance()->Get_Enemy_Color().Convert_To_ARGB();
+                    }
+                }
+            ]]
+
+            local weapon = LocalPlayer():GetActiveWeapon()
+            if IsValid( weapon ) then
+                local time = CurTime()
+
+                local isWeaponBusy = (
+                    not weapon:HasAmmo()
+                    or ( -- Can have ammo in the magazine, but currently does not
+                        weapon:Clip1() <= 0
+                        and weapon:GetMaxClip1() > 0
+                    )
+                    or weapon:GetInternalVariable( "m_bInReload" )
+                    or weapon:GetInternalVariable( "m_Activity" ) == reloadingActivity
+                )
+
+                if isWeaponBusy then
+                    reticleColor = globalSettings.Colors.ReticleBusy
+                end
+
+            end
+
+            local reticleOffset = Vector( ScrW()/2, ScrH()/2 ) -- TODO: Implement COMBAT_CAMERA->Get_Camera_Target_2D_Offset();
+
+            STATIC.ReticleRenderer:Reset()
+            STATIC.ReticleRenderer:AddQuad(
+                rect.New(
+                    reticleOffset.x - RETICLE_WIDTH / 2,
+                    reticleOffset.y - RETICLE_HEIGHT / 2,
+                    reticleOffset.x + RETICLE_WIDTH / 2,
+                    reticleOffset.y + RETICLE_HEIGHT / 2
+                ),
+                reticleColor
+            )
+
+            if combatManager.IsGameplayPermitted() then
+                STATIC.ReticleRenderer:SetHidden( false )
+            else
+                STATIC.ReticleRenderer:SetHidden( true )
+            end
+        end
     end
 
     function STATIC.Render()
-        -- render.PushFilterMin( TEXFILTER.POINT )
-        -- render.PushFilterMag( TEXFILTER.POINT )
+        if not STATIC.HasInit then return end
 
-        STATIC.PowerupRender()
+        render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA, BLENDFUNC_ADD )
+
+        render.PushFilterMin( TEXFILTER.POINT )
+        render.PushFilterMag( TEXFILTER.POINT )
+
+        --STATIC.PowerupRender()
         STATIC.WeaponRender()
         -- STATIC.WeaponChartRender()
         -- STATIC.InfoRender()
@@ -144,9 +206,15 @@ end
         -- STATIC.TargetRender()
         -- STATIC.HudHelpTextRender()
         -- STATIC.ObjectiveRender()
+        -- radarManager:Render()
 
-        -- render.PopFilterMag()
-        -- render.PopFilterMin()
+        STATIC.ReticleRenderer:Render()
+        STATIC.ReticleHitRenderer:Render()
+
+        render.OverrideBlend( false )
+
+        render.PopFilterMag()
+        render.PopFilterMin()
     end
     hook.Add( "HUDPaint", "A1_Renegade_RenderHUD", STATIC.Render )
 
@@ -481,6 +549,24 @@ end
             STATIC.AddDataLink()
         end
 
+    end
+    --[[ Reticles ]] do
+
+        --- @class Hud
+        --- @field ReticleRenderer Render2dInstance
+        --- @field ReticleHitRenderer Render2dInstance
+
+        function STATIC.ReticleInit()
+            STATIC.ReticleRenderer = render2d.New()
+            STATIC.ReticleRenderer:SetMaterial( STATIC.Materials.Hud.Reticle )
+            STATIC.ReticleRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            STATIC.ReticleRenderer:SetHidden( true )
+
+            STATIC.ReticleHitRenderer = render2d.New()
+            STATIC.ReticleHitRenderer:SetMaterial( STATIC.Materials.Hud.ReticleHit )
+            STATIC.ReticleHitRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            STATIC.ReticleHitRenderer:SetHidden( true )
+        end
     end
 
     --[[ Weapon Display ]] do
