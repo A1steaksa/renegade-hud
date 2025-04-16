@@ -58,6 +58,26 @@ local objectiveManager  = CNC_RENEGADE.ObjectiveManager
         return hudElements[ name ]
     end )
 end
+
+-- Manually reformat common weapon names that don't have good print names
+-- Format is [string: weapon class] -> [string: name to display]
+local preformattedWeaponNames = {
+    ["weapon_crowbar"]      = "Crowbar",
+    ["weapon_physcannon"]   = "Gravity Gun",
+    ["weapon_physgun"]      = "Physics Gun",
+    ["weapon_stunstick"]    = "Stunstick",
+    ["weapon_pistol"]       = "9mm Pistol",
+    ["weapon_357"]          = ".357 Magnum",
+    ["weapon_smg1"]         = "Submachine Gun",
+    ["weapon_ar2"]          = "Pulse-Rifle",
+    ["weapon_shotgun"]      = "Shotgun",
+    ["weapon_crossbow"]     = "Crossbow",
+    ["weapon_frag"]         = "Grenade",
+    ["weapon_rpg"]          = "RPG",
+    ["weapon_slam"]         = "S.L.A.M",
+    ["weapon_bugbait"]      = "Bugbait"
+}
+
 local reloadingActivity = 183
 
 --[[ Static Functions and Variables ]] do
@@ -112,7 +132,16 @@ local reloadingActivity = 183
 
         -- Health and Armor Upgrades
         STATIC.Materials.Pickups.HealthUpgrade = LoadMaterial( "hud_hemedal" )
-        STATIC.Materials.Pickups.ArmorUpgrade = LoadMaterial( "hud_armedal" )
+        STATIC.Materials.Pickups.ArmorUpgrade  = LoadMaterial( "hud_armedal" )
+    end
+
+    --[[ Load Font3d Instances ]] do
+        -- These fonts are provided by `WW3DAssetManager::Get_Instance()->Get_Font3DInstance( tgaFileName )` in the original code
+        STATIC.Font3dInstances = {}
+
+        STATIC.Font3dInstances.Large  = font3d.New( STATIC.Materials.Fonts.Large  )
+        STATIC.Font3dInstances.Medium = font3d.New( STATIC.Materials.Fonts.Medium )
+        STATIC.Font3dInstances.Small  = font3d.New( STATIC.Materials.Fonts.Small  )
     end
 
     --- @param renderAvailable boolean
@@ -135,6 +164,15 @@ local reloadingActivity = 183
 
     function STATIC.Think()
         if not STATIC.HasInit then return end
+
+        -- STATIC.InfoUpdate()
+        -- STATIC.PowerupUpdate()
+        STATIC.WeaponUpdate()
+        -- STATIC.WeaponChartUpdate()
+        -- STATIC.DamageUpdate()
+        -- STATIC.TargetUpdate()
+        -- STATIC.ObjectiveUpdate()
+
         --[[ Reticle ]] do
             local reticleColor = globalSettings.Colors.NoRelation
 
@@ -584,9 +622,12 @@ local reloadingActivity = 183
         local WEAPON_DISPLAY_WEAPON_OFFSET = Vector( 100, 110 )
 
         function STATIC.WeaponInit()
-            STATIC.WeaponBoxRenderer = render2d.New()
-            STATIC.WeaponBoxRenderer:SetMaterial( STATIC.Materials.Hud.Main )
-            STATIC.WeaponBoxRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            --[[ Weapon Name ]] do
+                local font = styleManager.PeekFont( styleManager.FONT_STYLE.FONT_INGAME_TXT )
+
+                STATIC.WeaponNameRenderer = render2dText.New( font )
+                STATIC.WeaponNameRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            end
 
             local boxUv = rect.New( STATIC.WeaponBoxUvUpperLeft, STATIC.WeaponBoxUvLowerRight )
             local drawBox = rect.New( boxUv )
@@ -594,14 +635,38 @@ local reloadingActivity = 183
             drawBox = drawBox + Vector( ScrW(), ScrH() ) - WEAPON_DISPLAY_WEAPON_OFFSET - drawBox:UpperLeft()
             --- @cast drawBox RectInstance
 
-            STATIC.WeaponBoxRenderer:AddQuad( drawBox, boxUv )
-            STATIC.WeaponBase = drawBox:UpperLeft()
+        function STATIC.WeaponUpdate()
+
+            --[[ Weapon Name ]] do
+
+                local name = "Unknown"
+
+                local wep = LocalPlayer():GetActiveWeapon()
+                if IsValid( wep ) then
+
+                    local preformattedName = preformattedWeaponNames[ wep:GetClass() ]
+
+                    if preformattedName then
+                        name = preformattedName
+                    else
+                        -- Localize the name, if possible
+                        name = language.GetPhrase( wep:GetPrintName() )
+                    end
+
+                end
+
+                STATIC.WeaponNameRenderer:Reset()
+
+                local textSize = STATIC.WeaponNameRenderer:GetTextExtents( name ) + Vector( 1, 0 )
+                STATIC.WeaponNameRenderer:SetLocation( render2d.GetScreenResolution():LowerRight() - textSize )
+                STATIC.WeaponNameRenderer:DrawText( name )
+            end
         end
 
         function STATIC.WeaponRender()
             STATIC.WeaponBoxRenderer:Render()
             --WeaponImageRender()
-            --WeaponNameRender()
+            STATIC.WeaponNameRenderer:Render()
             --WeaponClipCountRender()
             --WeaponTotalCountRender()
         end
