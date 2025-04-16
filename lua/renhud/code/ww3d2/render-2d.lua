@@ -172,10 +172,15 @@ end
     --- > *"default range is (-1,1)-(1,-1)" -Code/ww3d2/render2d.cpp#170*
     --- @param range RectInstance
     function INSTANCE:SetCoordinateRange( range )
-        self.CoordinateScale.x =  2 / range:Width()
-        self.CoordinateScale.y = -2 / range:Height()
-        self.CoordinateOffset.x = -( self.CoordinateScale.x * range.Left ) - 1
-        self.CoordinateOffset.y = -( self.CoordinateScale.y * range.Top  ) + 1
+        -- self.CoordinateScale.x =  2 / range:Width()
+        -- self.CoordinateScale.y = -2 / range:Height()
+        -- self.CoordinateOffset.x = -( self.CoordinateScale.x * range.Left ) - 1
+        -- self.CoordinateOffset.y = -( self.CoordinateScale.y * range.Top  ) + 1
+
+        self.CoordinateScale.x = range:Width()
+        self.CoordinateScale.y = range:Height()
+        self.CoordinateOffset.x = 0
+        self.CoordinateOffset.y = 0
 
         self:UpdateBias()
     end
