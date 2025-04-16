@@ -301,5 +301,4 @@ end
     function INSTANCE:MinimizeFontMaterial( fontMaterial )
         error( "Function not yet implemented" )
     end
-
 end
