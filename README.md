@@ -13,47 +13,79 @@ The core of the HUD lives in `Code/Combat/hud.cpp/h` which depends on:
 
 ## Status Legend
 
-| Order | Status            | Meaning                                                                                               |
-| ----- | ----------------- | ----------------------------------------------------------------------------------------------------- |
-| 1     | Not Started       | No file has been created yet                                                                          |
-| 2     | Created           | A file has been created, but it is missing some or all aspects of being stubbed                       |
-| 3     | Stubbed           | The file contains class setup and placeholders for all of the original code's functions and variables |
-| 4     | In Use            | Some of the functions or variables are filled in and are actively used by other files                 |
-| 5     | Fully Ported      | Every function has been filled in and no placeholders remain                                          |
+| Order | Status           | Meaning                                                                                               |
+| ----- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| 1     | 🚫 Not Started  | No file has been created yet                                                                          |
+| 2     | 📄 Created      | A file has been created, but it is missing some or all aspects of being stubbed                       |
+| 3     | 🪛 Stubbed      | The file contains class setup and placeholders for all of the original code's functions and variables |
+| 4     | 🚗 In Use       | Some of the functions or variables are filled in and are actively used by other files                 |
+| 5     | 🥇 Fully Ported | Every function has been filled in and no placeholders remain                                          |
+| 5     | 🥇 Good Enough  | All functions that are known to be necessary are ported or replaced                                   |
 
 ## File Statuses
 
 *Note: This list is not exhaustive and will be added to as new dependencies are found.*
 
-| Status | Path | C++ Link | Header Link |
-| ------ | ---- | -------- | ----------- |
-| Not Started | Code/Combat/assets             | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/assets.cpp)             | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/assets.h)  
-| Not Started | Code/ww3d2/font3d              | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/ww3d2/font3d.cpp)              | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/ww3d2/font3d.h)  
-| Not Started | Code/WWMath/rect               | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/WWMath/rect.cpp)               | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/WWMath/rect.h)  
-| Not Started | Code/Combat/combat             | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/combat.cpp)             | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/combat.h)  
-| Not Started | Code/Combat/soldier            | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/soldier.cpp)            | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/soldier.h)  
-| Not Started | Code/Combat/ccamera            | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/ccamera.cpp)            | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/ccamera.h)  
-| Not Started | Code/Combat/vehicle            | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/vehicle.cpp)            | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/vehicle.h)  
-| Not Started | Code/Combat/weapons            | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/weapons.cpp)            | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/weapons.h)  
-| Not Started | Code/Combat/radar              | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/radar.cpp)              | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/radar.h)  
-| Not Started | Code/ww3d2/texture             | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/ww3d2/texture.cpp)             | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/ww3d2/texture.h)  
-| Not Started | Code/wwphys/phys               | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/wwphys/phys.cpp)               | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/wwphys/phys.h)  
-| Not Started | Code/ww3d2/render2d            | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/ww3d2/render2d.cpp)            | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/ww3d2/render2d.h)  
-| Not Started | Code/Combat/hudinfo            | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/hudinfo.cpp)            | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/hudinfo.h)  
-| Not Started | Code/Combat/globalsettings     | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/globalsettings.cpp)     | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/globalsettings.h)  
-| Not Started | Code/wwtranslatedb/translatedb | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/wwtranslatedb/translatedb.cpp) | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/wwtranslatedb/translatedb.h)  
-| Not Started | Code/Combat/playerdata         | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/playerdata.cpp)         | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/playerdata.h)  
-| Not Started | Code/Combat/playertype         | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/playertype.cpp)         | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/playertype.h)  
-| Not Started | Code/Combat/sniper             | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/sniper.cpp)             | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/sniper.h)  
-| Not Started | Code/ww3d2/render2dsentence    | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/ww3d2/render2dsentence.cpp)    | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/ww3d2/render2dsentence.h)  
-| Not Started | Code/Combat/input              | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/input.cpp)              | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/input.h)  
-| Not Started | Code/Combat/building           | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/building.cpp)           | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/building.h)  
-| Not Started | Code/Combat/objectives         | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/objectives.cpp)         | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/objectives.h)  
-| Not Started | Code/Combat/weaponbag          | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/weaponbag.cpp)          | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/weaponbag.h)  
-| Not Started | Code/Combat/string_ids         | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/string_ids.cpp)         | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/string_ids.h)  
-| Not Started | Code/Combat/gametype           | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/gametype.cpp)           | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/Combat/gametype.h)  
-| Not Started | Code/wwui/stylemgr             | [C++](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/wwui/stylemgr.cpp)             | [Header](https://github.com/A1steaksa/CnC_Renegade/blob/main/Code/wwui/stylemgr.h)  
+### WW3d2
+
+| C++ File Path (Excluding .h/.cpp) | C++ Class             | Lua File Path                     | Static Lua Class | Status           |
+| --------------------------------- | --------------------- | --------------------------------- | ---------------- | ---------------- |
+| Code/ww3d2/font3d                 | Font3DInstanceClass   | code/ww3d2/font-3d.lua            | Font3d           | 🥇 Fully Ported |
+| Code/ww3d2/font3d                 | Font3DDataClass       | code/ww3d2/font-3d-data.lua       | Font3dData       | 🥇 Good Enough  |
+| Code/ww3d2/shader                 | ShaderClass           | code/ww3d2/shader.lua             | Shader           | 📄 Created      |
+| Code/ww3d2/render2d               | Render2DClass         | code/ww3d2/render-2d.lua          | Render2d         | 🚗 In Use       |
+| Code/ww3d2/texture                |                       |                                   |                  | 🚫 Not Started  |
+| Code/ww3d2/render2dsentence       | FontCharsClass        | code/ww3d2/font-chars.lua         | FontChars        | 🪛 Stubbed      |
+
+### Combat
+
+| C++ File Path (Excluding .h/.cpp) | C++ Class | Lua File Path | Static Lua Class | Status          |
+| --------------------------------- | --------- | ------------- | ---------------- | --------------- |
+| Code/Combat/assets                |           |               |                  | 🚫 Not Started |
+| Code/Combat/combat                |           |               |                  | 🚫 Not Started |
+| Code/Combat/soldier               |           |               |                  | 🚫 Not Started |
+| Code/Combat/ccamera               |           |               |                  | 🚫 Not Started |
+| Code/Combat/vehicle               |           |               |                  | 🚫 Not Started |
+| Code/Combat/weapons               |           |               |                  | 🚫 Not Started |
+| Code/Combat/radar                 |           |               |                  | 🚫 Not Started |
+| Code/Combat/hudinfo               |           |               |                  | 🚫 Not Started |
+| Code/Combat/globalsettings        |           |               |                  | 📄 Created     |
+| Code/Combat/playerdata            |           |               |                  | 🚫 Not Started |
+| Code/Combat/playertype            |           |               |                  | 🚫 Not Started |
+| Code/Combat/sniper                |           |               |                  | 🚫 Not Started |
+| Code/Combat/input                 |           |               |                  | 🚫 Not Started |
+| Code/Combat/building              |           |               |                  | 🚫 Not Started |
+| Code/Combat/objectives            |           |               |                  | 🚫 Not Started |
+| Code/Combat/weaponbag             |           |               |                  | 🚫 Not Started |
+| Code/Combat/string_ids            |           |               |                  | 🚫 Not Started |
+| Code/Combat/gametype              |           |               |                  | 🚫 Not Started |
+
+### WWUI
+
+| C++ File Path (Excluding .h/.cpp) | C++ Class     | Lua File Path               | Static Lua Class | Status     |
+| --------------------------------- | ------------- | --------------------------- | ---------------- | ---------- |
+| Code/wwui/stylemgr                | StyleMgrClass | code/wwui/style-manager.lua | StyleManager     | 🚗 In Use |
+
+### WWMath
+
+| C++ File Path (Excluding .h/.cpp) | C++ Class | Lua File Path | Static Lua Class | Status           |
+| --------------------------------- | --------- | ------------- | ---------------- | ---------------- |
+| Code/WWMath/rect                  |           |               |                  | 🥇 Fully Ported |
+
+### WWTranslateDb
+
+| C++ File Path (Excluding .h/.cpp) | C++ Class | Lua File Path | Static Lua Class | Status      |
+| --------------------------------- | --------- | ------------- | ---------------- | ----------- |
+| Code/wwtranslatedb/translatedb    |           |               |                  | 📄 Created |
+
+### WWPhys
+
+| C++ File Path (Excluding .h/.cpp) | C++ Class | Lua File Path | Static Lua Class | Status          |
+| --------------------------------- | --------- | ------------- | ---------------- | --------------- |
+| Code/wwphys/phys                  |           |               |                  | 🚫 Not Started |
+
 </details>
+
 
 # Breaking the HUD down
 
@@ -245,5 +277,5 @@ Brief description
     </summary>
 
 ![Pointing out the location of the reticles]()
-    
+
 </details>
