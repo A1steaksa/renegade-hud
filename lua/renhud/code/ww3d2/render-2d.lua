@@ -544,15 +544,20 @@ end
             error( string.format( "Render2d:InternalAddVertices received an invalid number of arguments (%d)", argCount ) )
         end
 
+        local convertedVertex0 = self:ConvertVert( vertex0 )
+        local convertedVertex1 = self:ConvertVert( vertex1 )
+        local convertedVertex2 = self:ConvertVert( vertex2 )
+        local convertedVertex3 = self:ConvertVert( vertex3 )
+
         -- First triangle
-        self.Vertices[#self.Vertices + 1] = self:ConvertVert( vertex0 ) -- Vertex 0
-        self.Vertices[#self.Vertices + 1] = self:ConvertVert( vertex1 ) -- Vertex 1
-        self.Vertices[#self.Vertices + 1] = self:ConvertVert( vertex2 ) -- Vertex 2
+        self.Vertices[#self.Vertices + 1] = convertedVertex0
+        self.Vertices[#self.Vertices + 1] = convertedVertex1
+        self.Vertices[#self.Vertices + 1] = convertedVertex2
 
         -- Second triangle
-        self.Vertices[#self.Vertices + 1] = self:ConvertVert( vertex1 ) -- Vertex 1
-        self.Vertices[#self.Vertices + 1] = self:ConvertVert( vertex3 ) -- Vertex 3
-        self.Vertices[#self.Vertices + 1] = self:ConvertVert( vertex2 ) -- Vertex 2
+        self.Vertices[#self.Vertices + 1] = convertedVertex1
+        self.Vertices[#self.Vertices + 1] = convertedVertex3
+        self.Vertices[#self.Vertices + 1] = convertedVertex2
     end
 
     --- Adds the UVs of a Quad to the internal list of UVs
