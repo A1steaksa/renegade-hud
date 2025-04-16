@@ -1,7 +1,6 @@
 -- Based loosely on Font3DDataClass within Code/ww3d2/font3d.cpp/h
 
--- This class is not a direct port of the original code, but rather is a "hack" to provide
--- the same functionality based on hard-coded values
+
 
 local STATIC, INSTANCE
 
@@ -12,7 +11,8 @@ local STATIC, INSTANCE
     --- @field Static Font3dData The static table for this instance's class
     INSTANCE = robustclass.Register( "Renegade_Font3dData" )
 
-    --- The static components of Font3dData
+    --- A container for image-based fonts  
+    --- After being loaded, font images are processed on the next frame
     --- @class Font3dData
     --- @field Instance Font3dDataInstance The Metatable used by Font3DDataInstance
     STATIC = CNC_RENEGADE.Font3dData or {}
@@ -69,7 +69,7 @@ end
 
                 local char = string.char( charIndex )
 
-                local startX, endX, charWidth = STATIC.FindHorizontalCharBounds( fontMaterial, charIndex )
+                local startX, _, charWidth = STATIC.FindHorizontalCharBounds( fontMaterial, charIndex )
 
                 fontData.UOffsetTable[char] = startX / materialWidth
                 fontData.UWidthTable[char] = charWidth / materialWidth
@@ -140,7 +140,6 @@ end
 
         return minX, maxX, maxX - minX
     end
-
 end
 
 --[[ Instanced Functions and Variables ]] do
