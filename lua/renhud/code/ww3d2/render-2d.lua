@@ -443,15 +443,19 @@ end
         local firstArg  = args[1]
         local secondArg = args[2]
 
+        local convertedVert
+
         if argCount == 1 then
             typecheck( "Render2d:ConvertVert", 1, "vector", firstArg )
 
             --- @cast firstArg Vector
             local vector = firstArg
 
-            return Vector(
-                math.floor( vector.x + self.BiasedCoordinateOffset.x ),
-                math.floor( vector.y + self.BiasedCoordinateOffset.y )
+            convertedVert = Vector(
+                -- math.floor( vector.x * self.CoordinateScale.x + self.BiasedCoordinateOffset.x ),
+                -- math.floor( vector.y * self.CoordinateScale.y + self.BiasedCoordinateOffset.y )
+                vector.x / self.CoordinateScale.x + self.BiasedCoordinateOffset.x,
+                vector.y / self.CoordinateScale.y + self.BiasedCoordinateOffset.y
             )
         elseif argCount == 2 then
             typecheck( "Render2d:ConvertVert", 1, "number", firstArg )
@@ -463,13 +467,21 @@ end
             --- @cast secondArg number
             local y = secondArg
 
-            return Vector(
-                math.floor( x + self.BiasedCoordinateOffset.x ),
-                math.floor( y + self.BiasedCoordinateOffset.y )
+            convertedVert = Vector(
+                -- math.floor( x * self.CoordinateScale.x + self.BiasedCoordinateOffset.x ),
+                -- math.floor( y * self.CoordinateScale.y + self.BiasedCoordinateOffset.y )
+                x / self.CoordinateScale.x + self.BiasedCoordinateOffset.x,
+                y / self.CoordinateScale.y + self.BiasedCoordinateOffset.y
             )
         else
             error( string.format( "Render2d:ConvertVert received an invalid number of arguments (%d)", argCount ) )
         end
+
+        -- Convert from whatever weird coordinate space this renderer is using to Garry's Mod's screen pixel coordinate space
+        convertedVert.x = convertedVert.x * STATIC.GetScreenResolution():Width()
+        convertedVert.y = convertedVert.y * STATIC.GetScreenResolution():Height()
+
+        return convertedVert
     end
 
     --- Adds the Vertices of a Quad to the internal list of Vertices
