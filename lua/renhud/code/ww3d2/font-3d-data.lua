@@ -22,6 +22,8 @@ local STATIC, INSTANCE
     INSTANCE.Static = STATIC
 end
 
+local TEXTUREFLAGS_POINTSAMPLE = 1
+
 --[[ Static Functions and Variables ]] do
 
     --- [[ Public ]]
@@ -45,7 +47,15 @@ end
 
     local function ProportionalizeFontData()
         if not STATIC.ProcessingRenderTarget then
-            STATIC.ProcessingRenderTarget = GetRenderTarget( "Renegade_Font3dData_FontProcessing", ScrW(), ScrH() )
+            STATIC.ProcessingRenderTarget = GetRenderTargetEx(
+            "Renegade_Font3dData_FontProcessing",
+            ScrW(), ScrH(),
+            RT_SIZE_NO_CHANGE,
+            MATERIAL_RT_DEPTH_NONE,
+            TEXTUREFLAGS_POINTSAMPLE,
+            0,
+            IMAGE_FORMAT_RGBA8888
+        )
         end
 
         cam.Start2D()
