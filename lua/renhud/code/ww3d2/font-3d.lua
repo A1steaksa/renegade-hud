@@ -64,6 +64,12 @@ end
         return self.FontData:PeekMaterial()
     end
 
+    --- @param spacing integer The spacing between characters, in pixels, at a scale of 1
+    function INSTANCE:SetInterCharSpacing( spacing )
+        self.InterCharSpacing = math.floor( spacing )
+        self:BuildCachedTables()
+    end
+
     function INSTANCE:SetMonoSpaced()
         self.MonoSpacing = self.FontData:GetCharWidth( "W" ) + 1
         self:BuildCachedTables()
@@ -78,6 +84,11 @@ end
     function INSTANCE:SetScale( scale )
         self.Scale = scale
         self:BuildCachedTables()
+    end
+
+    --- @return integer # The spacing between characters, in pixels, at a scale of 1
+    function INSTANCE:GetInterCharSpacing()
+        return self.InterCharSpacing
     end
 
     --- @param char string
@@ -135,16 +146,19 @@ end
         for i = 0, 255 do
             local char = string.char( i )
             local width = self.FontData:GetCharWidth( char )
-            if char == " " then
+            local isSpace = char == " "
+            if isSpace then
                 width = self.SpaceSpacing
             end
 
-            self.ScaledWidthTable[char] = self.Scale * width
+            self.ScaledWidthTable[char] = math.floor( self.Scale * width )
 
             if self.MonoSpacing ~= 0 then
-                self.ScaledSpacingTable[char] = self.Scale * self.MonoSpacing
+                self.ScaledSpacingTable[char] = math.floor( self.Scale * self.MonoSpacing )
             else
-                self.ScaledSpacingTable[char] = self.Scale * ( width + self.InterCharSpacing )
+                local effectiveWidth = width + ( isSpace and 0 or self.InterCharSpacing )
+
+                self.ScaledSpacingTable[char] = math.floor( self.Scale * effectiveWidth )
             end
         end
 
