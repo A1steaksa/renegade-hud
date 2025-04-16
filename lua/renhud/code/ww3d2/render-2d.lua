@@ -162,12 +162,21 @@ end
         end
 
         if self.Mesh then
+            render.SetMaterial( self.Material )
+
+            cam.Start2D()
             render.CullMode( MATERIAL_CULLMODE_CW )
 
-            render.SetMaterial( self.Material )
+            render.PushFilterMin( TEXFILTER.POINT )
+            render.PushFilterMag( TEXFILTER.POINT )
+
             self.Mesh:Draw()
 
+            render.PopFilterMag()
+            render.PopFilterMin()
+
             render.CullMode( MATERIAL_CULLMODE_CCW )
+            cam.End2D()
         end
     end
 
