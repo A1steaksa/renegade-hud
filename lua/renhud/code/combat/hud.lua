@@ -146,7 +146,9 @@ local reloadingActivity = 183
 
     --- @param renderAvailable boolean
     function STATIC.Init( renderAvailable )
+        STATIC.StatusBarInit()
         STATIC.ReticleInit()
+
         if renderAvailable then
             -- SniperHudClass.Init()
             STATIC.PowerupInit()
@@ -159,6 +161,7 @@ local reloadingActivity = 183
 
             -- STATIC.HudHelpTextInit()
         end
+
         STATIC.HasInit = true
     end
 
@@ -588,6 +591,19 @@ local reloadingActivity = 183
         end
 
     end
+
+    --[[ Status Bar ]] do
+
+        --- @class Hud
+        --- @field StatusBarRenderer Render2dInstance
+
+        function STATIC.StatusBarInit()
+            STATIC.StatusBarRenderer = render2d.New()
+            STATIC.StatusBarRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+        end
+
+    end
+
     --[[ Reticles ]] do
 
         --- @class Hud
@@ -619,9 +635,12 @@ local reloadingActivity = 183
         STATIC.WeaponBoxUvUpperLeft    = Vector( 0, 0 );
         STATIC.WeaponBoxUvLowerRight   = Vector( 95, 95 );
 
-        local WEAPON_DISPLAY_WEAPON_OFFSET = Vector( 100, 110 )
+        local WEAPON_OFFSET = Vector( 100, 110 )
+        local CLIP_ROUNDS_OFFSET  = Vector( 15, 27 )
+        local TOTAL_ROUNDS_OFFSET = Vector( 65, 34 )
 
         function STATIC.WeaponInit()
+
             --[[ Weapon Name ]] do
                 local font = styleManager.PeekFont( styleManager.FONT_STYLE.FONT_INGAME_TXT )
 
@@ -629,11 +648,31 @@ local reloadingActivity = 183
                 STATIC.WeaponNameRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
             end
 
-            local boxUv = rect.New( STATIC.WeaponBoxUvUpperLeft, STATIC.WeaponBoxUvLowerRight )
-            local drawBox = rect.New( boxUv )
-            boxUv = boxUv / 256
-            drawBox = drawBox + Vector( ScrW(), ScrH() ) - WEAPON_DISPLAY_WEAPON_OFFSET - drawBox:UpperLeft()
-            --- @cast drawBox RectInstance
+            --[[ Weapon Background ]] do
+                STATIC.WeaponBoxRenderer = render2d.New()
+                STATIC.WeaponBoxRenderer:SetMaterial( STATIC.Materials.Hud.Main )
+                STATIC.WeaponBoxRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+
+                local boxUv = rect.New( STATIC.WeaponBoxUvUpperLeft, STATIC.WeaponBoxUvLowerRight )
+                local drawBox = rect.New( boxUv )
+                boxUv = boxUv / 256
+                drawBox = drawBox + Vector( ScrW(), ScrH() ) - WEAPON_OFFSET - drawBox:UpperLeft()
+                --- @cast drawBox RectInstance
+
+                STATIC.WeaponBoxRenderer:AddQuad( drawBox, boxUv )
+                STATIC.WeaponBase = drawBox:UpperLeft()
+            end
+
+            --[[ Weapon Clip Count ]] do
+                STATIC.WeaponClipCountRenderer = render2dText.New( STATIC.Font3dInstances.Large )
+                STATIC.WeaponClipCountRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            end
+
+            --[[ Reserve Ammo ]] do
+                STATIC.WeaponTotalCountRenderer = render2dText.New( STATIC.Font3dInstances.Small )
+                STATIC.WeaponTotalCountRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            end
+        end
 
         function STATIC.WeaponUpdate()
 
@@ -661,14 +700,60 @@ local reloadingActivity = 183
                 STATIC.WeaponNameRenderer:SetLocation( render2d.GetScreenResolution():LowerRight() - textSize )
                 STATIC.WeaponNameRenderer:DrawText( name )
             end
+
+            --[[ Weapon Clip Count ]] do
+                STATIC.WeaponClipCountRenderer:Reset()
+                STATIC.WeaponClipCountRenderer:SetLocation( STATIC.WeaponBase + CLIP_ROUNDS_OFFSET )
+
+                local ammoText = "999"
+
+                if IsValid( LocalPlayer() ) then
+                    local wep = LocalPlayer():GetActiveWeapon()
+
+                    if IsValid( wep ) then
+                        local clip1Ammo = math.floor( wep:Clip1() + 0.5 )
+
+                        if clip1Ammo < 0 then
+                            clip1Ammo = 999
+                        end
+
+                        ammoText = string.format( "%03d", clip1Ammo )
+                    end
+                end
+
+                STATIC.WeaponClipCountRenderer:DrawText( ammoText )
+            end
+
+            --[[ Reserve Ammo Count ]] do
+                STATIC.WeaponTotalCountRenderer:Reset()
+                STATIC.WeaponTotalCountRenderer:SetLocation( STATIC.WeaponBase + TOTAL_ROUNDS_OFFSET )
+
+                local ammoText = "999"
+
+                if IsValid( LocalPlayer() ) then
+                    local wep = LocalPlayer():GetActiveWeapon()
+
+                    if IsValid( wep ) then
+                        local clip1Ammo = math.floor( LocalPlayer():GetAmmoCount( wep:GetPrimaryAmmoType() ) + 0.5 )
+
+                        if clip1Ammo < 0 then
+                            clip1Ammo = 999
+                        end
+
+                        ammoText = string.format( "%03d", clip1Ammo )
+                    end
+                end
+
+                STATIC.WeaponTotalCountRenderer:DrawText( ammoText )
+            end
         end
 
         function STATIC.WeaponRender()
             STATIC.WeaponBoxRenderer:Render()
-            --WeaponImageRender()
+            --STATIC.WeaponImageRenderer:Render()
             STATIC.WeaponNameRenderer:Render()
-            --WeaponClipCountRender()
-            --WeaponTotalCountRender()
+            STATIC.WeaponClipCountRenderer:Render()
+            STATIC.WeaponTotalCountRenderer:Render()
         end
     end
 
