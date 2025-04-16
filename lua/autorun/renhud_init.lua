@@ -17,9 +17,6 @@ local clientScripts = {
     -- Lua Libraries
     "renhud/lua-libraries/robustclass.lua",
 
-    -- data/*
-    "renhud/data/style-manager.lua",
-
     -- code/wmath/*
     "renhud/code/wwmath/rect.lua",
 
@@ -28,11 +25,15 @@ local clientScripts = {
 
     -- code/ww3d2/*
     "renhud/code/ww3d2/ww3d.lua",
-    "renhud/code/ww3d2/render-2d.lua",
+    "renhud/code/ww3d2/shader.lua",
+    "renhud/code/ww3d2/font-chars.lua",
     "renhud/code/ww3d2/font-3d-data.lua",
     "renhud/code/ww3d2/font-3d.lua",
-    "renhud/code/ww3d2/render-2d-sentence.lua",
+    "renhud/code/ww3d2/render-2d.lua",
     "renhud/code/ww3d2/render-2d-text.lua",
+
+    -- code/wwui
+    "renhud/code/wwui/style-manager.lua",
 
     -- code/combat/*
     "renhud/code/combat/global-settings.lua",
