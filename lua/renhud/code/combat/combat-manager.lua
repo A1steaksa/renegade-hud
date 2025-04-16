@@ -101,6 +101,8 @@ end
             -- dazzleLayer.SetCurrentDazzleLayer( nil )
         end
 
+        CNC_RENEGADE.StyleManager.Initialize()
+
         CNC_RENEGADE.Hud.Init( renderAvailable )
         -- CNC_RENEGADE.ScreenFadeManager.Init()
 
