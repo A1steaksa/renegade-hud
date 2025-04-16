@@ -9,7 +9,7 @@
 --- @class Render2dTextInstance : Render2dInstance
 local INSTANCE = robustclass.Register( "Renegade_Render2dText : Renegade_Render2d" )
 
---- The static components of Render2dText
+--- An image-based text renderer
 --- @class Render2dText : Render2d
 local STATIC = CNC_RENEGADE.Render2dText or setmetatable( {}, CNC_RENEGADE.Render2d )
 CNC_RENEGADE.Render2dText = STATIC
