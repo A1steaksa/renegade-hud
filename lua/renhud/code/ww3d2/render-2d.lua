@@ -10,7 +10,7 @@ local STATIC, INSTANCE
     --- @class Render2dInstance
     INSTANCE = robustclass.Register( "Renegade_Render2d" )
 
-    --- The static components of Render2d
+    --- A 2D renderer that constructs an internal IMesh
     --- @class Render2d
     --- @field Instance Render2dInstance The Metatable used by Render2dInstance
     STATIC = CNC_RENEGADE.Render2d or {}
@@ -97,6 +97,8 @@ end
         self.ShouldRebuildMesh = false
 
         self:SetMaterial( material )
+
+        self:UpdateBias()
     end
 
     --- Deletes the Mesh contents of this renderer
@@ -552,14 +554,14 @@ end
     --- @protected
     function INSTANCE:InternalAddQuadColors( color )
         -- First Triangle
-        self.Colors[#self.Colors + 1] = color -- Vertex 0
-        self.Colors[#self.Colors + 1] = color -- Vertex 1
-        self.Colors[#self.Colors + 1] = color -- Vertex 2
+        self.Colors[#self.Colors + 1] = color
+        self.Colors[#self.Colors + 1] = color
+        self.Colors[#self.Colors + 1] = color
 
         -- Second Triangle
-        self.Colors[#self.Colors + 1] = color -- Vertex 1
-        self.Colors[#self.Colors + 1] = color -- Vertex 3
-        self.Colors[#self.Colors + 1] = color -- Vertex 2
+        self.Colors[#self.Colors + 1] = color
+        self.Colors[#self.Colors + 1] = color
+        self.Colors[#self.Colors + 1] = color
     end
 
     --- Updates the biased coordinate offsets based on if ScreenUvBias is enabled
