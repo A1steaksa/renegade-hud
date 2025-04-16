@@ -31,9 +31,19 @@ end
         return robustclass.New( "Renegade_Render2d", material )
     end
 
-    --- @return unknown
+    --- @return ShaderInstance
     function STATIC.GetDefaultShader()
-        error( "Function not yet implemented" )
+        local shaderInstance = shader.New()
+
+        shaderInstance:SetDepthMask(       shader.DEPTH_WRITE_DISABLE          )
+        shaderInstance:SetDepthCompare(    shader.PASS_ALWAYS                  )
+        shaderInstance:SetDstBlendFunc(    shader.DSTBLEND_ONE_MINUS_SRC_ALPHA )
+        shaderInstance:SetSrcBlendFunc(    shader.SRCBLEND_SRC_ALPHA           )
+        shaderInstance:SetFogFunc(         shader.FOG_DISABLE                  )
+        shaderInstance:SetPrimaryGradient( shader.GRADIENT_MODULATE            )
+        shaderInstance:SetTexturing(       shader.TEXTURING_ENABLE             )
+
+        return shaderInstance
     end
 
     --- Retrieves the screen size as a RectangleInstance
@@ -401,7 +411,7 @@ end
     --- @field protected CoordinateOffset Vector
     --- @field protected BiasedCoordinateOffset Vector
     --- @field protected Material IMaterial? (Originally called "Texture") The material to be drawn on this renderer's faces
-    --- @field protected Shader unknown
+    --- @field protected Shader ShaderInstance
     --- @field protected Vertices Vector[]
     --- @field protected Uvs Vector[]
     --- @field protected ShouldRebuildMesh boolean
