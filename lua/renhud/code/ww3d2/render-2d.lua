@@ -20,6 +20,11 @@ local STATIC, INSTANCE
     INSTANCE.Static = STATIC
 end
 
+--#region Imports
+
+local shader = CNC_RENEGADE.Shader
+--#endregion
+
 --[[ Static Functions and Variables ]] do
 
     --[[ Public ]]
