@@ -154,7 +154,7 @@ local reloadingActivity = 183
             STATIC.PowerupInit()
             STATIC.WeaponInit()
             -- STATIC.WeaponChartInit()
-            -- STATIC.InfoInit()
+            STATIC.InfoInit()
             -- STATIC.DamageInit()
             -- STATIC.TargetInit()
             -- STATIC.ObjectiveInit()
@@ -168,7 +168,7 @@ local reloadingActivity = 183
     function STATIC.Think()
         if not STATIC.HasInit then return end
 
-        -- STATIC.InfoUpdate()
+        STATIC.InfoUpdate()
         -- STATIC.PowerupUpdate()
         STATIC.WeaponUpdate()
         -- STATIC.WeaponChartUpdate()
@@ -242,7 +242,7 @@ local reloadingActivity = 183
         --STATIC.PowerupRender()
         STATIC.WeaponRender()
         -- STATIC.WeaponChartRender()
-        -- STATIC.InfoRender()
+        STATIC.InfoRender()
         -- STATIC.DamageRender()
         -- STATIC.TargetRender()
         -- STATIC.HudHelpTextRender()
@@ -755,6 +755,385 @@ local reloadingActivity = 183
             STATIC.WeaponClipCountRenderer:Render()
             STATIC.WeaponTotalCountRenderer:Render()
         end
+    end
+
+    --[[ Health/Armor Info ]] do
+
+        --- @class Hud
+        --- @field InfoRenderer Render2dInstance
+        --- @field InfoHealthCountRenderer Render2dTextInstance
+        --- @field InfoShieldCountRenderer Render2dTextInstance
+        --- @field InfoBase Vector
+        --- @field LastHealth number
+        --- @field CenterHealthTimer number
+
+        STATIC.InfoBase = STATIC.InfoBase or Vector( 0, 0 )
+        STATIC.LastHealth = STATIC.LastHealth or 0
+        STATIC.CenterHealthTimer = STATIC.CenterHealthTimer or 0
+
+        -- #region Info Variables
+
+        local INFO_UV_SCALE         = Vector( 1 / 256, 1 / 256 )
+
+        -- The time, in seconds, that health changes should be drawn on-screen
+        local CENTER_HEALTH_TIME    = 2
+
+        -- The offset, in pixels, from the bottom-left corner of the screen where the info display is positioned
+        local INFO_OFFSET           = Vector( 7, -179 )
+
+        -- The frame UV and offset values for the static parts of the info display frame
+        local infoFrameData = {
+            { -- Frame 1 (Radar)
+                UpperLeftUv  = Vector( 96, 105 ),
+                LowerRightUv = Vector( 214, 255 ),
+                Offset       = Vector( -3, -1 )
+            },
+            { -- Frame 2 (EVA + Top Edge)
+                UpperLeftUv  = Vector( 215, 125 ),
+                LowerRightUv = Vector( 255, 192 ),
+                Offset       = Vector( 114, 57 )
+            },
+            { -- Frame 3 (Top Edge)
+                UpperLeftUv  = Vector( 218, 192 ),
+                LowerRightUv = Vector( 255, 201 ),
+                Offset       = Vector( 154, 115 ),
+            },
+            { -- Frame 4 (Top-Right Corner)
+                UpperLeftUv  = Vector( 216, 200 ),
+                LowerRightUv = Vector( 255, 255 ),
+                Offset       = Vector( 191, 115 ),
+            },
+            { -- Frame 5 (Right Cap)
+                UpperLeftUv  = Vector( 80, 203 ),
+                LowerRightUv = Vector( 100, 258 ),
+                Offset       = Vector( 230, 116 ),
+            },
+            { -- Frame 6 (Bottom-Left Rounded Corner)
+                UpperLeftUv  = Vector( 216, 101 ),
+                LowerRightUv = Vector( 240, 125 ),
+                Offset       = Vector( 74, 149 ),
+            }
+        }
+
+        local HEALTH_BACK_UV_UL     = Vector( 183, 241 )
+        local HEALTH_BACK_UV_LR     = Vector( 186, 248 )
+        local HEALTH_BACK_UL        = Vector( 98, 122 )
+        local HEALTH_BACK_LR        = Vector( 224, 168 )
+
+        local GRADIENT_BLACK_UV_UL  = Vector( 3, 135 )
+        local GRADIENT_BLACK_UV_LR  = Vector( 44, 144 )
+
+        local HEALTH_TEXT_BACK_UL   = Vector( 77, 124 )
+        local HEALTH_TEXT_BACK_LR   = Vector( 163, 150 )
+
+        local HEALTH_UV_UL          = Vector( 94, 52 )
+        local HEALTH_UV_LR          = Vector( 249, 100 )
+        local HEALTH_OFFSET         = Vector( 73, 121 )
+
+        local SHIELD_UV_UL          = Vector( 66, 97 )
+        local SHIELD_UV_LR          = Vector( 96, 132 )
+        local SHIELD_OFFSET         = Vector( 211, 140 )
+
+        local KEY_1_UV_UL           = Vector( 30, 180 )
+        local KEY_1_UV_LR           = Vector( 57, 197 )
+        local KEY_1_OFFSET          = Vector( 32, 134 )
+
+        local KEY_2_UV_UL           = Vector( 0, 181 )
+        local KEY_2_UV_LR           = Vector( 30, 197 )
+        local KEY_2_OFFSET          = Vector( 41, 140 )
+
+        local KEY_3_UV_UL           = Vector( 69, 133 )
+        local KEY_3_UV_LR           = Vector( 97, 149 )
+        local KEY_3_OFFSET          = Vector( 50, 148 )
+
+        local HEALTH_CROSS_1_UV_UL  = Vector( 33, 199 )
+        local HEALTH_CROSS_1_UV_LR  = Vector( 63, 226 )
+        local HEALTH_CROSS_1_OFFSET = Vector( 77, 124 )
+
+        local HEALTH_CROSS_2_UV_UL  = Vector( 33, 228 )
+        local HEALTH_CROSS_2_UV_LR  = Vector( 63, 258 )
+        local HEALTH_CROSS_2_OFFSET = Vector( 77, 124 )
+
+        local TOTAL_SHIELD_MOVEMENT = 80
+        -- #endregion
+
+        --- @param healthPercent number
+        --- @return Color
+        function STATIC.GetHealthColor( healthPercent )
+            local color = globalSettings.Colors.HealthHigh
+
+            if healthPercent <= 0.5 then
+                color = globalSettings.Colors.HealthMed
+            end
+
+            if healthPercent <= 0.25 then
+                color = globalSettings.Colors.HealthLow
+            end
+
+            return color
+        end
+
+        function STATIC.InfoInit()
+            local resolution = render2d.GetScreenResolution()
+
+            STATIC.InfoRenderer = render2d.New( STATIC.Materials.Hud.Main )
+            STATIC.InfoRenderer:SetCoordinateRange( resolution )
+
+            STATIC.InfoHealthCountRenderer = render2dText.New( STATIC.Font3dInstances.Large )
+            STATIC.InfoHealthCountRenderer:SetCoordinateRange( resolution )
+
+            STATIC.InfoShieldCountRenderer = render2dText.New( STATIC.Font3dInstances.Small )
+            STATIC.InfoShieldCountRenderer:SetCoordinateRange( resolution )
+
+            STATIC.InfoBase = resolution:LowerLeft() + INFO_OFFSET
+        end
+
+        function STATIC.InfoUpdateHealthShield()
+            local infoRenderer = STATIC.InfoRenderer
+
+            local health = 0
+            local healthPercent = 0
+            local shield = 0
+            local shieldPercent = 0
+
+            local combatStar = LocalPlayer()
+
+            -- TODO: Vehicle health
+
+            -- Get the player's current health or the health of their vehicle
+            if IsValid( combatStar ) then
+
+                health = combatStar:Health()
+                healthPercent = math.Clamp( health / combatStar:GetMaxHealth(), 0, 1 )
+
+                shield = combatStar:Armor()
+                shieldPercent = math.Clamp( shield / combatStar:GetMaxArmor(), 0, 1 )
+
+                -- Using the Drive system
+                if combatStar:IsDrivingEntity() then
+                    error( "Code path not yet implemented" )
+                end
+
+                -- Vehicle health
+                if combatStar:InVehicle() then
+                    error( "Code path not yet implemented" )
+                end
+            end
+
+            --- @type RectInstance, RectInstance, RectInstance, number
+            local uv, uv2, draw, intensity
+
+            local frameTime = FrameTime()
+
+            STATIC.LastHealthPercent = STATIC.LastHealthPercent or 0
+            STATIC.LastShieldPercent = STATIC.LastShieldPercent or 0
+
+            -- Get the health color
+            local colorPercent = math.max( STATIC.LastHealthPercent, healthPercent )
+            local healthColor = STATIC.GetHealthColor( colorPercent )
+
+            local healthString = string.format( "%03d", math.floor( health ) )
+            local shieldString = string.format( "%03d", math.floor( shield ) )
+
+            --[[ Health Bar ]] do
+
+                uv = rect.New( HEALTH_UV_UL, HEALTH_UV_LR )
+                draw = rect.New( uv )
+                uv:ScaleVector( INFO_UV_SCALE )
+
+                --- @type RectInstance
+                draw = draw + ( STATIC.InfoBase + HEALTH_OFFSET - draw:UpperLeft() )
+
+                -- Scale bars
+                local diff = healthPercent - STATIC.LastHealthPercent
+                local maxChange = frameTime
+                STATIC.LastHealthPercent = STATIC.LastHealthPercent + math.Clamp( diff, -maxChange, maxChange )
+                uv.Right = uv.Left + uv:Width() * STATIC.LastHealthPercent
+                draw.Right = draw.Left + draw:Width() * STATIC.LastHealthPercent
+
+                -- Draw the colored health bar
+                infoRenderer:AddQuad( draw, uv, healthColor )
+            end
+
+            --[[ Health Cross ]] do
+
+                -- Background gradient
+                uv = rect.New( GRADIENT_BLACK_UV_UL, GRADIENT_BLACK_UV_LR )
+                uv:ScaleVector( INFO_UV_SCALE )
+                draw = rect.New( HEALTH_TEXT_BACK_UL, HEALTH_TEXT_BACK_LR )
+                draw = draw + STATIC.InfoBase
+                infoRenderer:AddQuad( draw, uv )
+
+                -- Cross icon
+                STATIC.HealthCrossFlash = STATIC.HealthCrossFlash or 0
+                STATIC.HealthCrossFlash = STATIC.HealthCrossFlash + frameTime * 4
+
+                if STATIC.HealthCrossFlash > 2 then
+                    STATIC.HealthCrossFlash = STATIC.HealthCrossFlash - 2
+                end
+
+                if healthPercent > 0.25 then
+                    STATIC.HealthCrossFlash = 0
+                end
+
+                intensity = STATIC.HealthCrossFlash
+                if STATIC.HealthCrossFlash > 1 then
+                    intensity = 2 - STATIC.HealthCrossFlash
+                end
+
+                -- Cross icon fill
+                uv = rect.New( HEALTH_CROSS_1_UV_UL, HEALTH_CROSS_1_UV_LR )
+                draw = rect.New( uv )
+                uv:ScaleVector( INFO_UV_SCALE )
+                draw = draw + ( STATIC.InfoBase + HEALTH_CROSS_1_OFFSET - draw:UpperLeft() )
+                infoRenderer:AddQuad( draw, uv, ColorAlpha( healthColor, intensity * 255 ) )
+
+                -- Cross icon outline
+                uv2 = rect.New( HEALTH_CROSS_2_UV_UL, HEALTH_CROSS_2_UV_LR )
+                uv2:ScaleVector( INFO_UV_SCALE )
+                infoRenderer:AddQuad( draw, uv2, ColorAlpha( healthColor, ( 1 - intensity ) * 255 ) )
+            end
+
+            --[[ Health Number ]] do
+                STATIC.InfoHealthCountRenderer:Reset()
+
+                if health < 1 and health > 0 then
+                    health = 1
+                end
+
+                STATIC.InfoHealthCountRenderer:SetLocation( draw:UpperRight() + Vector( 4, 4 ) )
+                STATIC.InfoHealthCountRenderer:DrawText( healthString, healthColor )
+            end
+
+            --[[ Center Health Number ]] do
+
+                -- Show the center health number if we took damage recently or are low on health
+                if health ~= STATIC.LastHealth or healthPercent < 0.25 then
+                    STATIC.LastHealth = health
+                    STATIC.CenterHealthTimer = CENTER_HEALTH_TIME
+                end
+
+                if STATIC.CenterHealthTimer > 0 then
+
+                    local healthCenterOffset = render2d.GetScreenResolution():Center()
+                    healthCenterOffset.x = healthCenterOffset.x * 0.5
+                    healthCenterOffset.y = healthCenterOffset.y - draw:Height() / 2
+
+                    healthCenterOffset = healthCenterOffset - HEALTH_CROSS_1_OFFSET
+
+                    local fade = math.Clamp( STATIC.CenterHealthTimer, 0, 1 )
+
+                    -- Background gradient
+                    uv = rect.New( GRADIENT_BLACK_UV_UL, GRADIENT_BLACK_UV_LR )
+                    uv:ScaleVector( INFO_UV_SCALE )
+                    draw = rect.New( HEALTH_TEXT_BACK_UL, HEALTH_TEXT_BACK_LR )
+                    draw = draw + healthCenterOffset
+                    infoRenderer:AddQuad( draw, uv, Color( 255, 255, 255, fade * 255 ) )
+
+                    -- The center cross
+                    uv = rect.New( HEALTH_CROSS_1_UV_UL, HEALTH_CROSS_1_UV_LR  )
+                    draw = rect.New( uv )
+                    uv:ScaleVector( INFO_UV_SCALE )
+                    draw = draw + healthCenterOffset + HEALTH_CROSS_1_OFFSET - draw:UpperLeft()
+
+                    -- Cross fill
+                    infoRenderer:AddQuad( draw, uv, ColorAlpha( healthColor, fade * intensity * 255 ) )
+
+                    -- Cross outline
+                    infoRenderer:AddQuad( draw, uv2, ColorAlpha( healthColor, fade * ( 1 - intensity ) * 255 ) )
+
+                    -- Health text
+                    STATIC.InfoHealthCountRenderer:SetLocation( draw:UpperRight() + Vector( 4, 4 ) )
+                    STATIC.InfoHealthCountRenderer:DrawText( healthString, ColorAlpha( healthColor, fade * 255 ) )
+
+                    STATIC.CenterHealthTimer = STATIC.CenterHealthTimer - frameTime
+                end
+            end
+
+            --[[ Shield / Armor ]] do
+                local diff = shieldPercent - STATIC.LastShieldPercent
+                local maxChange = frameTime
+                STATIC.LastShieldPercent = STATIC.LastShieldPercent + math.Clamp( diff, -maxChange, maxChange )
+                shieldPercent = STATIC.LastShieldPercent
+                uv.Right = uv.Left + uv:Width() * shieldPercent
+                draw.Right = draw.Left + draw:Width() * shieldPercent
+
+                if shieldPercent > 0 then
+
+                    -- Background shields
+                    local percent = 0
+                    while percent < shieldPercent do
+                        uv = rect.New( SHIELD_UV_UL, SHIELD_UV_LR )
+                        draw = rect.New( uv )
+
+                        uv:ScaleVector( INFO_UV_SCALE )
+                        draw = draw + ( STATIC.InfoBase + SHIELD_OFFSET - draw:UpperLeft() )
+                        draw = draw + Vector( math.floor(-percent * TOTAL_SHIELD_MOVEMENT ), 0 )
+                        infoRenderer:AddQuad( draw, uv )
+
+                        percent = percent + 0.1
+                    end
+
+                    -- Foreground shield
+                    uv = rect.New( SHIELD_UV_UL, SHIELD_UV_LR )
+                    draw = rect.New( uv )
+                    uv:ScaleVector( INFO_UV_SCALE )
+                    draw = draw + ( STATIC.InfoBase + SHIELD_OFFSET - draw:UpperLeft() )
+                    draw = draw + Vector( math.floor( -shieldPercent * TOTAL_SHIELD_MOVEMENT ), 0 )
+                    infoRenderer:AddQuad( draw, uv )
+
+                    STATIC.InfoShieldCountRenderer:Reset()
+                    
+                    STATIC.InfoShieldCountRenderer:SetLocation( draw:UpperLeft() + Vector( 4, 4 ) )
+                    STATIC.InfoShieldCountRenderer:DrawText( shieldString )
+
+                else
+                    STATIC.InfoShieldCountRenderer:Reset()
+                end
+            end
+
+        end
+
+        function STATIC.InfoUpdate()
+            local infoRenderer = STATIC.InfoRenderer
+
+            infoRenderer:Reset()
+
+            --[[ Background Frame ]] do
+                local uv, draw
+
+                -- Add each frame part
+                for index, frameData in ipairs( infoFrameData ) do
+                    uv = rect.New( frameData.UpperLeftUv, frameData.LowerRightUv )
+                    draw = rect.New( uv )
+
+                    draw = draw + STATIC.InfoBase + frameData.Offset - draw:UpperLeft()
+
+                    uv:ScaleVector( INFO_UV_SCALE )
+
+                    infoRenderer:AddQuad( draw, uv )
+                end
+
+                -- Add health background
+                uv = rect.New( HEALTH_BACK_UV_UL, HEALTH_BACK_UV_LR )
+                uv:ScaleVector( INFO_UV_SCALE )
+                draw = rect.New( HEALTH_BACK_UL, HEALTH_BACK_LR )
+                draw = draw + STATIC.InfoBase
+
+                infoRenderer:AddQuad( draw, uv )
+            end
+
+            STATIC.InfoUpdateHealthShield()
+
+            -- TODO: Keys
+        end
+
+        function STATIC.InfoRender()
+            STATIC.InfoRenderer:Render()
+            STATIC.InfoHealthCountRenderer:Render()
+            STATIC.InfoShieldCountRenderer:Render()
+        end
+
     end
 
     function STATIC.DamageRender()
