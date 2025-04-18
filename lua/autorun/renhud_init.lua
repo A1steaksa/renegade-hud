@@ -23,6 +23,9 @@ local clientScripts = {
     -- Lua Library that relies on rect
     "renhud/lua-libraries/typecheck.lua",
 
+    -- code/combat/wwtranslatedb/*
+    "renhud/code/wwtranslatedb/translatedb.lua",
+
     -- code/ww3d2/*
     "renhud/code/ww3d2/ww3d.lua",
     "renhud/code/ww3d2/shader.lua",
@@ -43,9 +46,6 @@ local clientScripts = {
 
     -- Update global settings
     "renhud/updated-global-settings.lua",
-
-    -- code/combat/wwtranslatedb/*
-    "renhud/code/wwtranslatedb/translatedb.lua"
 }
 
 -- Client Scripts
