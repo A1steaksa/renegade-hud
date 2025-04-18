@@ -90,6 +90,8 @@ local reloadingActivity = 183
             local filepath = "renhud/" .. fileName .. ".png"
 
             local loadedMaterial = Material( filepath, "" )
+            loadedMaterial:SetInt( "$gammacolorread", 1 )   -- Disables SRGB conversion of color texture read.  Credit: Noaccess
+            loadedMaterial:SetInt( "$linearwrite", 1 )      -- Disables SRGB conversion of shader results.      Credit: Noaccess
 
             return loadedMaterial
         end
