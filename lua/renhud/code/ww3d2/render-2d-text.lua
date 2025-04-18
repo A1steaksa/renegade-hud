@@ -123,8 +123,8 @@ end
 
             local charUv = font:GetCharUv( char )
 
-            local fontAtlasWidth = font:PeekMaterial():Width()
-            local fontAtlasHeight = font:PeekMaterial():Height() + 1 -- TODO: Find out why not adding something here makes the center health text show other characters
+            local fontAtlasWidth = font:PeekMaterial():Width() + 0.5
+            local fontAtlasHeight = font:PeekMaterial():Height() + 0.5
 
             -- Make sure the UVs align with the pixels of the font atlas material
             charUv.Left = math.floor( charUv.Left * fontAtlasWidth ) / fontAtlasWidth
