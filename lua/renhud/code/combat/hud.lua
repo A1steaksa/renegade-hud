@@ -21,7 +21,7 @@ local styleManager      = CNC_RENEGADE.StyleManager
 local render2d          = CNC_RENEGADE.Render2d
 local render2dText      = CNC_RENEGADE.Render2dText
 local font3d            = CNC_RENEGADE.Font3d
-local translateDb       = CNC_RENEGADE.TranslateDB
+local translateDb       = CNC_RENEGADE.TranslateDb
 local objectiveManager  = CNC_RENEGADE.ObjectiveManager
 --#endregion
 
