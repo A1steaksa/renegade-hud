@@ -228,6 +228,9 @@ local reloadingActivity = 183
             else
                 STATIC.ReticleRenderer:SetHidden( true )
             end
+
+            -- TODO: Implement the hit reticle
+
         end
     end
 
