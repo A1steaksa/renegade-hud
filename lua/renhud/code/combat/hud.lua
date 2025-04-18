@@ -169,7 +169,7 @@ local reloadingActivity = 183
         if not STATIC.HasInit then return end
 
         STATIC.InfoUpdate()
-        -- STATIC.PowerupUpdate()
+        STATIC.PowerupUpdate()
         STATIC.WeaponUpdate()
         -- STATIC.WeaponChartUpdate()
         -- STATIC.DamageUpdate()
@@ -192,8 +192,6 @@ local reloadingActivity = 183
 
             local weapon = LocalPlayer():GetActiveWeapon()
             if IsValid( weapon ) then
-                local time = CurTime()
-
                 local isWeaponBusy = (
                     not weapon:HasAmmo()
                     or ( -- Can have ammo in the magazine, but currently does not
@@ -239,7 +237,7 @@ local reloadingActivity = 183
         render.PushFilterMin( TEXFILTER.POINT )
         render.PushFilterMag( TEXFILTER.POINT )
 
-        --STATIC.PowerupRender()
+        STATIC.PowerupRender()
         STATIC.WeaponRender()
         -- STATIC.WeaponChartRender()
         STATIC.InfoRender()
@@ -304,10 +302,10 @@ local reloadingActivity = 183
         --- @class PowerupIcon
         --- @field Name string
         --- @field Number integer
+        --- @field Renderer Render2dInstance
         --- @field UV RectInstance
         --- @field IconBox RectInstance
         --- @field Timer number
-        --- @field Material IMaterial
 
         local POWERUP_PIXEL_UV_64X64 = rect.New( 0, 0, 64, 65 )
         local POWERUP_OFFSET_10X40 = Vector( 10, 40 )
@@ -333,6 +331,9 @@ local reloadingActivity = 183
         STATIC.LeftPowerupIconList = STATIC.LeftPowerupIconList or {}
 
         function STATIC.PowerupInit()
+            local font = styleManager.PeekFont( styleManager.FONT_STYLE.FONT_INGAME_TXT )
+            STATIC.PowerupTextRenderer = render2dText.New( font )
+            STATIC.PowerupTextRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
         end
 
         --- Adds a new powerup to either the left or right powerup list
@@ -343,23 +344,27 @@ local reloadingActivity = 183
         --- @param offset Vector
         --- @param addToRightList boolean
         function STATIC.PowerupAdd( name, number, material, pixelUvs, offset, addToRightList )
-            --- @class PowerupIcon
-            local data = {}
-            data.Material = material
-
+            -- Convert pixel UVs to normalized UVs
             local textureSize = material:Width()
             local uvs
             if textureSize > 0 then
                 uvs = pixelUvs / textureSize
             end
-            data.UV = uvs or pixelUvs
 
-            data.IconBox = rect.New( pixelUvs )
+            --- @type PowerupIcon
+            local data = {
+                Name = name,
+                Number = number,
+                Renderer = render2d.New(),
+                IconBox = rect.New( pixelUvs ),
+                UV = uvs or pixelUvs,
+                Timer = STATIC.PowerupTime
+            }
+
+            data.Renderer:SetMaterial( material )
+            data.Renderer:SetCoordinateRange( render2d.GetScreenResolution() )
+
             data.IconBox = data.IconBox + offset + Vector( 0, -40.0 ) - data.IconBox:UpperLeft()
-
-            data.Name = name
-            data.Number = number
-            data.Timer = STATIC.PowerupTime
 
             if addToRightList then
                 STATIC.RightPowerupIconList[ #STATIC.RightPowerupIconList + 1 ] = data
@@ -383,7 +388,7 @@ local reloadingActivity = 183
             -- Remove the bottom of the list after a polite wait
             local listHasPowerups = #powerupList > 0
             if listHasPowerups then
-                local isDoneAnimatingListBottom = powerupList[ 1 ].Timer < 0
+                local isDoneAnimatingListBottom = powerupList[1].Timer < 0
                 if  isDoneAnimatingListBottom then
                     animationTimer = animationTimer + frameTime
                     if animationTimer > STATIC.PowerupPickupAnimationDuration then
@@ -404,19 +409,16 @@ local reloadingActivity = 183
             end
             --- @cast box RectInstance
 
-            surface.SetFont( styleManager.Fonts.IngameText )
-
             for index, powerup in ipairs( powerupList ) do
                 if index > STATIC.MaxPowerupIcons then break end
                 --- @cast powerup PowerupIcon
 
                 powerup.Timer = powerup.Timer - frameTime
 
-                -- Feels unnecessary
-                local drawBox = box
+                local drawBox = rect.New( box )
 
-                local green
-                local white
+                --- @type Color, Color
+                local green, white
 
                 local isBottomIcon = index == 1
                 local isAnimating = animationTimer > 0
@@ -436,41 +438,21 @@ local reloadingActivity = 183
                 -- Draw the powerup icon
                 do
                     local drawColor = isRightList and green or white
-                    surface.SetDrawColor( drawColor )
 
-                    surface.SetMaterial( powerup.Material )
-                    local uv = powerup.UV
-
-                    surface.DrawTexturedRectUV(
-                        iconBox.Left, iconBox.Top,
-                        iconBox:Width(), iconBox:Height(),
-                        uv.Left, uv.Top, uv.Bottom, uv.Right
-                    )
+                    powerup.Renderer:Reset()
+                    powerup.Renderer:AddQuad( iconBox, powerup.UV, drawColor )
                 end
 
                 -- Draw powerup name
                 do
-                    local text = powerup.Name
-                    local textX = drawBox.Left + 1
-                    local textY = drawBox.Top + STATIC.PowerupBoxHeight - 15
-                    local textWidth = render2dSentence.GetTextWidth( text )
-
-                    -- Adjust text X position to keep text from going off the right side of the screen
-                    local textEndX = textX + textWidth + 1
-                    if textEndX > ScrW() then
-                        textX = ScrW() - ( textWidth + 1 )
-                    end
-
-                    render2dSentence.DrawText( textX, textY, text, white )
+                    STATIC.PowerupTextRenderer:SetLocation( Vector( drawBox.Left + 1, drawBox.Top + STATIC.PowerupBoxHeight - 15 ) )
+                    STATIC.PowerupTextRenderer:DrawText( powerup.Name, white )
                 end
 
                 -- Draw powerup count
                 if isRightList and powerup.Number ~= 0 then
-                    local text = powerup.Number
-                    local textX = drawBox.Right - 12
-                    local textY = drawBox.Top + 1
-
-                    render2dSentence.DrawText( textX, textY, tostring( text ), white )
+                    STATIC.PowerupTextRenderer:SetLocation( Vector( drawBox.Right - 12, drawBox.Top + 1 ) )
+                    STATIC.PowerupTextRenderer:DrawText( tostring( powerup.Number ) )
                 end
 
                 -- Drop remaining icons down
@@ -485,15 +467,34 @@ local reloadingActivity = 183
             return animationTimer
         end
 
-        function STATIC.PowerupRender()
-            local frameTime = RealFrameTime()
+        function STATIC.PowerupUpdate()
+            STATIC.PowerupTextRenderer:Reset()
 
             -- Mimicking the behavior of C++ static variables declared within functions
             STATIC.LeftAnimateTimer = STATIC.LeftAnimateTimer or 0
             STATIC.RightAnimateTimer = STATIC.RightAnimateTimer or 0
 
+            local frameTime = RealFrameTime()
+
             STATIC.LeftAnimateTimer = RenderPowerupList( STATIC.LeftPowerupIconList, frameTime, STATIC.LeftAnimateTimer, false )
             STATIC.RightAnimateTimer = RenderPowerupList( STATIC.RightPowerupIconList, frameTime, STATIC.RightAnimateTimer, true )
+        end
+
+        function STATIC.PowerupRender()
+
+            -- Left powerup list
+            for i = 1, #STATIC.LeftPowerupIconList do
+                local iconRenderer = STATIC.LeftPowerupIconList[ i ]
+                iconRenderer.Renderer:Render()
+            end
+
+            -- Right powerup list
+            for i = 1, #STATIC.RightPowerupIconList do
+                local iconRenderer = STATIC.RightPowerupIconList[ i ]
+                iconRenderer.Renderer:Render()
+            end
+
+            STATIC.PowerupTextRenderer:Render()
         end
 
         --- @param id integer
@@ -589,7 +590,6 @@ local reloadingActivity = 183
         function STATIC.AddMapReveal()
             STATIC.AddDataLink()
         end
-
     end
 
     --[[ Status Bar ]] do
@@ -903,10 +903,10 @@ local reloadingActivity = 183
             -- Get the player's current health or the health of their vehicle
             if IsValid( combatStar ) then
 
-                health = combatStar:Health()
+                health = math.max( combatStar:Health(), 0 )
                 healthPercent = math.Clamp( health / combatStar:GetMaxHealth(), 0, 1 )
 
-                shield = combatStar:Armor()
+                shield = math.max( combatStar:Armor(), 0 )
                 shieldPercent = math.Clamp( shield / combatStar:GetMaxArmor(), 0, 1 )
 
                 -- Using the Drive system
@@ -1133,7 +1133,6 @@ local reloadingActivity = 183
             STATIC.InfoHealthCountRenderer:Render()
             STATIC.InfoShieldCountRenderer:Render()
         end
-
     end
 
     function STATIC.DamageRender()
