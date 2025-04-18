@@ -376,7 +376,9 @@ STATIC.DEFAULT_FONTS = {
         local atlas = GetRenderTargetEx( "RENEGADE_FONT-ATLAS-RT_" .. fontName, atlasWidth, atlasHeight, RT_SIZE_OFFSCREEN, MATERIAL_RT_DEPTH_NONE, bit.bor( 1 ), 0, IMAGE_FORMAT_RGBA8888 )
         local atlasMaterial = CreateMaterial( "RENEGADE_FONT-ATLAS-MAT_" .. fontName, "UnlitGeneric", {
             ["$basetexture"] = atlas:GetName(),
-            ["$translucent"] = 1
+            ["$translucent"] = 1,
+            ["$gammacolorread"] = 1,    -- Disables SRGB conversion of color texture read.  Credit: Noaccess
+            ["$linearwrite"] = 1        -- Disables SRGB conversion of shader results.      Credit: Noaccess
         } )
 
         -- Render the font to the atlas
