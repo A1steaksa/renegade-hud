@@ -2,11 +2,10 @@
 -- This is emulating the behavior of .ddb files
 -- Values were manually copied out of LevelEdit via `Presets>Global Settings>HUD>HUD`
 
-if not CNC_RENEGADE or not CNC_RENEGADE.GlobalSettings then
-    error( "Cannot update global settings before global settings have loaded" )
-end
+--- @class Renegade
+local CNC = CNC_RENEGADE
 
-local settings = CNC_RENEGADE.GlobalSettings
+local settings = CNC.Import( "renhud/code/combat/global-settings.lua" )
 
 --#region Colors
 settings.Colors = {}

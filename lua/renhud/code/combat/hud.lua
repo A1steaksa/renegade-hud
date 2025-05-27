@@ -1,63 +1,59 @@
 -- Based on Code/Combat/hud.cpp
 
+--- @class Renegade
+local CNC = CNC_RENEGADE
+
 local STATIC
 
 --[[ Class Setup ]] do
-    --- @class Renegade
-    --- @field Hud Hud
 
     --- The static components of Hud
     --- @class Hud
-    STATIC = CNC_RENEGADE.Hud or {}
-    CNC_RENEGADE.Hud = STATIC
+    STATIC = CNC.CreateExport()
 end
+
 
 --#region Imports
 
-local globalSettings    = CNC_RENEGADE.GlobalSettings
-local combatManager     = CNC_RENEGADE.CombatManager
-local rect              = CNC_RENEGADE.Rect
-local styleManager      = CNC_RENEGADE.StyleManager
-local render2d          = CNC_RENEGADE.Render2d
-local render2dText      = CNC_RENEGADE.Render2dText
-local font3d            = CNC_RENEGADE.Font3d
-local translateDb       = CNC_RENEGADE.TranslateDb
-local objectiveManager  = CNC_RENEGADE.ObjectiveManager
+    --- @type GlobalSettings
+    local globalSettings = CNC.Import( "renhud/code/combat/global-settings.lua" )
+
+    --- @type CombatManager
+    local combatManager = CNC.Import( "renhud/code/combat/combat-manager.lua" )
+
+    --- @type Rect
+    local rect = CNC.Import( "renhud/code/wwmath/rect.lua" )
+
+    --- @type StyleManager
+    local styleManager = CNC.Import( "renhud/code/wwui/style-manager.lua" )
+
+    --- @type Render2d
+    local render2d = CNC.Import( "renhud/code/ww3d2/render-2d.lua" )
+
+    --- @type Render2dText
+    local render2dText = CNC.Import( "renhud/code/ww3d2/render-2d-text.lua" )
+
+    --- @type Font3d
+    local font3d = CNC.Import( "renhud/code/ww3d2/font-3d.lua" )
+
+    --- @type TranslateDb
+    local translateDb = CNC.Import( "renhud/code/wwtranslatedb/translatedb.lua" )
+
+    --- @type ObjectiveManager
+    local objectiveManager = CNC.Import( "renhud/code/combat/objective-manager.lua" )
+
+    --- @type HudInfo
+    local hudInfo = CNC.Import( "renhud/code/combat/hud-info.lua" )
 --#endregion
 
---[[ Hide Original HUD ]] do
-    local hudElements = {
-        [ "CHudAmmo" ]                   = false,
-        [ "CHudBattery" ]                = false,
-        [ "CHudChat" ]                   = false,
-        [ "CHudCrosshair" ]              = false,
-        [ "CHudCloseCaption" ]           = false,
-        [ "CHudDamageIndicator" ]        = false,
-        [ "CHudHistoryResource" ]        = false,
-        [ "CHudDeathNotice" ]            = false,
-        [ "CHudGeiger" ]                 = false,
-        [ "CHudGMod" ]                   = true,
-        [ "CHudHealth" ]                 = false,
-        [ "CHudHintDisplay" ]            = false,
-        [ "CHudMenu" ]                   = false,
-        [ "CHudMessage" ]                = false,
-        [ "CHudPoisonDamageIndicator" ]  = false,
-        [ "CHudSecondaryAmmo" ]          = false,
-        [ "CHudSquadStatus" ]            = false,
-        [ "CHudTrain" ]                  = false,
-        [ "CHudVehicle" ]                = false,
-        [ "CHudWeapon" ]                 = false,
-        [ "CHudWeaponSelection" ]        = true,
-        [ "CHudZoom" ]                   = false,
-        [ "NetGraph" ]                   = true,
-        [ "CHUDQuickInfo" ]              = false,
-        [ "CHudSuitPower" ]              = false,
-    }
 
-    hook.Add( "HUDShouldDraw", "A1_Renegade_HideHUD", function( name )
-        return hudElements[ name ]
-    end )
-end
+--[[ Static Functions and Variables ]] do
+
+    local CLASS = "Hud"
+
+    local RETICLE_WIDTH, RETICLE_HEIGHT  = 64, 64
+
+    local ACT_RELOADING = 183
 
 -- Manually reformat common weapon names that don't have good print names
 -- Format is [string: weapon class] -> [string: name to display]
@@ -77,12 +73,6 @@ local preformattedWeaponNames = {
     ["weapon_slam"]         = "S.L.A.M",
     ["weapon_bugbait"]      = "Bugbait"
 }
-
-local reloadingActivity = 183
-
---[[ Static Functions and Variables ]] do
-
-    local RETICLE_WIDTH, RETICLE_HEIGHT  = 64, 64
 
     --[[ Load Materials ]] do
 
@@ -263,43 +253,43 @@ local reloadingActivity = 183
     hook.Add( "HUDPaint", "A1_Renegade_RenderHUD", STATIC.Render )
 
     function STATIC.Reset()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "Reset" )
     end
 
     --- @return boolean
     function STATIC.Save()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "Save" )
     end
 
     --- @return boolean
     function STATIC.Load()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "Load" )
     end
 
     --- @param points number
     function STATIC.DisplayPoints( points )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "DisplayPoints" )
     end
 
     function STATIC.ToggleHidePoints()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "ToggleHidePoints" )
     end
 
     --- @return boolean
     function STATIC.IsEnabled()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "IsEnabled" )
     end
 
     function STATIC.Enable()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "Enable" )
     end
 
     function STATIC.ForceWeaponChartUpdate()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "ForceWeaponChartUpdate" )
     end
 
     function STATIC.ForceWeaponChartDisplay()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "ForceWeaponChartDisplay" )
     end
 
     --[[ Powerups ]] do
@@ -505,13 +495,13 @@ local reloadingActivity = 183
         --- @param id integer
         ---@param rounds integer
         function STATIC.AddPowerupWeapon( id, rounds )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "AddPowerupWeapon" )
         end
 
         --- @param id integer
         ---@param rounds integer
         function STATIC.AddPowerupAmmo( id, rounds )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "AddPowerupAmmo" )
         end
 
         --- Adds an armor powerup notification
@@ -576,10 +566,10 @@ local reloadingActivity = 183
         --- Adds a primary or secondary powerup notification
         --- @param type ObjectiveType
         function STATIC.AddObjective( type )
-            if type == objectiveManager.ObjectiveType.TYPE_PRIMARY then
+            if type == objectiveManager.OBJECTIVE_TYPE.PRIMARY then
                 local powerupName = translateDb.GetString( "IDS_Enc_Obj_Priority_0_Primary" )
                 STATIC.PowerupAdd( powerupName, 0, STATIC.Materials.Pickups.Eva1, POWERUP_PIXEL_UV_64X64, POWERUP_OFFSET_10X40, false )
-            elseif type == objectiveManager.ObjectiveType.TYPE_SECONDARY then
+            elseif type == objectiveManager.OBJECTIVE_TYPE.SECONDARY then
                 local powerupName = translateDb.GetString( "IDS_Enc_Obj_Priority_0_Secondary" )
                 STATIC.PowerupAdd( powerupName, 0, STATIC.Materials.Pickups.Eva2, POWERUP_PIXEL_UV_64X64, POWERUP_OFFSET_10X40, false )
             end
@@ -916,12 +906,12 @@ local reloadingActivity = 183
 
                 -- Using the Drive system
                 if combatStar:IsDrivingEntity() then
-                    error( "Code path not yet implemented" )
+                    typecheck.NotImplementedError( CLASS, "InfoUpdateHealthShield", "Driving system" )
                 end
 
                 -- Vehicle health
                 if combatStar:InVehicle() then
-                    error( "Code path not yet implemented" )
+                    typecheck.NotImplementedError( CLASS, "InfoUpdateHealthShield", "Vehicle Health" )
                 end
             end
 
@@ -1138,9 +1128,5 @@ local reloadingActivity = 183
             STATIC.InfoHealthCountRenderer:Render()
             STATIC.InfoShieldCountRenderer:Render()
         end
-    end
-
-    function STATIC.DamageRender()
-        error( "Function not yet implemented" )
     end
 end

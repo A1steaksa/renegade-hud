@@ -1,6 +1,7 @@
 -- Based loosely on Font3DDataClass within Code/ww3d2/font3d.cpp/h
 
-
+--- @class Renegade
+local CNC = CNC_RENEGADE
 
 local STATIC, INSTANCE
 
@@ -15,20 +16,21 @@ local STATIC, INSTANCE
     --- After being loaded, font images are processed on the next frame
     --- @class Font3dData
     --- @field Instance Font3dDataInstance The Metatable used by Font3DDataInstance
-    STATIC = CNC_RENEGADE.Font3dData or {}
-    CNC_RENEGADE.Font3dData = STATIC
+    STATIC = CNC.CreateExport()
 
     STATIC.Instance = INSTANCE
     INSTANCE.Static = STATIC
+    INSTANCE.IsFont3dData = true
 end
 
-local TEXTUREFLAGS_POINTSAMPLE = 1
 
 --[[ Static Functions and Variables ]] do
 
-    --- [[ Public ]]
+    local CLASS = "Font3dData"
 
-    --- @class Font3dData
+    local TEXTUREFLAGS_POINTSAMPLE = 1
+
+    --- [[ Public ]]
 
     --- Creates a new Font3dData
     --- @param font3dInstance Font3dInstance The Font3dInstance that owns this Font3dDataInstance
@@ -36,6 +38,17 @@ local TEXTUREFLAGS_POINTSAMPLE = 1
     function STATIC.New( font3dInstance, fontMaterial )
         return robustclass.New( "Renegade_Font3dData",  font3dInstance, fontMaterial )
     end
+
+    ---@param arg any
+    ---@return boolean `true` if the passed argument is a(n) Font3dDataInstance, `false` otherwise
+    function STATIC.IsFont3dData( arg )
+        if not istable( arg ) then return false end
+        if getmetatable( arg ) ~= INSTANCE then return false end
+
+        return arg.IsFont3dData
+    end
+
+    typecheck.RegisterType( "Font3dDataInstance", STATIC.IsFont3dData )
 
     -- [[ Private ]]
 
@@ -152,7 +165,10 @@ local TEXTUREFLAGS_POINTSAMPLE = 1
     end
 end
 
+
 --[[ Instanced Functions and Variables ]] do
+
+    local CLASS = "Font3dDataInstance"
 
     --- [[ Public ]]
 
@@ -299,6 +315,6 @@ end
     --- @param fontMaterial IMaterial
     --- @return IMaterial
     function INSTANCE:MinimizeFontMaterial( fontMaterial )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "MinimizeFontMaterial" )
     end
 end

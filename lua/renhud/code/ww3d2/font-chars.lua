@@ -1,5 +1,8 @@
 -- Based somewhat loosely on FontCharsClass within Code/ww3d2/render2dsentence.cpp/h
 
+--- @class Renegade
+local CNC = CNC_RENEGADE
+
 local STATIC, INSTANCE
 
 --[[ Class Setup ]] do
@@ -12,18 +15,19 @@ local STATIC, INSTANCE
     --- In Garry's Mod, it's main purpose is to register the font with the game and to act as a look-up for character sizing
     --- @class FontChars
     --- @field Instance FontCharsInstance The Metatable used by FontCharsInstance
-    STATIC = CNC_RENEGADE.FontChars or {}
-    CNC_RENEGADE.FontChars = STATIC
+    STATIC = CNC.CreateExport()
 
     STATIC.Instance = INSTANCE
     INSTANCE.Static = STATIC
+    INSTANCE.IsFontChars = true
 end
+
 
 --[[ Static Functions and Variables ]] do
 
-    --- [[ Public ]]
+    local CLASS = "FontChars"
 
-    --- @class FontChars
+    --- [[ Public ]]
 
     --- Creates a new FontCharsInstance
     --- @vararg any
@@ -32,13 +36,24 @@ end
         return robustclass.New( "Renegade_FontChars" )
     end
 
+    --- @param arg any
+    --- @return boolean `true` if the passed argument is a(n) FontCharsInstance, `false` otherwise
+    function STATIC.IsFontChars( arg )
+        if not istable( arg ) then return false end
+        if getmetatable( arg ) ~= INSTANCE then return false end
+
+        return arg.IsFontChars
+    end
+
+    typecheck.RegisterType( "FontCharsInstance", STATIC.IsFontChars )
 end
+
 
 --[[ Instanced Functions and Variables ]] do
 
-    --- [[ Public ]]
+    local CLASS = "FontCharsInstance"
 
-    --- @class FontCharsInstance
+    --- [[ Public ]]
 
     --- Constructs a new FontCharsInstance
     --- @vararg any
@@ -96,7 +111,7 @@ end
     --- @param isBold boolean
     --- @return boolean
     function INSTANCE:IsFont( fontName, pointSize, isBold )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "IsFont" )
     end
 
     --- @return string
@@ -201,5 +216,4 @@ end
     function INSTANCE:FreeCharacterArrays()
         -- This function has no Garry's Mod equivalent
     end
-
 end

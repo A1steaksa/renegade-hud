@@ -1,21 +1,32 @@
 -- Based on StyleMgrClass within Code/wwui/stylemgr.cpp/h
 
+--- @class Renegade
+local CNC = CNC_RENEGADE
+
 local STATIC
 
 --[[ Class Setup ]] do
 
     --- The static components of StyleManager
     --- @class StyleManager
-    STATIC = CNC_RENEGADE.StyleManager or {}
-    CNC_RENEGADE.StyleManager = STATIC
+    STATIC = CNC.CreateExport()
 end
+
 
 --#region Imports
 
-local render2d = CNC_RENEGADE.Render2d
-local fontChars = CNC_RENEGADE.FontChars
-local font3d = CNC_RENEGADE.Font3d
+    --- @type Render2d
+    local render2d = CNC.Import( "renhud/code/ww3d2/render-2d.lua" )
+
+    --- @type FontChars
+    local fontChars = CNC.Import( "renhud/code/ww3d2/font-chars.lua" )
+
+    --- @type Font3d
+    local font3d = CNC.Import( "renhud/code/ww3d2/font-3d.lua" )
 --#endregion
+
+
+--#region Enums
 
 --- @enum FONT_STYLE
 STATIC.FONT_STYLE = {
@@ -58,31 +69,14 @@ STATIC.EVENT_AUDIO = {
 --- @field interCharSpacing integer
 --- @field isBold boolean
 
---- The font defaults as found in stylemgr.cpp and, seemingly identically, in data/stylemgr.ini
---- @type FONT_DESC[]
-STATIC.DEFAULT_FONTS = {
-   [STATIC.FONT_STYLE.FONT_TITLE              ] = { name = "Regatta Condensed LET", pointSize = 52, interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_LG_CONTROLS        ] = { name = "Arial MT",              pointSize = 12, interCharSpacing = 2, isBold = true  },
-   [STATIC.FONT_STYLE.FONT_CONTROLS           ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = true  },
-   [STATIC.FONT_STYLE.FONT_LISTS              ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_TOOLTIPS           ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_MENU               ] = { name = "Regatta Condensed LET", pointSize = 32, interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_SM_MENU            ] = { name = "Regatta Condensed LET", pointSize = 20, interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_HEADER             ] = { name = "Arial MT",              pointSize = 9,  interCharSpacing = 2, isBold = true  },
-   [STATIC.FONT_STYLE.FONT_BIG_HEADER         ] = { name = "Arial MT",              pointSize = 12, interCharSpacing = 2, isBold = true  },
-   [STATIC.FONT_STYLE.FONT_CREDITS            ] = { name = "Arial MT",              pointSize = 10, interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_CREDITS_BOLD       ] = { name = "Arial MT",              pointSize = 10, interCharSpacing = 2, isBold = true  },
-   [STATIC.FONT_STYLE.FONT_INGAME_TXT         ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_INGAME_BIG_TXT     ] = { name = "Arial MT",              pointSize = 16, interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_INGAME_SUBTITLE_TXT] = { name = "Arial MT",              pointSize = 14, interCharSpacing = 2, isBold = false },
-   [STATIC.FONT_STYLE.FONT_INGAME_HEADER_TXT  ] = { name = "Arial MT",              pointSize = 9,  interCharSpacing = 2, isBold = true  },
-}
+--#endregion
+
 
 --[[ Static Functions and Variables ]] do
 
-    --- [[ Public ]]
+    local CLASS = "StyleManager"
 
-    --- @class StyleManager
+    --- [[ Public ]]
 
     --[[ Initialization ]] do
 
@@ -113,11 +107,11 @@ STATIC.DEFAULT_FONTS = {
 
         --- @param fileName string
         function STATIC.InitializeFromIni( fileName )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "InitializeFromIni" )
         end
 
         function STATIC.Shutdown()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "Shutdown" )
         end
     end
 
@@ -126,7 +120,7 @@ STATIC.DEFAULT_FONTS = {
         --- @param style FONT_STYLE
         --- @return FontCharsInstance
         function STATIC.GetFont( style )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "GetFont" )
         end
 
         --- @param style FONT_STYLE
@@ -138,7 +132,7 @@ STATIC.DEFAULT_FONTS = {
         --- @param renderer Render2dTextInstance
         --- @param style FONT_STYLE
         function STATIC.AssignFont( renderer, style )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "AssignFont" )
         end
     end
 
@@ -146,7 +140,7 @@ STATIC.DEFAULT_FONTS = {
 
         --- @param event EVENT_AUDIO
         function STATIC.PlaySound( event )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "PlaySound" )
         end
     end
 
@@ -154,7 +148,7 @@ STATIC.DEFAULT_FONTS = {
 
         --- @param renderer Render2dTextInstance
         function STATIC.ConfigureRenderer( renderer )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "ConfigureRenderer" )
         end
     end
 
@@ -241,14 +235,14 @@ STATIC.DEFAULT_FONTS = {
             local args = { ... }
             local argCount = select( "#", ... )
 
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "RenderText" )
         end
 
         --- @param text string
         --- @param renderer Render2dTextInstance
         --- @param rect RectInstance
         function STATIC.RenderTitleText( text, renderer, rect )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "RenderTitleText" )
         end
 
         --- @overload fun( text: string, renderer: Render2dTextInstance, textColor: Color, shadowColor: Color, rect: RectInstance, doShadow: boolean?, doVCenter: boolean? )
@@ -257,7 +251,7 @@ STATIC.DEFAULT_FONTS = {
             local args = { ... }
             local argCount = select( "#", ... )
 
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "RenderWrappedText" )
         end
 
         --- @overload fun( text: string, renderer: Render2dTextInstance, rect: RectInstance, doShadow: boolean?, doVCenter: boolean?, isEnabled:boolean?, justify: JUSTIFICATION? )
@@ -266,7 +260,7 @@ STATIC.DEFAULT_FONTS = {
             local args = { ... }
             local argCount = select( "#", ... )
 
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "RenderWrappedTextEx" )
         end
     end
 
@@ -274,13 +268,13 @@ STATIC.DEFAULT_FONTS = {
 
         --- @param renderer Render2dTextInstance
         function STATIC.ConfigureHilighter( renderer )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "ConfigureHilighter" )
         end
 
         --- @param renderer Render2dTextInstance
         --- @param rect RectInstance
         function STATIC.RenderHilight( renderer, rect )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "RenderHilight" )
         end
     end
 
@@ -294,7 +288,7 @@ STATIC.DEFAULT_FONTS = {
         --- @param color Color
         --- @param justify JUSTIFICATION
         function STATIC.RenderGlow( text, renderer, rect, radiusX, radiusY, color, justify )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "RenderGlow" )
         end
     end
 
@@ -452,6 +446,4 @@ STATIC.DEFAULT_FONTS = {
 
         return fontWithBold
     end
-    
-
 end

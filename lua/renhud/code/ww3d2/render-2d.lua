@@ -1,10 +1,11 @@
 -- Based on Render2DClass within Code/ww3d2/render2d.cpp/h
 
+--- @class Renegade
+local CNC = CNC_RENEGADE
+
 local STATIC, INSTANCE
 
 --[[ Class Setup ]] do
-    --- @class Renegade
-    --- @field Render2d Render2d
 
     --- The instanced components of Render2d
     --- @class Render2dInstance
@@ -13,21 +14,32 @@ local STATIC, INSTANCE
     --- A 2D renderer that constructs an internal IMesh
     --- @class Render2d
     --- @field Instance Render2dInstance The Metatable used by Render2dInstance
-    STATIC = CNC_RENEGADE.Render2d or {}
-    CNC_RENEGADE.Render2d = STATIC
+    STATIC = CNC.CreateExport()
 
     STATIC.Instance = INSTANCE
     INSTANCE.Static = STATIC
+    INSTANCE.IsRender2d = true
 end
+
 
 --#region Imports
 
-local shader = CNC_RENEGADE.Shader
+    --- @type Rect
+    local rect = CNC.Import( "renhud/code/wwmath/rect.lua" )
+
+    --- @type WW3d
+    local ww3d = CNC.Import( "renhud/code/ww3d2/ww3d.lua" )
+
+    --- @type Shader
+    local shader = CNC.Import( "renhud/code/ww3d2/shader.lua" )
 --#endregion
+
 
 --[[ Static Functions and Variables ]] do
 
-    --[[ Public ]]
+    local CLASS = "Render2d"
+
+    --- [[ Public ]]
 
     --- Creates a new Render2d
     --- @param material IMaterial?
@@ -35,6 +47,17 @@ local shader = CNC_RENEGADE.Shader
     function STATIC.New( material )
         return robustclass.New( "Renegade_Render2d", material )
     end
+
+    ---@param arg any
+    ---@return boolean `true` if the passed argument is a(n) Render2dInstance, `false` otherwise
+    function STATIC.IsRender2d( arg )
+        if not istable( arg ) then return false end
+        if getmetatable( arg ) ~= INSTANCE then return false end
+
+        return arg.IsRender2d
+    end
+
+    typecheck.RegisterType( "Render2dInstance", STATIC.IsRender2d )
 
     --- @return ShaderInstance
     function STATIC.GetDefaultShader()
@@ -62,6 +85,7 @@ local shader = CNC_RENEGADE.Shader
     end
 
     --- [[ Protected ]]
+
     --- @class Render2d
     --- @field protected ScreenResolution RectInstance
     --- @field protected BiasAdd Vector The amount to offset all 2D rendering if ScreenUvBias is enabled
@@ -77,11 +101,12 @@ local shader = CNC_RENEGADE.Shader
     hook.Add( "OnScreenSizeChanged", "A1_Renegade_Render2d_UpdateScreenSizeDependencies", STATIC.UpdateBiasAdd )
 end
 
+
 --[[ Instanced Functions and Variables ]] do
 
-    --[[ Public ]]
+    local CLASS = "Render2dInstance"
 
-    ---@class Render2dInstance
+    --- [[ Public ]]
 
     --- Constructs a new Render2D object
     --- @param material IMaterial?
@@ -127,14 +152,14 @@ end
 
             -- Sanity check
             if #self.Vertices ~= #self.Uvs or #self.Uvs ~= #self.Colors then
-                error( string.format( "Render2d:Render has mismatch in list counts: Vertices (%d), UVs (%d), Colors (%d)", #self.Vertices, #self.Uvs, #self.Colors ) )
+                typecheck.Error( CLASS, "Render", string.format( "Render2d:Render has mismatch in list counts: Vertices (%d), UVs (%d), Colors (%d)", #self.Vertices, #self.Uvs, #self.Colors ) )
             end
 
             local triCount = #self.Vertices / 3
 
             -- Can't have partial triangles
             if triCount ~= math.floor( triCount ) then
-                error( string.format(  "Render2d:Render count of Vertices (%d) must be divisible by 3", #self.Vertices ) )
+                typecheck.Error( CLASS, "Render", string.format(  "Render2d:Render count of Vertices (%d) must be divisible by 3", #self.Vertices ) )
             end
 
             if self.Mesh then
@@ -252,86 +277,88 @@ end
 
         --- For collectively defined vertices
         --- @type RectInstance
-        local rect
+        local _rect
 
         local uvs = robustclass.New( "Renegade_Rect", 0, 0, 1, 1 )
         local color = Color( 255, 255, 255, 255 )
 
-        -- AddQuad( vertex0: Vector, vertex1: Vector, vertex2: Vector, vertex3: Vector, ... )
+typecheck.AssertArgType( CLASS, 1, firstArg, { "Vector", "RectInstance" } )
+
+        -- ( vertex0: Vector, vertex1: Vector, vertex2: Vector, vertex3: Vector, ... )
         if isvector( firstArg ) then
             --- @cast firstArg Vector
 
-            typecheck( "Render2D:AddQuad", 2, "vector", secondArg )
-            typecheck( "Render2D:AddQuad", 3, "vector", thirdArg )
-            typecheck( "Render2D:AddQuad", 4, "vector", fourthArg )
+            typecheck.AssertArgType( CLASS, 2, secondArg, "vector" )
+            typecheck.AssertArgType( CLASS, 3, thirdArg, "vector" )
+            typecheck.AssertArgType( CLASS, 4, fourthArg, "vector" )
 
             vertex0 = firstArg
             vertex1 = secondArg
             vertex2 = thirdArg
             vertex3 = fourthArg
 
-            -- AddQuad( vertex0: Vector, vertex1: Vector, vertex2: Vector, vertex3: Vector, uvs: RectInstance, color: Color? )
-            if CNC_RENEGADE.Rect.IsRect( fifthArg ) then
+            -- ( vertex0: Vector, vertex1: Vector, vertex2: Vector, vertex3: Vector, uvs: RectInstance, color: Color? )
+            if rect.IsRect( fifthArg ) then
                 --- @cast fifthArg RectInstance
                 uvs = fifthArg
 
                 -- Sixth arg must be Color
                 if sixthArg then
-                    typecheck( "Render2D:AddQuad", 6, "color", sixthArg )
+                    typecheck.AssertArgType( CLASS, 6, sixthArg, "color" )
+
                     --- @cast sixthArg Color
                     color = sixthArg
                 end
 
-            -- AddQuad( vertex0: Vector, vertex1: Vector, vertex2: Vector, vertex3: Vector, color: Color? )
+            -- ( vertex0: Vector, vertex1: Vector, vertex2: Vector, vertex3: Vector, color: Color? )
             else
                 -- Fifth arg must be Color
                 if fifthArg then
-                    typecheck( "Render2D:AddQuad", 5, "color", fifthArg )
+                    typecheck.AssertArgType( CLASS, 5, fifthArg, "color" )
+
                     --- @cast fifthArg Color
                     color = fifthArg
                 end
             end
 
-        -- AddQuad( rect: RectInstance, ... )
-        elseif CNC_RENEGADE.Rect.IsRect( firstArg ) then
+        -- ( rect: RectInstance, ... )
+        else
             --- @cast firstArg RectInstance
 
-            -- AddQuad( rect: RectInstance, uvs: RectInstance, color: Color? )
-            if CNC_RENEGADE.Rect.IsRect( secondArg ) then
+            -- ( rect: RectInstance, uvs: RectInstance, color: Color? )
+            if rect.IsRect( secondArg ) then
                 --- @cast secondArg RectInstance
 
-                rect = firstArg
+_rect = firstArg
                 uvs = secondArg
 
                 -- Third arg must be Color
                 if thirdArg then
-                    typecheck( "Render2D:AddQuad", 3, "color", thirdArg )
+                    typecheck.AssertArgType( CLASS, 3, thirdArg, "color" )
                     --- @cast thirdArg Color
                     color = thirdArg
                 end
 
-            -- AddQuad( rect: RectInstance, color: Color? )
+            -- ( rect: RectInstance, color: Color? )
             else
-                rect  = firstArg
+_rect  = firstArg
 
                 if secondArg then
-                    typecheck( "Render2D:AddQuad", 2, "color", secondArg )
+                    typecheck.AssertArgType( CLASS, 2, secondArg, "color" )
                     --- @cast secondArg Color
                     color = secondArg
                 end
             end
-        else
-            error( "Render2d:AddQuad argument 1: expected Vector or Rect but got " .. type( firstArg ) )
-        end
+                end
 
         -- One final sanity check
-        local hasVertices = ( rect or ( vertex0 and vertex1 and vertex2 and vertex3 ) )
+        local hasVertices = ( _rect or ( vertex0 and vertex1 and vertex2 and vertex3 ) )
         if not hasVertices or not uvs or not color then
-            error( "Render2d:AddQuad an unknown error occurred" )
+            typecheck.Error( CLASS, "AddQuad", "an unknown error occurred" )
         end
 
-        if rect then
-            self:InternalAddQuadVertices( rect )
+        if _rect then
+            self:InternalAddQuadVertices( _rect )
         else
             self:InternalAddQuadVertices( vertex0, vertex1, vertex2, vertex3 )
         end
@@ -349,21 +376,21 @@ end
     --- @param uv RectInstance
     --- @param color Color? [Default: White]
     function INSTANCE:AddQuadBackfaced( vertex0, vertex1, vertex2, vertex3, uv, color )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "AddQuadBackfaced" )
     end
 
     --- @param screen RectInstance
     --- @param topColor Color
     --- @param bottomColor Color
     function INSTANCE:AddQuadVerticalGradient( screen, topColor, bottomColor )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "AddQuadVerticalGradient" )
     end
 
     ---@param screen RectInstance
     ---@param leftColor Color
     ---@param rightColor Color
     function INSTANCE:AddQuadVerticalGradient( screen, leftColor, rightColor )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "AddQuadVerticalGradient" )
     end
 
     --- @param vertex0 Vector
@@ -374,15 +401,15 @@ end
     --- @param uv2 Vector
     --- @param color Color? [Default: White]
     function INSTANCE:AddTri( vertex0, vertex1, vertex2, uv0, uv1, uv2, color )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "AddTri" )
     end
 
     function INSTANCE:AddLine( ... )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "AddLine" )
     end
 
     function INSTANCE:AddOutline( ... )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "AddOutline" )
     end
 
     --- @param rect RectInstance
@@ -390,7 +417,7 @@ end
     --- @param borderColor Color? [Default: Red]
     --- @param fillColor Color? [Default: White]
     function INSTANCE:AddRect( rect, borderWidth, borderColor, fillColor )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "AddRect" )
     end
 
     ---@param isHidden boolean
@@ -407,17 +434,17 @@ end
     --- Moves/translates all vertices
     --- @param translation Vector
     function INSTANCE:Move( translation )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "Move" )
     end
 
     --- @param alpha number
     function INSTANCE:ForceAlpha( alpha )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "ForceAlpha" )
     end
 
     --- @param color Color
     function INSTANCE:ForceColor( color )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "ForceColor" )
     end
 
     --- @return Color[]
@@ -455,7 +482,7 @@ end
         local convertedVert
 
         if argCount == 1 then
-            typecheck( "Render2d:ConvertVert", 1, "vector", firstArg )
+            typecheck.AssertArgType( CLASS, 1, firstArg, "vector" )
 
             --- @cast firstArg Vector
             local vector = firstArg
@@ -465,8 +492,8 @@ end
                 vector.y / self.CoordinateScale.y
             )
         elseif argCount == 2 then
-            typecheck( "Render2d:ConvertVert", 1, "number", firstArg )
-            typecheck( "Render2d:ConvertVert", 2, "number", secondArg )
+            typecheck.AssertArgType( CLASS, 1, firstArg, "number" )
+            typecheck.AssertArgType( CLASS, 2, secondArg, "number" )
 
             --- @cast firstArg number
             local x = firstArg
@@ -479,7 +506,7 @@ end
                 y / self.CoordinateScale.y
             )
         else
-            error( string.format( "Render2d:ConvertVert received an invalid number of arguments (%d)", argCount ) )
+            typecheck.AssertArgCount( CLASS, argCount )
         end
 
         -- Convert from whatever weird coordinate space this renderer is using to Garry's Mod's screen pixel coordinate space
@@ -508,10 +535,9 @@ end
 
         -- InternalAddQuadVertices( rect: RectInstance )
         if argCount == 1 then
-            typecheck( "Render2d:InternalAddVertices", 1, "rect", firstArg )
+            local rect = firstArg --[[@as RectInstance]]
 
-            --- @cast firstArg RectInstance
-            local rect = firstArg
+            typecheck.AssertArgType( CLASS, 1, firstArg, "RectInstance" )
 
             vertex0 = Vector( rect.Left,    rect.Top    )
             vertex1 = Vector( rect.Left,    rect.Bottom )
@@ -520,24 +546,18 @@ end
 
         -- InternalAddQuadVertices( vertex0: Vector, vertex1: Vector, vertex2: Vector, vertex3: Vector )
         elseif argCount == 4 then
-            typecheck( "Render2d:InternalAddVertices", 1, "vector", firstArg )
-            typecheck( "Render2d:InternalAddVertices", 2, "vector", secondArg )
-            typecheck( "Render2d:InternalAddVertices", 3, "vector", thirdArg )
-            typecheck( "Render2d:InternalAddVertices", 4, "vector", fourthArg )
+            vertex0 = firstArg --[[@as Vector]]
+            vertex1 = secondArg --[[@as Vector]]
+            vertex2 = thirdArg --[[@as Vector]]
+            vertex3 = fourthArg --[[@as Vector]]
 
-            --- @cast firstArg Vector
-            vertex0 = firstArg
+            typecheck.AssertArgType( CLASS, 1, firstArg, "vector" )
+            typecheck.AssertArgType( CLASS, 2, secondArg, "vector" )
+            typecheck.AssertArgType( CLASS, 3, thirdArg, "vector" )
+            typecheck.AssertArgType( CLASS, 4, fourthArg, "vector" )
 
-            --- @cast secondArg Vector
-            vertex1 = secondArg
-
-            --- @cast thirdArg Vector
-            vertex2 = thirdArg
-
-            --- @cast fourthArg Vector
-            vertex3 = fourthArg
         else
-            error( string.format( "Render2d:InternalAddVertices received an invalid number of arguments (%d)", argCount ) )
+            typecheck.AssertArgCount( CLASS, argCount )
         end
 
         local convertedVertex0 = self:ConvertVert( vertex0 )
@@ -591,7 +611,7 @@ end
     function INSTANCE:UpdateBias()
         self.BiasedCoordinateOffset = self.CoordinateOffset
 
-        if CNC_RENEGADE.WW3d.IsScreenUvBiased() then
+        if ww3d.IsScreenUvBiased() then
             if not STATIC.BiasAdd then
                 STATIC.UpdateBiasAdd()
             end

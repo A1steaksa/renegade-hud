@@ -1,5 +1,8 @@
 -- Based on ShaderClass within Code/ww3d2/shader.cpp/h
 
+--- @class Renegade
+local CNC = CNC_RENEGADE
+
 local STATIC, INSTANCE
 
 --[[ Class Setup ]] do
@@ -12,18 +15,18 @@ local STATIC, INSTANCE
     --- The static components of Shader
     --- @class Shader
     --- @field Instance ShaderInstance The Metatable used by ShaderInstance
-    STATIC = CNC_RENEGADE.Shader or {}
-    CNC_RENEGADE.Shader = STATIC
+    STATIC = CNC.CreateExport()
 
     STATIC.Instance = INSTANCE
     INSTANCE.Static = STATIC
+    INSTANCE.IsShader = true
 end
 
 --[[ Static Functions and Variables ]] do
 
-    --- [[ Public ]]
+    local CLASS = "Shader"
 
-    --- @class Shader
+    --- [[ Public ]]
 
     --- Creates a new ShaderInstance
     --- @vararg any
@@ -32,33 +35,41 @@ end
         return robustclass.New( "Renegade_Shader", ... )
     end
 
-    --- [[ Protected ]]
+    --- @param arg any
+    --- @return boolean `true` if the passed argument is a(n) ShaderInstance, `false` otherwise
+    function STATIC.IsShader( arg )
+        if not istable( arg ) then return false end
+        if getmetatable( arg ) ~= INSTANCE then return false end
 
-    --- @class Shader
-    
+        return arg.IsShader
+    end
 
+    typecheck.RegisterType( "ShaderInstance", STATIC.IsShader )
 end
 
+
 --[[ Instanced Functions and Variables ]] do
+
+    local CLASS = "ShaderInstance"
 
     --- [[ Public ]]
 
     --- @class ShaderInstance
     --- @field ShaderBits integer
-    --- @field DepthCompare integer
-    --- @field DepthMask integer
-    --- @field ColorMask integer
-    --- @field DstBlend_Func integer
-    --- @field FogFunc integer
-    --- @field PrimaryGradient integer
-    --- @field SecondaryGradient integer
-    --- @field SrcBlendFunc integer
-    --- @field Texturing integer
-    --- @field AlphaTest integer
-    --- @field CullMode integer
-    --- @field PostDetailColorFunc integer
-    --- @field PostDetailAlphaFunc integer
-    --- @field NPatchEnable integer
+    --- @field DepthCompare DepthCompare
+    --- @field DepthMask DepthWrite
+    --- @field ColorMask ColorWrite
+    --- @field DstBlendFunc DstBlendFunc
+    --- @field FogFunc FogFunc
+    --- @field PrimaryGradient PrimaryGradient
+    --- @field SecondaryGradient SecondaryGradient
+    --- @field SrcBlendFunc SrcBlendFunc
+    --- @field Materialing Materialing
+    --- @field AlphaTest AlphaTest
+    --- @field CullMode CullMode
+    --- @field PostDetailColorFunc DetailAlphaFunc
+    --- @field PostDetailAlphaFunc DetailColorFunc
+    --- @field NPatchEnable NPatch
 
     --- Constructs a new ShaderInstance
     --- @vararg any
@@ -71,11 +82,11 @@ end
             return
         end
 
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS )
     end
 
     function INSTANCE:Apply()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "Apply" )
     end
 
     function INSTANCE:Reset()

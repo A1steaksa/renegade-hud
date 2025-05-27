@@ -1,5 +1,8 @@
 -- Based on RectInstance within Code/WWMath/rect.h
 
+--- @class Renegade
+local CNC = CNC_RENEGADE
+
 local STATIC, INSTANCE
 
 --[[ Class Setup ]] do
@@ -11,14 +14,19 @@ local STATIC, INSTANCE
     --- The static components of Rect
     --- @class Rect
     --- @field Instance RectInstance The Metatable used by RectInstance
-    STATIC = CNC_RENEGADE.Rect or {}
-    CNC_RENEGADE.Rect = STATIC
+    STATIC = CNC.CreateExport()
 
     STATIC.Instance = INSTANCE
     INSTANCE.Static = STATIC
+    INSTANCE.IsRect = true
 end
 
+
 --[[ Static Functions and Variables ]] do
+
+    local CLASS = "Rect"
+
+    --- [[ Public ]]
 
     --- Creates a new Rect
     --- @overload fun( left: number, top: number, right: number, bottom: number ): RectInstance Creates a new Rect from the horizontal and vertical coordinates of its four edges
@@ -32,13 +40,18 @@ end
     ---@return boolean `true` if the passed argument is a Rect, `false` otherwise
     function STATIC.IsRect( arg )
         if not istable( arg ) then return false end
-        if getmetatable( arg ) ~= CNC_RENEGADE.Rect.Instance then return false end
+        if getmetatable( arg ) ~= INSTANCE then return false end
 
         return arg.IsRect
     end
+
+    typecheck.RegisterType( "RectInstance", STATIC.IsRect )
 end
 
+
 --[[ Instanced Functions and Variables ]] do
+
+    local CLASS = "RectInstance"
 
     --- [[ Public ]]
 
@@ -48,88 +61,61 @@ end
     --- @field Right number
     --- @field Bottom number
 
-    INSTANCE.IsRect = true
-
     --- Constructs a new Rect
-    --- @overload fun( rectToCopy: RectInstance ): RectInstance Creates a new RectInstance by copying the values of an existing one
-    --- @overload fun( topLeft: Vector, bottomRight: Vector ): RectInstance Creates a new RectInstance from Vectors that define its top-left and bottom-right corners
-    --- @overload fun( left: number, top: number, right: number, bottom: number ): RectInstance Creates a new Rect from the horizontal and vertical coordinates of its four edges
+    --- @vararg any
     function INSTANCE:Renegade_Rect( ... )
         local args = { ... }
         local argCount = select( "#", ... )
 
         -- An empty Rect
+        -- ( nil )
         if argCount == 0 then
             self:Replace( 0, 0, 0, 0 )
             return
         end
 
-        local firstArg  = args[1]
-        local secondArg = args[2]
-        local thirdArg  = args[3]
-        local fourthArg = args[4]
-
         -- Copying another Rect
+        -- ( rect: RectInstance )
         if argCount == 1 then
-            if not istable( firstArg ) then
-                error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "table", type( firstArg ) ) )
-            end
+            local rect = args[1] --[[@as RectInstance]]
 
-            if not firstArg.IsRect then
-                error( "C&C Renegade Rect constructor argument 1: provided table is not Rect" )
-            end
+            typecheck.AssertArgType( CLASS, 1, rect, "RectInstance" )
 
-            --- @cast firstArg RectInstance
-            self:Copy( firstArg )
-
+            self:Copy( rect )
             return
         end
 
         -- Creating from top-left and bottom-right Vectors
+        -- ( topLeft: Vector, bottomRight: Vector )
         if argCount == 2 then
-            if not isvector( firstArg ) then
-                error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "vector", type( firstArg ) ) )
-            end
+            local topLeft = args[1] --[[@as Vector]]
+            local bottomRight = args[2] --[[@as Vector]]
 
-            if not isvector( secondArg ) then
-                error( string.format( "C&C Renegade Rect constructor argument 2: expected %s but got %s", "vector", type( secondArg ) ) )
-            end
+            typecheck.AssertArgType( CLASS, 1, topLeft, "Vector" )
+            typecheck.AssertArgType( CLASS, 2, bottomRight, "Vector" )
 
-            --- @cast firstArg Vector
-            --- @cast secondArg Vector
-            self:ReplaceVectors( firstArg, secondArg )
-
+            self:ReplaceVectors( topLeft, bottomRight )
             return
         end
 
         -- Creating from edge positions
+        -- ( left: number, top: number, right: number, bottom: number )
         if argCount == 4 then
-            if not isnumber( firstArg ) then
-                error( string.format( "C&C Renegade Rect constructor argument 1: expected %s but got %s", "number", type( firstArg ) ) )
-            end
+            local left = args[1] --[[@as number]]
+            local top = args[2] --[[@as number]]
+            local right = args[3] --[[@as number]]
+            local bottom = args[4] --[[@as number]]
 
-            if not isnumber( secondArg ) then
-                error( string.format( "C&C Renegade Rect constructor argument 2: expected %s but got %s", "number", type( secondArg ) ) )
-            end
+            typecheck.AssertArgType( CLASS, 1, left, "number" )
+            typecheck.AssertArgType( CLASS, 2, top, "number" )
+            typecheck.AssertArgType( CLASS, 3, right, "number" )
+            typecheck.AssertArgType( CLASS, 4, bottom, "number" )
 
-            if not isnumber( thirdArg ) then
-                error( string.format( "C&C Renegade Rect constructor argument 3: expected %s but got %s", "number", type( thirdArg ) ) )
-            end
-
-            if not isnumber( fourthArg ) then
-                error( string.format( "C&C Renegade Rect constructor argument 4: expected %s but got %s", "number", type( fourthArg ) ) )
-            end
-
-            --- @cast firstArg  number
-            --- @cast secondArg number
-            --- @cast thirdArg  number
-            --- @cast fourthArg number
-            self:Replace( firstArg, secondArg, thirdArg, fourthArg )
-
+            self:Replace( left, top, right, bottom )
             return
         end
 
-        error( "C&C Renegade Rect constructor received an invalid number of arguments" )
+        typecheck.AssertArgCount( CLASS, argCount )
     end
 
     --[[ Assignment ]] do

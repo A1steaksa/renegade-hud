@@ -1,33 +1,57 @@
 -- Based on CombatManager within Code/Combat/combat.cpp/h
 
+--- @class Renegade
+local CNC = CNC_RENEGADE
+
 local STATIC
+
 --[[ Class Setup ]] do
 
     --- The static components of CombatManager
     --- @class CombatManager
-    STATIC = CNC_RENEGADE.CombatManager or {}
-    CNC_RENEGADE.CombatManager = STATIC
+    STATIC = CNC.CreateExport()
 end
 
+
+--#region Enums
+
+    --- @enum CombatMode
+    STATIC.COMBAT_MODE = {
+        NONE            = 0,
+        FIRST_PERSON    = 1,
+        THIRD_PERSON    = 2,
+        SNIPING         = 3,
+        IN_VEHICLE      = 4,
+        ON_LADDER       = 5,
+        DYING           = 6,
+        CORPSE          = 7,
+        SNAPSHOT        = 8
+    }
+    local combatMode = STATIC.COMBAT_MODE
+--#endregion
+
+
+-- #region Imports
+
+    --- @type Hud
+    local hud = CNC.Import( "renhud/code/combat/hud.lua" )
+
+    --- @type StyleManager
+    local styleManager = CNC.Import( "renhud/code/wwui/style-manager.lua" )
+
+    --- @type CommandoCamera
+    local commandoCamera = CNC.Import( "renhud/code/combat/commando-camera.lua" )
+-- #endregion
+
+
 --[[ Static Functions and Variables ]] do
+
+    local CLASS = "CombatManager"
 
     --- [[ Public ]]
 
     --- @class CombatManager
     --- @field GameScene unknown
-
-    --- @enum CombatMode
-    CNC_RENEGADE.CombatMode = {
-        None        = 0,
-        FirstPerson = 1,
-        ThirdPerson = 2,
-        Sniping     = 3,
-        InVehicle   = 4,
-        OnLadder    = 5,
-        Dying       = 6,
-        Corpse      = 7,
-        SnapShot    = 8
-    }
 
     --[[ Default Values ]] do
         STATIC.MainCamera = nil
@@ -67,7 +91,7 @@ end
         STATIC._IsHitReticleEnabled = true
         STATIC._IsGameplayPermitted = false
 
-        STATIC.CombatMode = CNC_RENEGADE.CombatMode.None
+        STATIC.CombatMode = combatMode.NONE
         STATIC.ReloadCount = 0
         STATIC.LastLsdName = nil
         STATIC.LoadProgress = 0
@@ -91,7 +115,7 @@ end
         -- CNC_RENEGADE.CombatSoundManager.Init()
 
         -- Create the game camera
-        -- STATIC.MainCamera = camera.New()
+        STATIC.MainCamera = commandoCamera.New()
 
         -- Create the Dazzle Layer
         if renderAvailable then
@@ -101,20 +125,22 @@ end
             -- dazzleLayer.SetCurrentDazzleLayer( nil )
         end
 
-        CNC_RENEGADE.StyleManager.Initialize()
+        styleManager.Initialize()
 
-        CNC_RENEGADE.Hud.Init( renderAvailable )
+        hud.Init( renderAvailable )
         -- CNC_RENEGADE.ScreenFadeManager.Init()
 
         STATIC.FirstPerson = STATIC.FirstPersonDefault
+
+        hook.Add( "Think", "A1_Renegade_CombatManager_Think", STATIC.Think )
     end
 
     function STATIC.Shutdown()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "Shutdown" )
     end
 
     function STATIC.SceneInit()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "SceneInit" )
     end
 
     --[[ Level Loading ]] do
@@ -125,55 +151,55 @@ end
                 renderAvailable = true
             end
 
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "PreLoadLevel" )
         end
 
         --- @param mapName string
         ---@param preloadAssets boolean
         function STATIC.LoadLevelThreaded( mapName, preloadAssets )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "LoadLevelThreaded" )
         end
 
         --- @return boolean
         function STATIC.IsLoadLevelComplete()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "IsLoadLevelComplete" )
         end
 
         --- @return boolean
         function STATIC.IsLoadingLevel()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "IsLoadingLevel" )
         end
 
         function STATIC.PostLoadLevel()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "PostLoadLevel" )
         end
 
         function STATIC.UnloadLevel()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "UnloadLevel" )
         end
     end
 
     --[[ Main Loop ]] do
       
         function STATIC.GenerateControl()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "GenerateControl" )
         end
 
         function STATIC.Think()
 
-            -- Skipping over the vast majority of this funciton for now
+            -- Skipping over the vast majority of this function for now
 
-            CNC_RENEGADE.Hud.Think()
+            STATIC.MainCamera:Update()
 
+            hud.Think()
         end
-        hook.Add( "Think", "A1_Renegade_CombatManager_Think", STATIC.Think )
 
         function STATIC.Render()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "Render" )
         end
 
         function STATIC.HandleInput()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "HandleInput" )
         end
     end
 
@@ -181,12 +207,12 @@ end
 
         --- @param save unknown
         function STATIC.Save( save )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "Save" )
         end
 
         --- @param load unknown
         function STATIC.Load( load )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "Load" )
         end
     end
 
@@ -286,30 +312,30 @@ end
 
         ---@param handler unknown
         function STATIC.SetCombatNetworkHandler( handler )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "SetCombatNetworkHandler" )
         end
 
         ---@param damager Entity
         ---@param victim Entity
         function STATIC.CanDamage( damager, victim )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "CanDamage" )
         end
 
         ---@param damager Entity
         ---@param victim Entity
         function STATIC.GetDamageFactor( damager, victim)
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "GetDamageFactor" )
         end
 
         ---@param soldier Entity
         ---@param victim Entity
         function STATIC.OnSoldierKill( soldier, victim )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "OnSoldierKill" )
         end
 
         ---@param soldier Entity
         function STATIC.OnSoldierDeath( soldier )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "OnSoldierDeath" )
         end
 
         ---@return boolean
@@ -332,11 +358,11 @@ end
 
         --- @param wasSuccess boolean
         function STATIC.MissionComplete( wasSuccess )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "MissionComplete" )
         end
 
         function STATIC.StarKilled()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "StarKilled" )
         end
     end
 
@@ -349,7 +375,25 @@ end
                 isStarDeterminingTarget = true
             end
 
-            error( "Function not yet implemented" )
+            -- Clear the HUD if we just changed stars
+            if STATIC.TheStar ~= target then
+                hud.Reset()
+            end
+
+            STATIC.TheStar = target
+            STATIC._IsStarDeterminingTarget = isStarDeterminingTarget
+            -- if IsValid( target ) then
+            --     -- TODO: Point the camera toward the new star's direction
+            -- end
+
+            hud.ForceWeaponChartUpdate()
+            -- Omitted weapon view class resetting
+
+            if not STATIC.IsLevelInitialized then
+                STATIC.IsLevelInitialized = true
+
+                -- Omitted re-enabling sound and music
+            end
         end
 
         --- @return Entity
@@ -358,11 +402,17 @@ end
         end
 
         function STATIC.UpdateStar()
-            error( "Function not yet implemented" )
+            local star = STATIC.GetTheStar()
+
+            if not IsValid( star ) then
+                return
+            end
+
+            typecheck.NotImplementedError( CLASS, "UpdateStar" )
         end
 
         function STATIC.UpdateStarTargeting()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "UpdateStarTargeting" )
         end
 
         --- @param isStarTargeting boolean
@@ -379,7 +429,7 @@ end
     --[[ The Scene ]] do
 
         function STATIC.GetScene()
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "GetScene" )
         end
 
         --- @return unknown
@@ -387,7 +437,7 @@ end
             return STATIC.BackgroundScene
         end
 
-        --- @return unknown
+        --- @return CommandoCameraInstance
         function STATIC.GetCamera()
             return STATIC.MainCamera
         end
@@ -399,7 +449,7 @@ end
 
         --- @param profileName string
         function STATIC.SetCameraProfile( profileName )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "SetCameraProfile" )
         end
 
         ---@param vehicle Entity
@@ -409,13 +459,13 @@ end
                 seat = 0
             end
 
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "SetCameraVehicle" )
         end
 
         --- @param pos Vector
         --- @return boolean
         function STATIC.IsInCameraFrustum( pos )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "IsInCameraFrustum" )
         end
 
         --- @param areActive boolean
@@ -502,7 +552,7 @@ end
         
         --- @param direction integer
         function STATIC.ShowStarDamageDirection( direction )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "ShowStarDamageDirection" )
         end
 
         --- @return integer
@@ -607,7 +657,7 @@ end
 
         --- @param killer Entity
         function STATIC.RegisterStarKiller( killer )
-            error( "Function not yet implemented" )
+            typecheck.NotImplementedError( CLASS, "RegisterStarKiller" )
         end
 
         --- @return integer
@@ -634,7 +684,7 @@ end
     --- @field private BeaconPlacementEndsGame boolean
     --- @field private FirstPerson boolean
     --- @field private FirstPersonDefault boolean
-    --- @field private MainCamera unknown
+    --- @field private MainCamera CommandoCameraInstance
     --- @field private BackgroundScene unknown
     --- @field private SoundEnvironment unknown
     --- @field private DazzleLayer unknown
@@ -664,10 +714,10 @@ end
 
     --- @param mode CombatMode
     function STATIC.SetCombatMode( mode )
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "SetCombatMode" )
     end
 
     function STATIC.UpdateCombatMode()
-        error( "Function not yet implemented" )
+        typecheck.NotImplementedError( CLASS, "UpdateCombatMode" )
     end
 end

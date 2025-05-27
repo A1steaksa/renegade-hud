@@ -1,5 +1,8 @@
 -- Based on Font3DInstanceClass within Code/ww3d2/font3d.cpp/h
 
+--- @class Renegade
+local CNC = CNC_RENEGADE
+
 local STATIC, INSTANCE
 
 --[[ Class Setup ]] do
@@ -12,23 +15,29 @@ local STATIC, INSTANCE
     --- The static components of Font3d
     --- @class Font3d
     --- @field Instance Font3dInstance The Metatable used by Font3dInstance
-    STATIC = CNC_RENEGADE.Font3d or {}
-    CNC_RENEGADE.Font3d = STATIC
+    STATIC = CNC.CreateExport()
 
     STATIC.Instance = INSTANCE
     INSTANCE.Static = STATIC
+    INSTANCE.IsFont3d = true
 end
 
+
 --#region Imports
-    local font3dData    = CNC_RENEGADE.Font3dData
-    local rect          = CNC_RENEGADE.Rect
+
+    --- @type Font3dData
+    local font3dData = CNC.Import( "renhud/code/ww3d2/font-3d-data.lua" )
+
+    --- @type Rect
+    local rect = CNC.Import( "renhud/code/wwmath/rect.lua" )
 --#endregion
+
 
 --[[ Static Functions and Variables ]] do
 
-    --- [[ Public ]]
+    local CLASS = "Font3d"
 
-    --- @class Font3d
+    --- [[ Public ]]
 
     --- Creates a new Font3dInstance
     --- @param fontMaterial IMaterial
@@ -36,13 +45,25 @@ end
     function STATIC.New( fontMaterial )
         return robustclass.New( "Renegade_Font3d", fontMaterial )
     end
+
+    ---@param arg any
+    ---@return boolean `true` if the passed argument is a(n) Font3dInstance, `false` otherwise
+    function STATIC.IsFont3d( arg )
+        if not istable( arg ) then return false end
+        if getmetatable( arg ) ~= INSTANCE then return false end
+
+        return arg.IsFont3d
+    end
+
+    typecheck.RegisterType( "Font3dInstance", STATIC.IsFont3d )
 end
+
 
 --[[ Instanced Functions and Variables ]] do
 
-    --- [[ Public ]]
+    local CLASS = "Font3dInstance"
 
-    --- @class Font3dInstance
+    --- [[ Public ]]
 
     --- Constructs a new Font3dInstance
     --- @param fontMaterial IMaterial

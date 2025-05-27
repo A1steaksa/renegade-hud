@@ -1,28 +1,44 @@
 -- Based on Render2DTextClass within Code/ww3d2/render2d.cpp/h
 
--- #region Class Setup
-
 --- @class Renegade
---- @field Render2dText Render2dText
+local CNC = CNC_RENEGADE
 
---- The instanced components of Render2dText
---- @class Render2dTextInstance : Render2dInstance
-local INSTANCE = robustclass.Register( "Renegade_Render2dText : Renegade_Render2d" )
+local STATIC, INSTANCE
 
---- An image-based text renderer
---- @class Render2dText : Render2d
-local STATIC = CNC_RENEGADE.Render2dText or setmetatable( {}, CNC_RENEGADE.Render2d )
-CNC_RENEGADE.Render2dText = STATIC
--- #endregion
+--[[ Class Setup ]] do
+
+    --- The instanced components of Render2dText
+    --- @class Render2dTextInstance : Render2dInstance
+    --- @field Static Render2dText The static table for this instance's class
+    INSTANCE = robustclass.Register( "Renegade_Render2dText : Renegade_Render2d" )
+
+    --- An image-based text renderer
+    --- The static components of Render2dText
+    --- @class Render2dText : Render2d
+    --- @field Instance Render2dTextInstance The Metatable used by Render2dTextInstance
+    STATIC = CNC.CreateExport()
+
+    STATIC.Instance = INSTANCE
+    INSTANCE.Static = STATIC
+    INSTANCE.IsRender2dText = true
+end
+
 
 --#region Imports
 
-local rect = CNC_RENEGADE.Rect
+    --- @type Render2d
+    local render2d = CNC.Import( "renhud/code/ww3d2/render-2d.lua" )
 
+    --- @type Rect
+    local rect = CNC.Import( "renhud/code/wwmath/rect.lua" )
 --#endregion
 
+
 --[[ Static Functions and Variables ]] do
-    --- @class Render2dText
+
+    local CLASS = "Render2dText"
+
+    --- [[ Public ]]
 
     --- Creates a new Render2dTextInstance
     --- @param font Font3dInstance?
@@ -30,11 +46,25 @@ local rect = CNC_RENEGADE.Rect
     function STATIC.New( font )
         return robustclass.New( "Renegade_Render2dText", font )
     end
+
+    --- @param arg any
+    --- @return boolean `true` if the passed argument is a(n) Render2dTextInstance, `false` otherwise
+    function STATIC.IsRender2dText( arg )
+        if not istable( arg ) then return false end
+        if getmetatable( arg ) ~= INSTANCE then return false end
+
+        return arg.IsRender2dText
+    end
+
+    typecheck.RegisterType( "Render2dTextInstance", STATIC.IsRender2dText )
 end
+
 
 --[[ Instanced Functions and Variables ]] do
 
-    --[[ Public ]]
+    local CLASS = "Render2dTextInstance"
+
+    --- [[ Public ]]
 
     --- @class Render2dTextInstance
     --- @field Font Font3dInstance
@@ -65,7 +95,7 @@ end
     end
 
     function INSTANCE:Reset()
-        CNC_RENEGADE.Render2d.Instance.Reset( self )
+        render2d.Instance.Reset( self )
 
         self.Cursor       = self.Location
         self.WrapWidth    = 0

@@ -1,27 +1,39 @@
 -- Based on Code/wwtranslatedb/translatedb.cpp
 
 --- @class Renegade
---- @field TranslateDb TranslateDB
+local CNC = CNC_RENEGADE
 
-CNC_RENEGADE.TranslateDb = CNC_RENEGADE.TranslateDb or {}
+local STATIC
 
---- @class TranslateDB
-local STATIC = CNC_RENEGADE.TranslateDb
+--[[ Class Setup ]] do
 
-local strings = {
-    [ "IDS_Power_up_DataDisc_01" ] = "Data Disc",
+    --- The static components of TranslateDb
+    --- @class TranslateDb
+    STATIC = CNC.CreateExport()
+end
 
-    [ "IDS_Enc_Obj_Priority_0_Primary" ] = "Primary",
-    [ "IDS_Enc_Obj_Priority_0_Secondary" ] = "Secondary",
 
-    [ "IDS_Power_up_SecurityCard" ] = "Security Card",
+--[[ Static Functions and Variables ]] do
 
-    [ "IDS_Power_up_Armor_00" ] = "Armor",
-    [ "IDS_Power_up_Health_00" ] = "Health",
-    [ "IDS_Power_up_Armor_Upgrade" ] = "Augmented Armor",
-    [ "IDS_Power_up_Health_Upgrade" ] = "Augmented Health",
-}
+    local CLASS = "CombatManager"
 
-function STATIC.GetString( id )
-    return strings[ id ] or "UNKNOWN STRING ID"
+    local strings = {
+        [ "IDS_Power_up_DataDisc_01" ] = "Data Disc",
+
+        [ "IDS_Enc_Obj_Priority_0_Primary" ] = "Primary",
+        [ "IDS_Enc_Obj_Priority_0_Secondary" ] = "Secondary",
+
+        [ "IDS_Power_up_SecurityCard" ] = "Security Card",
+
+        [ "IDS_Power_up_Armor_00" ] = "Armor",
+        [ "IDS_Power_up_Health_00" ] = "Health",
+        [ "IDS_Power_up_Armor_Upgrade" ] = "Augmented Armor",
+        [ "IDS_Power_up_Health_Upgrade" ] = "Augmented Health",
+    }
+
+    --- [[ Public ]]
+
+    function STATIC.GetString( id )
+        return strings[ id ] or "UNKNOWN STRING ID"
+    end
 end
