@@ -63,13 +63,13 @@ end
     function STATIC.GetDefaultShader()
         local shaderInstance = shader.New()
 
-        shaderInstance:SetDepthMask(       shader.DEPTH_WRITE_DISABLE          )
-        shaderInstance:SetDepthCompare(    shader.PASS_ALWAYS                  )
-        shaderInstance:SetDstBlendFunc(    shader.DSTBLEND_ONE_MINUS_SRC_ALPHA )
-        shaderInstance:SetSrcBlendFunc(    shader.SRCBLEND_SRC_ALPHA           )
-        shaderInstance:SetFogFunc(         shader.FOG_DISABLE                  )
-        shaderInstance:SetPrimaryGradient( shader.GRADIENT_MODULATE            )
-        shaderInstance:SetTexturing(       shader.TEXTURING_ENABLE             )
+        shaderInstance:SetDepthMask( shader.DEPTH_WRITE.DISABLE )
+        shaderInstance:SetDepthCompare( shader.DEPTH_COMPARE.PASS_ALWAYS )
+        shaderInstance:SetDstBlendFunc( shader.DST_BLEND_FUNC.ONE_MINUS_SRC_ALPHA )
+        shaderInstance:SetSrcBlendFunc( shader.SRC_BLEND_FUNC.SRC_ALPHA )
+        shaderInstance:SetFogFunc( shader.FOG_FUNC.DISABLE )
+        shaderInstance:SetPrimaryGradient( shader.PRIMARY_GRADIENT.MODULATE )
+        shaderInstance:SetMaterialing( shader.MATERIALING.ENABLE )
 
         return shaderInstance
     end
@@ -122,6 +122,7 @@ end
         self.ShouldRebuildMesh = false
 
         self:SetMaterial( material )
+        self.Shader = STATIC.GetDefaultShader();
 
         self:UpdateBias()
     end
@@ -187,7 +188,13 @@ end
         end
 
         if self.Mesh then
-            render.SetMaterial( self.Material )
+
+            local material = self.Material
+            if material then
+                render.SetMaterial( material )
+            else
+                render.SetColorMaterial()
+            end
 
             cam.Start2D()
             render.CullMode( MATERIAL_CULLMODE_CW )
@@ -234,23 +241,39 @@ end
         return self.Material
     end
 
-    --- @param isAdditive boolean
-    function INSTANCE:EnableAdditive( isAdditive )
-        error( "Function not yet implemented" )
-    end
-
     --- @param hasAlpha boolean
     function INSTANCE:EnableAlpha( hasAlpha )
-        error( "Function not yet implemented" )
+        if hasAlpha then
+            self.Shader:SetDstBlendFunc( shader.DST_BLEND_FUNC.ONE_MINUS_SRC_ALPHA )
+            self.Shader:SetSrcBlendFunc( shader.SRC_BLEND_FUNC.SRC_ALPHA )
+        else
+            self.Shader:SetDstBlendFunc( shader.DST_BLEND_FUNC.ONE )
+            self.Shader:SetSrcBlendFunc( shader.SRC_BLEND_FUNC.ZERO )
+        end
+    end
+
+    --- @param isAdditive boolean
+    function INSTANCE:EnableAdditive( isAdditive )
+        if isAdditive then
+            self.Shader:SetDstBlendFunc( shader.DST_BLEND_FUNC.ONE )
+            self.Shader:SetSrcBlendFunc( shader.SRC_BLEND_FUNC.ONE )
+        else
+            self.Shader:SetDstBlendFunc( shader.DST_BLEND_FUNC.ONE )
+            self.Shader:SetSrcBlendFunc( shader.SRC_BLEND_FUNC.ZERO )
+        end
     end
 
     --- Originally called `Enable_Texturing`
     --- @param useMaterial boolean
     function INSTANCE:EnableMaterial( useMaterial )
-        error( "Function not yet implemented" )
+        if useMaterial then
+            self.Shader:SetMaterialing( shader.MATERIALING.ENABLE )
+        else
+            self.Shader:SetMaterialing( shader.MATERIALING.DISABLE )
+        end
     end
 
-    --- @return unknown
+    --- @return ShaderInstance
     function INSTANCE:GetShader()
         return self.Shader
     end
@@ -282,7 +305,7 @@ end
         local uvs = robustclass.New( "Renegade_Rect", 0, 0, 1, 1 )
         local color = Color( 255, 255, 255, 255 )
 
-typecheck.AssertArgType( CLASS, 1, firstArg, { "Vector", "RectInstance" } )
+        typecheck.AssertArgType( CLASS, 1, firstArg, { "Vector", "RectInstance" } )
 
         -- ( vertex0: Vector, vertex1: Vector, vertex2: Vector, vertex3: Vector, ... )
         if isvector( firstArg ) then
@@ -315,7 +338,7 @@ typecheck.AssertArgType( CLASS, 1, firstArg, { "Vector", "RectInstance" } )
                 -- Fifth arg must be Color
                 if fifthArg then
                     typecheck.AssertArgType( CLASS, 5, fifthArg, "color" )
-
+                    
                     --- @cast fifthArg Color
                     color = fifthArg
                 end
@@ -329,7 +352,7 @@ typecheck.AssertArgType( CLASS, 1, firstArg, { "Vector", "RectInstance" } )
             if rect.IsRect( secondArg ) then
                 --- @cast secondArg RectInstance
 
-_rect = firstArg
+                _rect = firstArg
                 uvs = secondArg
 
                 -- Third arg must be Color
@@ -341,7 +364,7 @@ _rect = firstArg
 
             -- ( rect: RectInstance, color: Color? )
             else
-_rect  = firstArg
+                _rect  = firstArg
 
                 if secondArg then
                     typecheck.AssertArgType( CLASS, 2, secondArg, "color" )
@@ -349,7 +372,7 @@ _rect  = firstArg
                     color = secondArg
                 end
             end
-                end
+        end
 
         -- One final sanity check
         local hasVertices = ( _rect or ( vertex0 and vertex1 and vertex2 and vertex3 ) )

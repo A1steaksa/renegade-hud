@@ -28,47 +28,70 @@ end
 
 --#region Enums
 
---- @enum FONT_STYLE
-STATIC.FONT_STYLE = {
-    FONT_TITLE               = 0,
-    FONT_LG_CONTROLS         = 1,
-    FONT_CONTROLS            = 2,
-    FONT_LISTS               = 3,
-    FONT_TOOLTIPS            = 4,
-    FONT_MENU                = 5,
-    FONT_SM_MENU             = 6,
-    FONT_HEADER              = 7,
-    FONT_BIG_HEADER          = 8,
-    FONT_CREDITS             = 9,
-    FONT_CREDITS_BOLD        = 10,
-    FONT_INGAME_TXT          = 11,
-    FONT_INGAME_BIG_TXT      = 12,
-    FONT_INGAME_SUBTITLE_TXT = 13,
-    FONT_INGAME_HEADER_TXT   = 14
-}
+    --- @enum FONT_STYLE
+    STATIC.FONT_STYLE = {
+        FONT_TITLE               = 0,
+        FONT_LG_CONTROLS         = 1,
+        FONT_CONTROLS            = 2,
+        FONT_LISTS               = 3,
+        FONT_TOOLTIPS            = 4,
+        FONT_MENU                = 5,
+        FONT_SM_MENU             = 6,
+        FONT_HEADER              = 7,
+        FONT_BIG_HEADER          = 8,
+        FONT_CREDITS             = 9,
+        FONT_CREDITS_BOLD        = 10,
+        FONT_INGAME_TXT          = 11,
+        FONT_INGAME_BIG_TXT      = 12,
+        FONT_INGAME_SUBTITLE_TXT = 13,
+        FONT_INGAME_HEADER_TXT   = 14
+    }
+    local fontStyle = STATIC.FONT_STYLE
 
---- @enum JUSTIFICATION
-STATIC.JUSTIFICATION = {
-    LEFT_JUSTIFY    = 0,
-    RIGHT_JUSTIFY   = 1,
-    CENTER_JUSTIFY  = 2
-}
+    --- @enum JUSTIFICATION
+    STATIC.JUSTIFICATION = {
+        LEFT_JUSTIFY    = 0,
+        RIGHT_JUSTIFY   = 1,
+        CENTER_JUSTIFY  = 2
+    }
+    local justification = STATIC.JUSTIFICATION
 
---- @enum EVENT_AUDIO
-STATIC.EVENT_AUDIO = {
-    EVENT_MOUSE_CLICK = 0,
-    EVENT_MOUSE_OVER  = 1,
-    EVENT_MENU_BACK   = 2,
-    EVENT_POPUP       = 3,
-    EVENT_AUDIO_MAX   = 4
-}
+    --- @enum EVENT_AUDIO
+    STATIC.EVENT_AUDIO = {
+        EVENT_MOUSE_CLICK = 0,
+        EVENT_MOUSE_OVER  = 1,
+        EVENT_MENU_BACK   = 2,
+        EVENT_POPUP       = 3,
+        EVENT_AUDIO_MAX   = 4
+    }
+    local eventAudio = STATIC.EVENT_AUDIO
 
---- @class FONT_DESC
---- @field name string
---- @field pointSize integer
---- @field interCharSpacing integer
---- @field isBold boolean
+    --- @class FONT_DESC
+    --- @field name string
+    --- @field pointSize integer
+    --- @field interCharSpacing integer
+    --- @field isBold boolean
 
+    --- The font defaults as found in stylemgr.cpp and, seemingly identically, in data/stylemgr.ini
+    --- @type FONT_DESC[]
+    STATIC.DEFAULT_FONTS = {
+    [ fontStyle.FONT_TITLE              ] = { name = "Regatta Condensed LET", pointSize = 52, interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_LG_CONTROLS        ] = { name = "Arial MT",              pointSize = 12, interCharSpacing = 2, isBold = true  },
+    [ fontStyle.FONT_CONTROLS           ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = true  },
+    [ fontStyle.FONT_LISTS              ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_TOOLTIPS           ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_MENU               ] = { name = "Regatta Condensed LET", pointSize = 32, interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_SM_MENU            ] = { name = "Regatta Condensed LET", pointSize = 20, interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_HEADER             ] = { name = "Arial MT",              pointSize = 9,  interCharSpacing = 2, isBold = true  },
+    [ fontStyle.FONT_BIG_HEADER         ] = { name = "Arial MT",              pointSize = 12, interCharSpacing = 2, isBold = true  },
+    [ fontStyle.FONT_CREDITS            ] = { name = "Arial MT",              pointSize = 10, interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_CREDITS_BOLD       ] = { name = "Arial MT",              pointSize = 10, interCharSpacing = 2, isBold = true  },
+    [ fontStyle.FONT_INGAME_TXT         ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_INGAME_BIG_TXT     ] = { name = "Arial MT",              pointSize = 16, interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_INGAME_SUBTITLE_TXT] = { name = "Arial MT",              pointSize = 14, interCharSpacing = 2, isBold = false },
+    [ fontStyle.FONT_INGAME_HEADER_TXT  ] = { name = "Arial MT",              pointSize = 9,  interCharSpacing = 2, isBold = true  },
+    }
+    local defaultFonts = STATIC.DEFAULT_FONTS
 --#endregion
 
 
@@ -89,7 +112,7 @@ STATIC.EVENT_AUDIO = {
 
             -- Create font atlases for the default fonts
             for _, index in pairs( STATIC.FONT_STYLE ) do
-                local fontDetails = STATIC.DEFAULT_FONTS[ index ]
+                local fontDetails = defaultFonts[ index ]
 
                 -- Convert from Renegade's font sizing to Garry's Mod's font sizing
                 local convertedFontSize = fontDetails.pointSize * 1.75
