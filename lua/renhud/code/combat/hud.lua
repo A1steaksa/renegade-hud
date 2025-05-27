@@ -55,24 +55,24 @@ end
 
     local ACT_RELOADING = 183
 
--- Manually reformat common weapon names that don't have good print names
--- Format is [string: weapon class] -> [string: name to display]
-local preformattedWeaponNames = {
-    ["weapon_crowbar"]      = "Crowbar",
-    ["weapon_physcannon"]   = "Gravity Gun",
-    ["weapon_physgun"]      = "Physics Gun",
-    ["weapon_stunstick"]    = "Stunstick",
-    ["weapon_pistol"]       = "9mm Pistol",
-    ["weapon_357"]          = ".357 Magnum",
-    ["weapon_smg1"]         = "Submachine Gun",
-    ["weapon_ar2"]          = "Pulse-Rifle",
-    ["weapon_shotgun"]      = "Shotgun",
-    ["weapon_crossbow"]     = "Crossbow",
-    ["weapon_frag"]         = "Grenade",
-    ["weapon_rpg"]          = "RPG",
-    ["weapon_slam"]         = "S.L.A.M",
-    ["weapon_bugbait"]      = "Bugbait"
-}
+    -- Manually reformat common weapon names that don't have good print names
+    -- Format is [string: weapon class] -> [string: name to display]
+    local preformattedWeaponNames = {
+        ["weapon_crowbar"]      = "Crowbar",
+        ["weapon_physcannon"]   = "Gravity Gun",
+        ["weapon_physgun"]      = "Physics Gun",
+        ["weapon_stunstick"]    = "Stunstick",
+        ["weapon_pistol"]       = "9mm Pistol",
+        ["weapon_357"]          = ".357 Magnum",
+        ["weapon_smg1"]         = "Submachine Gun",
+        ["weapon_ar2"]          = "Pulse-Rifle",
+        ["weapon_shotgun"]      = "Shotgun",
+        ["weapon_crossbow"]     = "Crossbow",
+        ["weapon_frag"]         = "Grenade",
+        ["weapon_rpg"]          = "RPG",
+        ["weapon_slam"]         = "S.L.A.M",
+        ["weapon_bugbait"]      = "Bugbait"
+    }
 
     --[[ Load Materials ]] do
 
@@ -148,7 +148,7 @@ local preformattedWeaponNames = {
             -- STATIC.WeaponChartInit()
             STATIC.InfoInit()
             -- STATIC.DamageInit()
-            -- STATIC.TargetInit()
+            STATIC.TargetInit()
             -- STATIC.ObjectiveInit()
 
             -- STATIC.HudHelpTextInit()
@@ -165,7 +165,7 @@ local preformattedWeaponNames = {
         STATIC.WeaponUpdate()
         -- STATIC.WeaponChartUpdate()
         -- STATIC.DamageUpdate()
-        -- STATIC.TargetUpdate()
+        STATIC.TargetUpdate()
         -- STATIC.ObjectiveUpdate()
 
         --[[ Reticle ]] do
@@ -191,7 +191,7 @@ local preformattedWeaponNames = {
                         and weapon:GetMaxClip1() > 0
                     )
                     or weapon:GetInternalVariable( "m_bInReload" )
-                    or weapon:GetInternalVariable( "m_Activity" ) == reloadingActivity
+                    or weapon:GetInternalVariable( "m_Activity" ) == ACT_RELOADING
                 )
 
                 if isWeaponBusy then
@@ -237,7 +237,7 @@ local preformattedWeaponNames = {
         -- STATIC.WeaponChartRender()
         STATIC.InfoRender()
         -- STATIC.DamageRender()
-        -- STATIC.TargetRender()
+        STATIC.TargetRender()
         -- STATIC.HudHelpTextRender()
         -- STATIC.ObjectiveRender()
         -- radarManager:Render()
@@ -749,6 +749,50 @@ local preformattedWeaponNames = {
             STATIC.WeaponNameRenderer:Render()
             STATIC.WeaponClipCountRenderer:Render()
             STATIC.WeaponTotalCountRenderer:Render()
+        end
+    end
+
+    --[[ Target Display ]] do
+
+        --- @class Hud
+        --- @field TargetRenderer Render2dInstance
+        --- @field TargetBoxRenderer Render2dInstance
+        --- @field TargetNameRenderer Render2dTextInstance
+        --- @field TargetName string
+        --- @field TargetNameLocation Vector
+
+        function STATIC.TargetInit()
+            STATIC.TargetRenderer = render2d.New()
+            STATIC.TargetRenderer:SetMaterial( STATIC.Materials.Hud.Main )
+            STATIC.TargetRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+
+            STATIC.TargetBoxRenderer = render2d.New()
+            STATIC.TargetBoxRenderer:EnableMaterial( false )
+            STATIC.TargetBoxRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+
+            local font = styleManager.PeekFont( styleManager.FONT_STYLE.FONT_INGAME_TXT )
+            STATIC.TargetNameRenderer = render2dText.New( font )
+            STATIC.TargetNameRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+        end
+
+        function STATIC.TargetUpdate()
+            STATIC.TargetRenderer:Reset()
+            STATIC.TargetBoxRenderer:Reset()
+            STATIC.TargetNameRenderer:Reset()
+
+            hudInfo.UpdateInfoEntity()
+        end
+
+        function STATIC.TargetRender()
+            STATIC.TargetRenderer:Render()
+            STATIC.TargetBoxRenderer:Render()
+            STATIC.TargetNameRenderer:Render()
+        end
+
+        ---@param ent Entity
+        ---@return RectInstance
+        function STATIC.GetTargetBox( ent )
+            typecheck.NotImplementedError( CLASS )
         end
     end
 
