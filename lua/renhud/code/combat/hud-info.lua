@@ -23,6 +23,9 @@ end
 
     --- @type GameType
     local gameType = CNC.Import( "renhud/code/combat/game-type.lua" )
+
+    --- @type BuildingsBridge
+    local buildingsBridge = CNC.Import( "renhud/bridges/buildings.lua" )
 --#endregion
 
 
@@ -101,7 +104,7 @@ end
 
                 local isSameEntity = STATIC.LastInfoEntity == ent
                 local isSameHealth = STATIC.LastInfoHealth == health
-                if ent:IsBuilding() then
+                if buildingsBridge.IsBuilding( ent ) then
                     if isSameEntity and isSameHealth then
                         if not isMct and gameType.IsMission() then
                             return
@@ -122,7 +125,6 @@ end
             return STATIC.InfoEntity
         end
 
-
         --- @return boolean
         function STATIC.GetInfoEntityIsMct()
             return STATIC.IsMct
@@ -134,33 +136,33 @@ end
 
         function STATIC.UpdateInfoEntity()
 
-            local info = STATIC.GetInfoEntity()
+            local target = STATIC.GetInfoEntity()
 
-            if not IsValid( info ) then return end
+            if not IsValid( target ) then return end
 
             -- Forget buildings as soon as we aren't looking at them in multiplayer
-            if not gameType.IsMission() and info:IsBuilding() then
+            if not gameType.IsMission() and buildingsBridge.IsBuilding( target ) then
                 if STATIC.InfoEntityTimer > 0 then
                     STATIC.InfoEntity = NULL
-                    info = NULL
+                    target = NULL
                 end
             end
 
             -- Forget dead entities
-            if info:Health() <= 0 then
+            if target:Health() <= 0 then
                 STATIC.InfoEntity = NULL
-                info = NULL
+                target = NULL
             end
 
             STATIC.InfoEntityTimer = STATIC.InfoEntityTimer + FrameTime()
 
             if STATIC.InfoEntityTimer > 5 then
                 STATIC.InfoEntity = NULL
-                info = NULL
+                target = NULL
             else
-                if not IsValid( info ) then return end
+                if not IsValid( target ) then return end
 
-                local minBounds, maxBounds = info:GetCollisionBounds()
+                local minBounds, maxBounds = target:GetCollisionBounds()
 
                 local extents = maxBounds - minBounds
                 local center = extents / 2
@@ -170,7 +172,8 @@ end
                 local shouldCullTarget = combatManager:GetCamera():CullBox( bounds )
 
                 if shouldCullTarget then
-                    STATIC.InfoEntity = NULL
+                    -- Omitted removing info entity while frustum culling logic is broken
+                    --STATIC.InfoEntity = NULL
                 end
             end
         end
