@@ -50,8 +50,10 @@ if CLIENT then
 
     -- Load Renegade-specific libraries
     include( "renhud/imports.lua" )
-    include( "renhud/buildings.lua" )
     include( "renhud/hide-hud.lua" )
+
+    -- Load Renegade bridge libraries
+    IterateFilesRecursively( "renhud/bridges/", "LUA", include )
 
     -- Load the game's kernel file
     --- @type CombatManager
