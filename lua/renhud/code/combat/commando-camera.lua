@@ -520,7 +520,12 @@ end
 
         --- @param distance number
         function INSTANCE:SetSniperDistance( distance )
-            typecheck.NotImplementedError( CLASS, "SetSniperDistance" )
+            if self.SniperDistance == distance then
+                return
+            end
+
+            self.SniperDistance = distance
+            self:UpdateSniperListenerPos()
         end
 
         --- @return number
@@ -651,6 +656,7 @@ end
             -- "remember this guy"
             self.WeaponHelpTarget = bestObj
             self.StarTargetingPosition = bestObj:GetPos() + bestObj:OBBCenter() -- Omitted bestObj:GetBullseyePosition()
+
             hudInfo.SetInfoEntity( bestObj )
         end
 
@@ -659,7 +665,10 @@ end
 
     --- @protected
     function INSTANCE:UpdateSniperListenerPos()
-        typecheck.NotImplementedError( CLASS, "UpdateSniperListenerPos" )
+
+        if IsValid( self.SniperListener ) then
+            typecheck.NotImplementedError( CLASS, "UpdateSniperListenerPos" )
+        end
     end
 
     --- @protected
