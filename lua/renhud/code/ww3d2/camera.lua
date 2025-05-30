@@ -257,7 +257,8 @@ end
 
     --- @protected
     function INSTANCE:UpdateFrustum()
-        if self.FrustumValid then return end
+        -- Omitted frustum validation
+        --if self.FrustumValid then return end
 
         local cameraMatrix = self:GetTransform()
 
