@@ -427,8 +427,57 @@ end
         typecheck.NotImplementedError( CLASS, "AddTri" )
     end
 
+    --- @overload fun( self: Render2dInstance, startPos: Vector, endPos: Vector, width: number, color: Color )
+    --- @overload fun( self: Render2dInstance, startPos: Vector, endPos: Vector, width: number, uv: RectInstance, color: Color )
     function INSTANCE:AddLine( ... )
-        typecheck.NotImplementedError( CLASS, "AddLine" )
+        local args = { ... }
+        local argCount = select( "#", ... )
+
+        typecheck.AssertArgCount( CLASS, argCount, { 4, 5 } )
+
+        local startPos
+        local endPos
+        local width
+        local uv
+        local color
+
+        -- ( startPos: Vector, endPos: Vector, width: number, color: Color )
+        if argCount == 4 then
+            typecheck.AssertArgType( CLASS, 1, args[1], "Vector" )
+            typecheck.AssertArgType( CLASS, 2, args[2], "Vector" )
+            typecheck.AssertArgType( CLASS, 3, args[3], "number" )
+            typecheck.AssertArgType( CLASS, 4, args[4], "Color"  )
+
+            startPos = args[1] --[[@as Vector]]
+            endPos   = args[2] --[[@as Vector]]
+            width    = args[3] --[[@as number]]
+            uv       = rect.New( 0, 0, 1, 1 ) --[[@as RectInstance]]
+            color    = args[4] --[[@as Color]]
+        end
+
+        -- ( startPos: Vector, endPos: Vector, width: number, uv: RectInstance, color: Color )
+        if argCount == 5 then
+            typecheck.AssertArgType( CLASS, 1, startPos, "Vector"       )
+            typecheck.AssertArgType( CLASS, 2, endPos,   "Vector"       )
+            typecheck.AssertArgType( CLASS, 3, width,    "number"       )
+            typecheck.AssertArgType( CLASS, 4, uv,       "RectInstance" )
+            typecheck.AssertArgType( CLASS, 5, color,    "Color"        )
+
+            startPos = args[1] --[[@as Vector]]
+            endPos   = args[2] --[[@as Vector]]
+            width    = args[3] --[[@as number]]
+            uv       = args[4] --[[@as RectInstance]]
+            color    = args[5] --[[@as Color]]
+        end
+
+        local cornerOffset = startPos - endPos -- "Get line relative to endPos"
+        local temp = cornerOffset.x -- "Rotate 90"
+        cornerOffset.x = cornerOffset.y
+        cornerOffset.y = -temp
+        cornerOffset:Normalize()
+        cornerOffset = cornerOffset * width / 2
+
+        self:AddQuad( startPos - cornerOffset, startPos + cornerOffset, endPos - cornerOffset, endPos + cornerOffset, uv, color )
     end
 
     function INSTANCE:AddOutline( ... )
