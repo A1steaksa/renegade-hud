@@ -54,6 +54,7 @@ end
     --- @field GameScene unknown
 
     --[[ Default Values ]] do
+
         STATIC.MainCamera = nil
         STATIC.BackgroundScene = nil
         STATIC.SoundEnvironment = nil
@@ -116,6 +117,10 @@ end
 
         -- Create the game camera
         STATIC.MainCamera = commandoCamera.New()
+
+        -- TODO: Check if this is a good way to set up the star
+        STATIC.TheStar = LocalPlayer()
+
 
         -- Create the Dazzle Layer
         if renderAvailable then
