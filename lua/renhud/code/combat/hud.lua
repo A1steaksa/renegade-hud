@@ -792,6 +792,79 @@ end
             STATIC.TargetNameRenderer:Reset()
 
             hudInfo.UpdateInfoEntity()
+
+            STATIC.BoxZoomSize = STATIC.BoxZoomSize or 0
+
+            local target = hudInfo.GetInfoEntity()
+
+            if not target or not IsValid( target ) then
+                STATIC.TargetNameRenderer:Reset()
+                STATIC.TargetName = ""
+                STATIC.TargetNameLocation = Vector( 0, 0 )
+
+                STATIC.BoxZoomSize = 0
+                hudInfo:ClearInfoEntity()
+                return
+            end
+
+            local combatStar = combatManager.GetTheStar()
+            if not IsValid( combatStar ) then return end
+
+            local camera = combatManager.GetCamera()
+
+            local physObj = target:GetPhysicsObject()
+
+            local frameTime = FrameTime()
+
+            STATIC.BoxZoomSize = STATIC.BoxZoomSize + frameTime * 4
+            STATIC.BoxZoomSize = math.Clamp( STATIC.BoxZoomSize, 0, 1 )
+
+            local color = globalSettings.Colors.NoRelation
+            if physicalGameObjectsBridge.IsPhysicalGameObject( target ) then
+                if physicalGameObjectsBridge.IsTeammate( combatStar, target ) then
+                    color = globalSettings.Colors.Friendly
+                elseif physicalGameObjectsBridge.IsEnemy( combatStar, target ) then
+                    color = globalSettings.Colors.Enemy
+                end
+            end
+
+            if buildingsBridge.IsBuilding( target ) then
+                if buildingsBridge.IsTeammate( combatStar, target ) then
+                    color = globalSettings.Colors.Friendly
+                elseif buildingsBridge.IsEnemy( combatStar, target ) then
+                    color = globalSettings.Colors.Enemy
+                end
+            end
+
+            -- Omitted color selection based on target type
+
+            local box = render2d.GetScreenResolution()
+
+            if physObj then
+                box = STATIC.GetTargetBox( target )
+            else
+                -- "Build a box for the buildings"
+                box:ScaleRelativeCenter( 0.3 )
+
+                -- "Center on cursor reticle"
+                local newCenter = camera:GetCameraTarget2dOffset() * 0.5
+                newCenter.y = newCenter.y * -1
+                newCenter = newCenter + Vector( 0.5, 0.5 )
+                newCenter.x = newCenter.x * render2d:GetScreenResolution().Right
+                newCenter.y = newCenter.y * render2d:GetScreenResolution().Bottom
+                box = box + newCenter - box:Center()
+            end
+
+            -- "Scale the box to let it zoom in"
+            if STATIC.BoxZoomSize < 1 then
+                box:ScaleRelativeCenter( 1 + ( ( 1 - STATIC.BoxZoomSize ) * 0.3 ) )
+            end
+            box:SnapToUnits( Vector( 1, 1 ) )
+
+            STATIC.TargetBoxEdge( box:UpperLeft(),  box:UpperRight(), color )
+            STATIC.TargetBoxEdge( box:UpperLeft(),  box:LowerLeft(),  color )
+            STATIC.TargetBoxEdge( box:LowerRight(), box:UpperRight(), color )
+            STATIC.TargetBoxEdge( box:LowerRight(), box:LowerLeft(),  color )
         end
 
         function STATIC.TargetRender()
@@ -800,10 +873,56 @@ end
             STATIC.TargetNameRenderer:Render()
         end
 
-        ---@param ent Entity
-        ---@return RectInstance
+        --- @param ent Entity
+        --- @return RectInstance
         function STATIC.GetTargetBox( ent )
-            typecheck.NotImplementedError( CLASS )
+
+            local top = Vector( 0, 0 )
+            local bottom = Vector( 0, 0 )
+
+            if physicalGameObjectsBridge.IsPhysicalGameObject( ent ) then
+                local shadowBox = physicalGameObjectsBridge.GetShadowBox( ent )
+
+                local boxViewTransformationMatrix = Matrix()
+
+            end
+
+            local screen = render2d.GetScreenResolution()
+
+            top.x = top.x *  0.5 + 0.5
+            top.y = top.y * -0.5 + 0.5
+            bottom.x = bottom.x *  0.5 + 0.5
+            bottom.y = bottom.y * -0.5 + 0.5
+
+            local temp = top.y
+            top.y = bottom.y
+            bottom.y = temp
+
+            local infoBox = rect.New(
+                top.x * screen.Right,
+                top.y * screen.Bottom,
+                bottom.x * screen.Right,
+                bottom.y * screen.Bottom
+            )
+
+            return infoBox
+        end
+
+        --- @param startPos Vector
+        --- @param endPos Vector
+        --- @param color Color
+        function STATIC.TargetBoxEdge( startPos, endPos, color )
+            local percent = 0.2
+
+            local adjustedStart = endPos - startPos
+            adjustedStart = adjustedStart * percent
+            adjustedStart = adjustedStart + startPos
+            STATIC.TargetBoxRenderer:AddLine( startPos, adjustedStart, 2, color )
+
+            local adjustedEnd = startPos - endPos
+            adjustedEnd = adjustedEnd * percent
+            adjustedEnd = adjustedEnd + endPos
+            STATIC.TargetBoxRenderer:AddLine( endPos, adjustedEnd, 2, color )
         end
     end
 
