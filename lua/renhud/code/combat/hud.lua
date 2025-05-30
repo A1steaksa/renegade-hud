@@ -44,6 +44,15 @@ end
 
     --- @type HudInfo
     local hudInfo = CNC.Import( "renhud/code/combat/hud-info.lua" )
+
+    --- @type PhysicalGameObjectsBridge
+    local physicalGameObjectsBridge = CNC.Import( "renhud/bridges/physical-game-objects.lua" )
+
+    --- @type BuildingsBridge
+    local buildingsBridge = CNC.Import( "renhud/bridges/buildings.lua" )
+
+    --- @type Matrix3d
+    local matrix3d = CNC.Import( "renhud/code/wwmath/matrix3d.lua" )
 --#endregion
 
 
