@@ -168,19 +168,22 @@ end
         STATIC.TargetUpdate()
         -- STATIC.ObjectiveUpdate()
 
+        local combatStar = combatManager.GetTheStar()
+
         --[[ Reticle ]] do
+
             local reticleColor = globalSettings.Colors.NoRelation
 
-            -- TODO:
-            --[[
-                if ( HUDInfo::Get_Weapon_Target_Object() != NULL ) {
-                    reticle_color = HUDGlobalSettingsDef::Get_Instance()->Get_Friendly_Color().Convert_To_ARGB();
-                    PhysicalGameObj * pgo = HUDInfo::Get_Weapon_Target_Object()->As_PhysicalGameObj();
-                    if ( pgo && pgo->Is_Enemy( star ) ) {
-                        reticle_color = HUDGlobalSettingsDef::Get_Instance()->Get_Enemy_Color().Convert_To_ARGB();
-                    }
-                }
-            ]]
+            -- Check for friendly or enemy targets to change the reticle color
+            local targetEntity = hudInfo:GetWeaponTargetEntity()
+            if IsValid( targetEntity ) then
+                reticleColor = globalSettings.Colors.Friendly
+                if physicalGameObjectsBridge.IsPhysicalGameObject( targetEntity ) then
+                    if physicalGameObjectsBridge.IsEnemy( targetEntity, combatStar ) then
+                        reticleColor = globalSettings.Colors.Enemy
+                    end
+                end
+            end
 
             local weapon = LocalPlayer():GetActiveWeapon()
             if IsValid( weapon ) then
@@ -197,7 +200,6 @@ end
                 if isWeaponBusy then
                     reticleColor = globalSettings.Colors.ReticleBusy
                 end
-
             end
 
             local reticleOffset = Vector( ScrW()/2, ScrH()/2 ) -- TODO: Implement COMBAT_CAMERA->Get_Camera_Target_2D_Offset();
