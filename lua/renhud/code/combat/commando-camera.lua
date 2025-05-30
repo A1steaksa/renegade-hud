@@ -36,6 +36,18 @@ end
 
     --- @type CommandoCameraProfile
     local commandoCameraProfile = CNC.Import( "renhud/code/combat/commando-camera-profile.lua" )
+
+    --- @type BuildingsBridge
+    local buildingsBridge = CNC.Import( "renhud/bridges/buildings.lua" )
+
+    --- @type PhysicalGameObjectsBridge
+    local physicalGameObjectsBridge = CNC.Import( "renhud/bridges/physical-game-objects.lua" )
+
+    --- @type DamageableGameObjectsBridge
+    local damageableGameObjectsBridge = CNC.Import( "renhud/bridges/damageable-game-objects.lua" )
+
+    --- @type SmartGameObjectsBridge
+    local smartGameObjectsBridge = CNC.Import( "renhud/bridges/smart-game-objects.lua" )
 --#endregion
 
 
@@ -150,6 +162,8 @@ end
     function INSTANCE:Update()
 
         self:ApplyWeaponHelp()
+
+        self:DetermineTargetingPosition()
 
         -- Omitted camera update logic
         --[[
@@ -640,10 +654,56 @@ end
         typecheck.NotImplementedError( CLASS, "HandleInput" )
     end
 
+    --- "Finds the world position and Entity the player is looking/pointing at"
+    --- "The details get stored in HudInfo"
     --- @return boolean
     --- @protected
     function INSTANCE:DetermineTargetingPosition()
-        typecheck.NotImplementedError( CLASS, "DetermineTargetingPosition" )
+        local lookingAtEntity = false
+
+        local combatStar = combatManager.GetTheStar() --[[@as Player]]
+        local isStarDeterminingTarget = combatManager.IsStarDeterminingTarget()
+
+        if IsValid( combatStar ) and isStarDeterminingTarget then
+
+            -- Omitted tracing logic
+            local eyeTrace = combatStar:GetEyeTrace()
+            local hitEnt = eyeTrace.Entity
+
+            if IsValid( hitEnt ) then
+                -- Check for the MCT
+                local isMct = false
+                if buildingsBridge.IsBuilding( hitEnt ) then
+                    isMct = buildingsBridge.IsMct( hitEnt )
+                end
+
+                -- Don't target untargetable Entities
+                if not damageableGameObjectsBridge.IsTargetable( hitEnt ) then
+                    hitEnt = NULL
+                end
+
+                -- Don't target stealthed enemies
+                if smartGameObjectsBridge.IsStealthed( hitEnt ) and physicalGameObjectsBridge.IsEnemy( hitEnt, combatStar ) then
+                    hitEnt = NULL
+                end
+
+                print( "Target Entity", hitEnt )
+
+                lookingAtEntity = hitEnt ~= NULL
+                hudInfo.SetInfoEntity( hitEnt, isMct )
+                hudInfo.SetWeaponTargetEntity( hitEnt )
+            end
+
+            if eyeTrace.Hit then
+                local traceLength = ( eyeTrace.StartPos:Distance( eyeTrace.HitPos ) )
+                self:SetSniperDistance( traceLength )
+            else
+                self:SetSniperDistance( 0 )
+            end
+
+        end
+
+        return lookingAtEntity
     end
 
     --- @protected
