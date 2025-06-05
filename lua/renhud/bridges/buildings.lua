@@ -3,15 +3,12 @@
 --- @class Renegade
 local CNC = CNC_RENEGADE
 
---- @class BuildingsBridge
-local LIB = CNC.CreateExport()
+--- Parent class
+--- @type CommonBridge
+local commonBridge = CNC.Import( "renhud/bridges/common.lua" )
 
-
---#region Imports
-
-    --- @type CommonBridge
-    local commonBridge = CNC.Import( "renhud/bridges/common.lua" )
---#endregion
+--- @class BuildingsBridge : CommonBridge
+local LIB = setmetatable( CNC.CreateExport(), { __index = commonBridge } )
 
 
 --[[ Static Functions and Variables ]] do
@@ -19,10 +16,6 @@ local LIB = CNC.CreateExport()
     local CLASS = "BuildingsBridge"
 
     --- [[ Public ]]
-
-    LIB.IsTeammate = commonBridge.IsTeammate
-    LIB.IsEnemy = commonBridge.IsEnemy
-    LIB.IsNeutral = commonBridge.IsNeutral
 
     --- Any Entity present as a key in this table is a building
     --- @type table<Entity, boolean>

@@ -3,15 +3,12 @@
 --- @class Renegade
 local CNC = CNC_RENEGADE
 
---- @class DamageableGameObjectsBridge
-local LIB = CNC.CreateExport()
+--- Parent class
+--- @type CommonBridge
+local commonBridge = CNC.Import( "renhud/bridges/common.lua" )
 
-
---#region Imports
-
-    --- @type CommonBridge
-    local commonBridge = CNC.Import( "renhud/bridges/common.lua" )
---#endregion
+--- @class DamageableGameObjectsBridge : CommonBridge
+local LIB = setmetatable( CNC.CreateExport(), { __index = commonBridge } )
 
 
 --[[ Static Functions and Variables ]] do
