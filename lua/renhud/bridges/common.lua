@@ -7,7 +7,14 @@ local CNC = CNC_RENEGADE
 local LIB = CNC.CreateExport()
 
 
---# Enums
+--#region Imports
+
+    --- @type Matrix3d
+    local matrix3d = CNC.Import( "renhud/code/wwmath/matrix3d.lua" )
+--#endregion
+
+
+--#region Enums
 
     --- @enum Disposition
     LIB.DISPOSITION = {
@@ -78,6 +85,17 @@ local LIB = CNC.CreateExport()
         local relationship = ent:GetRelationship( otherEnt )
 
         return relationship == disposition.Neutral
+    end
+
+    --- Gets are transformation matrix that represents a given Entity
+    --- @param ent Entity
+    --- @return Matrix3dInstance
+    function LIB.GetTransform( ent )
+        local matrix = matrix3d.New()
+
+        matrix:SetTranslation( ent:GetPos() )
+
+        return matrix
     end
 
 
