@@ -3,14 +3,15 @@
 --- @class Renegade
 local CNC = CNC_RENEGADE
 
---- @class PhysicalGameObjectsBridge
-local LIB = CNC.CreateExport()
+--- Parent class
+--- @type CommonBridge
+local commonBridge = CNC.Import( "renhud/bridges/common.lua" )
+
+--- @class PhysicalGameObjectsBridge : CommonBridge
+local LIB = setmetatable( CNC.CreateExport(), { __index = commonBridge } )
 
 
 --#region Imports
-
-    --- @type CommonBridge
-    local commonBridge = CNC.Import( "renhud/bridges/common.lua" )
 
     --- @type AABox
     local aABox = CNC.Import( "renhud/code/wwmath/aabox.lua" )
@@ -22,10 +23,6 @@ local LIB = CNC.CreateExport()
     local CLASS = "PhysicalGameObjectsBridge"
 
     --- [[ Public ]]
-
-    LIB.IsTeammate = commonBridge.IsTeammate
-    LIB.IsEnemy = commonBridge.IsEnemy
-    LIB.IsNeutral = commonBridge.IsNeutral
 
     --- @param ent Entity
     --- @return boolean
