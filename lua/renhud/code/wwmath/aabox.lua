@@ -77,7 +77,9 @@ end
 
         -- ( nil )
         if argCount == 0 then
-            return -- Do nothing
+            self.Center = Vector( 0, 0, 0 )
+            self.Extent = Vector( 0, 0, 0 )
+            return
         end
 
         if argCount == 1 then
