@@ -76,13 +76,13 @@ end
         return robustclass.New( "Renegade_Matrix3d", ... )
     end
 
-    ---@param arg any
-    ---@return boolean `true` if the passed argument is a(n) Matrix3dInstance, `false` otherwise
+    --- @param arg any
+    --- @return boolean `true` if the passed argument is a(n) Matrix3dInstance, `false` otherwise
     function STATIC.IsMatrix3d( arg )
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
 
-        return arg.IsMatrix3d
+        return arg.IsMatrix3d and true or false
     end
 
     typecheck.RegisterType( "Matrix3dInstance", STATIC.IsMatrix3d )

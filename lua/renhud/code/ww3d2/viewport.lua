@@ -48,7 +48,7 @@ end
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
 
-        return arg.IsViewport
+        return arg.IsViewport and true or false
     end
 
     typecheck.RegisterType( "ViewportInstance", STATIC.IsViewport )

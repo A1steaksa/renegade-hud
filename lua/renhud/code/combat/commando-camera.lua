@@ -82,7 +82,7 @@ end
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
 
-        return arg.IsCommandoCamera
+        return arg.IsCommandoCamera and true or false
     end
 
     typecheck.RegisterType( "CommandoCameraInstance", STATIC.IsCommandoCamera )

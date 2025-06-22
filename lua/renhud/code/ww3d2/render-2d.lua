@@ -54,7 +54,7 @@ end
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
 
-        return arg.IsRender2d
+        return arg.IsRender2d and true or false
     end
 
     typecheck.RegisterType( "Render2dInstance", STATIC.IsRender2d )

@@ -29,6 +29,7 @@ end
     --- [[ Public ]]
 
     --- Creates a new Rect
+    --- @overload fun(): RectInstance
     --- @overload fun( left: number, top: number, right: number, bottom: number ): RectInstance Creates a new Rect from the horizontal and vertical coordinates of its four edges
     --- @overload fun( topLeft: Vector, bottomRight: Vector ): RectInstance Creates a new RectInstance from Vectors that define its top-left and bottom-right corners
     --- @overload fun( rectToCopy: RectInstance ): RectInstance Creates a new RectInstance by copying the values of an existing one
@@ -42,7 +43,7 @@ end
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
 
-        return arg.IsRect
+        return arg.IsRect and true or false
     end
 
     typecheck.RegisterType( "RectInstance", STATIC.IsRect )

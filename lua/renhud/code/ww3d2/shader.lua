@@ -218,7 +218,7 @@ end
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
 
-        return arg.IsShader
+        return arg.IsShader and true or false
     end
 
     typecheck.RegisterType( "ShaderInstance", STATIC.IsShader )

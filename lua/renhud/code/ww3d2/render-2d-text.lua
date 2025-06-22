@@ -53,7 +53,7 @@ end
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
 
-        return arg.IsRender2dText
+        return arg.IsRender2dText and true or false
     end
 
     typecheck.RegisterType( "Render2dTextInstance", STATIC.IsRender2dText )

@@ -52,7 +52,7 @@ end
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
 
-        return arg.IsFont3d
+        return arg.IsFont3d and true or false
     end
 
     typecheck.RegisterType( "Font3dInstance", STATIC.IsFont3d )
