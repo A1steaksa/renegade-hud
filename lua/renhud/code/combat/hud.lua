@@ -861,6 +861,25 @@ end
             end
             box:SnapToUnits( Vector( 1, 1 ) )
 
+            local res = render2d.GetScreenResolution()
+            if box.Top < 0 then
+                box.Top = 0
+            end
+
+            if box.Left < 0 then
+                box.Left = 0
+            end
+
+            if box.Right > res.Right - 1 then
+                box.Right = res.Right - 1
+            end
+
+            -- "Leave room for info at the bottom"
+            if box.Bottom > res.Bottom - 26 then
+                box.Bottom = res.Bottom - 26
+            end
+
+
             STATIC.TargetBoxEdge( box:UpperLeft(),  box:UpperRight(), color )
             STATIC.TargetBoxEdge( box:UpperLeft(),  box:LowerLeft(),  color )
             STATIC.TargetBoxEdge( box:LowerRight(), box:UpperRight(), color )
