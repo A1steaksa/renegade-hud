@@ -403,6 +403,11 @@ end
 
         --- @return Entity
         function STATIC.GetTheStar()
+
+            if LocalPlayer() and not IsValid( STATIC.TheStar ) then
+                STATIC.TheStar = LocalPlayer()
+            end
+
             return STATIC.TheStar
         end
 
