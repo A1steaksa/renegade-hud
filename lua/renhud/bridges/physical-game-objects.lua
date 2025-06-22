@@ -34,14 +34,15 @@ local LIB = setmetatable( CNC.CreateExport(), { __index = commonBridge } )
 
     --- @param ent Entity
     --- @return AABoxInstance
-    function LIB.GetShadowBox( ent )
+    function LIB.GetShadowBlobBox( ent )
         typecheck.AssertArgType( CLASS, 1, ent, commonBridge.EntTypes )
+        local mins = ent:OBBMins()
+        local maxs = ent:OBBMaxs()
 
-        local mins, maxs = ent:GetCollisionBounds()
+        local center = ( maxs + mins ) / 2
+        local extent = ( maxs - mins ) / 2
 
-        local center = ( maxs - mins ) / 2
-
-        local shadowBox = aABox.New( center, maxs )
+        local shadowBox = aABox.New( center, extent )
 
         return shadowBox
     end
