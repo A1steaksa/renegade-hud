@@ -62,7 +62,6 @@ local LIB = CNC.CreateExport()
         typecheck.AssertArgType( CLASS, 2, otherEnt, LIB.EntTypes )
 
         if not LIB.CanHaveRelationships( ent ) then
-            print( "No relationships" )
             return false
         end
 
@@ -91,9 +90,15 @@ local LIB = CNC.CreateExport()
     --- @param ent Entity
     --- @return Matrix3dInstance
     function LIB.GetTransform( ent )
-        local matrix = matrix3d.New()
+        local matrix = matrix3d.New( ent:GetPos() )
 
-        matrix:SetTranslation( ent:GetPos() )
+        local ang = ent:GetAngles()
+
+        -- "Coordinates in Source are (X,Y,Z), where X is forward/East, Y is left/North, and Z is up"
+        -- https://developer.valvesoftware.com/wiki/Coordinates
+        matrix:RotateY( math.rad( ang.pitch ) )
+        matrix:RotateZ( math.rad( ang.yaw ) )
+        matrix:RotateX( math.rad( ang.roll ) )
 
         return matrix
     end
