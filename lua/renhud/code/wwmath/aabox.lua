@@ -96,7 +96,7 @@ end
             end
 
             -- Omitted MinMaxAABox logic
-            typecheck.NotImplementedError( CLASS, nil, "MinMaxAABox constructor" )
+            typecheck.NotImplementedError( CLASS, "MinMaxAABox constructor" )
         end
 
         -- ( center: Vector, extent: Vector )

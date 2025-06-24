@@ -879,7 +879,6 @@ end
                 box.Bottom = res.Bottom - 26
             end
 
-
             STATIC.TargetBoxEdge( box:UpperLeft(),  box:UpperRight(), color )
             STATIC.TargetBoxEdge( box:UpperLeft(),  box:LowerLeft(),  color )
             STATIC.TargetBoxEdge( box:LowerRight(), box:UpperRight(), color )
@@ -917,14 +916,15 @@ end
             top.y = bottom.y
             bottom.y = temp
 
-            local infoBox = rect.New(
+            STATIC.InfoBox = STATIC.InfoBox or rect.New()
+            STATIC.InfoBox:Replace(
                 top.x * screen.Right,
                 top.y * screen.Bottom,
                 bottom.x * screen.Right,
                 bottom.y * screen.Bottom
             )
 
-            return infoBox
+            return STATIC.InfoBox
         end
 
         --- @param startPos Vector

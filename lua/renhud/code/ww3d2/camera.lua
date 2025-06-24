@@ -162,6 +162,7 @@ end
 
     --- Originally part of RenderObjClass in Code/ww3d2/rendobj.h/cpp
     --- Camera extends RenderObjClass but I don't feel like porting that right now
+    --- @return Matrix3dInstance
     function INSTANCE:GetTransform()
         local matrix = Matrix()
 

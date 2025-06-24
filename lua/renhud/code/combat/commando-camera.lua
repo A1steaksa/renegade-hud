@@ -687,8 +687,6 @@ end
                     hitEnt = NULL
                 end
 
-                print( "Target Entity", hitEnt )
-
                 lookingAtEntity = hitEnt ~= NULL
                 hudInfo.SetInfoEntity( hitEnt, isMct )
                 hudInfo.SetWeaponTargetEntity( hitEnt )

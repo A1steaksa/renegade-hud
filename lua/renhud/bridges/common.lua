@@ -86,7 +86,7 @@ local LIB = CNC.CreateExport()
         return relationship == disposition.Neutral
     end
 
-    --- Gets are transformation matrix that represents a given Entity
+    --- Gets a transformation matrix that represents a given Entity
     --- @param ent Entity
     --- @return Matrix3dInstance
     function LIB.GetTransform( ent )
@@ -120,5 +120,4 @@ local LIB = CNC.CreateExport()
 
         return true
     end
-
 end
