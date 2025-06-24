@@ -53,6 +53,9 @@ end
 
     --- @type Matrix3d
     local matrix3d = CNC.Import( "renhud/code/wwmath/matrix3d.lua" )
+
+    --- @type AABox
+    local aABox = CNC.Import( "renhud/code/wwmath/aabox.lua" )
 --#endregion
 
 
@@ -899,10 +902,43 @@ end
             local bottom = Vector( 0, 0 )
 
             if physicalGameObjectsBridge.IsPhysicalGameObject( ent ) then
-                local shadowBox = physicalGameObjectsBridge.GetShadowBox( ent )
 
-                local boxViewTransformationMatrix = Matrix()
+                -- "tm" here stands for "Transformation Matrix"
+                -- "inv" here stands for "Inverse"
 
+                local entBox = physicalGameObjectsBridge.GetShadowBlobBox( ent )
+                local entTM = physicalGameObjectsBridge.GetTransform( ent )
+
+                local combatCamera = combatManager.GetCamera()
+                local cameraTM = combatCamera:GetTransform()
+                local cameraPos = cameraTM:GetTranslation()
+
+                local boxViewTM = matrix3d.New() --[[@as Matrix3dInstance]]
+                boxViewTM:LookAt( cameraPos, entTM * entBox.Center, 0 )
+                local boxViewInvTM = boxViewTM:GetOrthogonalInverse()
+
+                local entToBoxViewTM = boxViewInvTM * entTM
+
+                local boxViewBox = aABox.New()
+                boxViewBox.Center, boxViewBox.Extent = entToBoxViewTM:TransformCenterExtentAABox( entBox.Center, entBox.Extent )
+
+                local cameraInvTM = cameraTM:GetOrthogonalInverse()
+                local boxViewToCameraTM = cameraInvTM * boxViewTM
+
+                local cameraBox = aABox.New() --[[@as AABoxInstance]]
+                cameraBox.Center, cameraBox.Extent = boxViewToCameraTM:TransformCenterExtentAABox( boxViewBox.Center, boxViewBox.Extent )
+
+                cameraBox.Extent.z = 0
+                local centerTop    = cameraBox.Center - cameraBox.Extent
+                local centerBottom = cameraBox.Center + cameraBox.Extent
+
+                local temp = combatCamera:ProjectCameraSpacePoint( centerTop )
+                top.x = temp.x
+                top.y = temp.y
+
+                temp = combatCamera:ProjectCameraSpacePoint( centerBottom )
+                bottom.x = temp.x
+                bottom.y = temp.y
             end
 
             local screen = render2d.GetScreenResolution()
