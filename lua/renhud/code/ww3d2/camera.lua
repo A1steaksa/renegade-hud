@@ -164,12 +164,25 @@ end
     --- Camera extends RenderObjClass but I don't feel like porting that right now
     --- @return Matrix3dInstance
     function INSTANCE:GetTransform()
-        local matrix = Matrix()
-
         local viewInfo = render.GetViewSetup() --[[@as ViewSetup]]
+        local viewAng = viewInfo.angles
 
-        matrix:Translate( viewInfo.origin )
-        matrix:Rotate( viewInfo.angles )
+        local matrix = matrix3d.New( false )
+        local row = matrix.Row
+        local row1, row2, row3 = row[1], row[2], row[3]
+
+        row1.x, row1.y, row1.z =  0,  0, -1
+        row2.x, row2.y, row2.z = -1,  0,  0
+        row3.x, row3.y, row3.z =  0,  1,  0
+
+        row1.w = viewInfo.origin.x
+        row2.w = viewInfo.origin.y
+        row3.w = viewInfo.origin.z
+
+        -- Rotate the camera's matrix, adjusting the Source angles to match Renegade's coordinate space
+        matrix:RotateY( math.rad(  viewAng.yaw   ) )
+        matrix:RotateX( math.rad( -viewAng.pitch ) )
+        matrix:RotateZ( math.rad( -viewAng.roll  ) )
 
         return matrix
     end
