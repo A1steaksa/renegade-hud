@@ -25,7 +25,7 @@ end
     --- [[ Public ]]
 
     LIB.ErrorTextColor = Color( 240, 240, 240 )
-    LIB.ErrorPrefixColor = Color( 220, 0, 0 )
+    LIB.ErrorPrefixColor = Color( 255, 73, 91 )
 
     --[[ Type Registration ]] do
 
@@ -61,9 +61,11 @@ end
         function LIB.IsOfType( valueToCheck, expectedTypes )
             expectedTypes = LIB.EnsureStringTable( expectedTypes )
 
-            local valueType = type( valueToCheck ):lower():Trim()
+            local valueType = LIB.CleanString( type( valueToCheck ) )
 
             for _, expectedType in ipairs( expectedTypes ) do
+                expectedType = LIB.CleanString( expectedType )
+
                 local customType = LIB.CustomTypes[ expectedType ]
 
                 local isCorrectType = false
