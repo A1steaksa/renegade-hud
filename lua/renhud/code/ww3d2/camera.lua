@@ -33,6 +33,18 @@ end
 
     --- @type Frustum
     local frustum = CNC.Import( "renhud/code/wwmath/frustum.lua" )
+
+    --- @type Matrix3d
+    local matrix3d = CNC.Import( "renhud/code/wwmath/matrix3d.lua" )
+
+    --- @type WWMath
+    local wWMath = CNC.Import( "renhud/code/wwmath/wwmath.lua" )
+
+    --- @type Matrix4
+    local matrix4 = CNC.Import( "renhud/code/wwmath/matrix4.lua" )
+
+    --- @type Render2d
+    local render2d = CNC.Import( "renhud/code/ww3d2/render-2d.lua" )
 --#endregion
 
 
@@ -111,6 +123,8 @@ end
             self.ZBufferMin = 0
             self.ZBufferMax = 1
             self.FrustumValid = false
+
+            self.ProjectionTransform = matrix4.New()
 
             -- Omitted self:SetTransform() call as the camera class does not currently modify-
             -- the game view, it only reads from it.
@@ -245,6 +259,40 @@ end
         end
     end
 
+    --- @param camPoint Vector
+    --- @return Vector
+    --- @return ProjectionResultType
+    function INSTANCE:ProjectCameraSpacePoint( camPoint )
+        self:UpdateFrustum()
+
+        local projectedPoint = Vector()
+
+        -- If the camPoint is behind the near clipping plane, just return (0,0,0)
+        if camPoint.z > -self.ZNear + wWMath.EPSILON then
+            projectedPoint:SetUnpacked( 0, 0, 0 )
+            return projectedPoint, projectionResultType.OUTSIDE_NEAR_CLIP
+        end
+
+        local viewPoint = self.ProjectionTransform * camPoint
+
+        local oow = 1 / viewPoint.w
+        projectedPoint.x = viewPoint.x * oow
+        projectedPoint.y = viewPoint.y * oow
+        projectedPoint.z = viewPoint.z * oow
+
+        if projectedPoint.z > 1 then
+            return projectedPoint, projectionResultType.OUTSIDE_FAR_CLIP
+        end
+
+        local isXOutOfFrustum = projectedPoint.x < -1 or projectedPoint.x > 1
+        local isYOutOfFrustum = projectedPoint.y < -1 or projectedPoint.y > 1
+        if isXOutOfFrustum or isYOutOfFrustum then
+            return projectedPoint, projectionResultType.OUTSIDE_FRUSTUM
+        end
+
+        return projectedPoint, projectionResultType.INSIDE_FRUSTUM
+    end
+
     ---@param zNear number
     ---@param zFar number
     function INSTANCE:SetClipPlanes( zNear, zFar )
@@ -273,8 +321,8 @@ end
     --- @field protected Frustum FrustumInstance "World-space frustum and clip planes"
     --- @field protected ViewSpaceFrustum FrustumInstance "View-space frustum and clip planes"
     --- @field protected NearClipBBox OBBoxInstance "OBBox which bounds the near clip plane"
-    --- @field protected ProjectionTransform VMatrix
-    --- @field protected CameraInvTransform VMatrix
+    --- @field protected ProjectionTransform Matrix4Instance
+    --- @field protected CameraInverseTransform Matrix3dInstance
 
     --- @protected
     function INSTANCE:UpdateFrustum()
@@ -304,6 +352,41 @@ end
         --self.NearClipBBox.Extendt.z = 0.01
         --self.NearClipBBox.Basis.Set( cameraMatrix )
 
-        -- Omitted projection matrix updating
+        -- "Update the inverse camera matrix"
+        self.CameraInverseTransform = self:GetTransform():GetInverse()
+
+        -- "Update the projection matrix"
+        if self.Projection == projectionType.PERSPECTIVE then
+
+            local viewSetup = render.GetViewSetup() --[[@as ViewSetup]]
+            local horizontalFov = math.rad( viewSetup.fov )
+
+            local screen = render2d.GetScreenResolution()
+            local aspectRatio = screen:Width() / screen:Height()
+            local verticalFov = 2 * math.atan( math.tan( horizontalFov / 2 ) / aspectRatio )
+
+            self.ProjectionTransform:InitPerspective(
+                horizontalFov, verticalFov,
+                zNearDistance, zFarDistance
+            )
+
+            -- self.ProjectionTransform:InitPerspective(
+            --     viewportMin.x * zNearDistance,
+            --     viewportMax.x * zNearDistance,
+            --     viewportMin.y * zNearDistance,
+            --     viewportMax.y * zNearDistance,
+            --     zNearDistance,
+            --     zFarDistance
+            -- )
+        else
+            self.ProjectionTransform:InitOrthographic(
+                viewportMin.x,
+                viewportMax.x,
+                viewportMin.y,
+                viewportMax.x,
+                zNearDistance,
+                zFarDistance
+            )
+        end
     end
 end
