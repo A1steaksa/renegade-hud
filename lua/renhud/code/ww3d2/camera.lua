@@ -99,6 +99,7 @@ end
 
         self.ViewPlane = viewport.New()
         self.Frustum = frustum.New()
+        self.ViewSpaceFrustum = frustum.New()
 
         -- ( nil )
         if argCount == 0 then
@@ -133,7 +134,7 @@ end
             self.Frustum = src.Frustum
             self.NearClipBBox = src.NearClipBBox
             self.ProjectionTransform = src.ProjectionTransform
-            self.CameraInvTransform = src.CameraInvTransform
+            self.CameraInverseTransform = src.CameraInverseTransform
             self.AspectRatio = src.AspectRatio
             self.ZBufferMin = src.ZBufferMin
             self.ZBufferMax = src.ZBufferMax
@@ -158,6 +159,12 @@ end
     function INSTANCE:GetFrustum()
         self:UpdateFrustum()
         return self.Frustum
+    end
+
+    --- @return FrustumInstance
+    function INSTANCE:GetViewSpaceFrustum()
+        self:UpdateFrustum()
+        return self.ViewSpaceFrustum
     end
 
     --- Originally part of RenderObjClass in Code/ww3d2/rendobj.h/cpp
@@ -286,6 +293,7 @@ end
         -- "Update the frustum"
         self.FrustumValid = true
         self.Frustum:Init( cameraMatrix, viewportMin, viewportMax, zNear, zFar )
+        self.ViewSpaceFrustum:Init( matrix3d.New( true ), viewportMin, viewportMax, zNear, zFar )
 
         -- Omitted viewspace frustum init    
 
