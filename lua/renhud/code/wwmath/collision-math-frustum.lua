@@ -31,7 +31,7 @@ end
     STATIC.AddOverlapTest( "FrustumInstance", "AABoxInstance", function( frustum, box )
         local mask = 0
 
-        for i = 0, 6 do
+        for i = 0, 5 do
             local plane = frustum.Planes[i]
 
             local result = STATIC.OverlapTest( plane, box )
