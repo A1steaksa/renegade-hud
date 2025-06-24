@@ -51,7 +51,7 @@ end
 
     typecheck.RegisterType( "AABoxInstance", STATIC.IsAABox )
 
-    --- @param transformMatrix VMatrix
+    --- @param transformMatrix Matrix3dInstance
     --- @param toTransform AABoxInstance
     --- @return AABoxInstance
     function STATIC.Transform( transformMatrix, toTransform )
@@ -211,7 +211,7 @@ end
         typecheck.NotImplementedError( CLASS, "ProjectToAxis" )
     end
 
-    ---@param transformMatrix VMatrix
+    ---@param transformMatrix Matrix3dInstance
     ---@param input AABoxInstance
     ---@return AABoxInstance
     function INSTANCE:Transform( transformMatrix, input )

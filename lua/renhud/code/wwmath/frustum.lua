@@ -61,7 +61,7 @@ end
     --- [[ Public ]]
 
     --- @class FrustumInstance
-    --- @field CameraTransform VMatrix
+    --- @field CameraTransform Matrix3dInstance
     --- @field Planes table<integer, PlaneInstance>
     --- @field Corners Vector[]
     --- @field BoundMin Vector
@@ -72,7 +72,7 @@ end
     function INSTANCE:Renegade_Frustum()
     end
 
-    --- @param camera VMatrix
+    --- @param camera Matrix3dInstance
     --- @param viewportMin Vector
     --- @param viewportMax Vector
     --- @param zNear number
