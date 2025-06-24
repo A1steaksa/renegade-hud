@@ -90,15 +90,37 @@ local LIB = CNC.CreateExport()
     --- @param ent Entity
     --- @return Matrix3dInstance
     function LIB.GetTransform( ent )
-        local matrix = matrix3d.New( ent:GetPos() )
+        local matrix = matrix3d.New( false )
+        local row = matrix.Row
+        local row1, row2, row3 = row[1], row[2], row[3]
+
+        local right = ent:GetRight():GetNormalized()
+        local forward = ent:GetForward():GetNormalized()
+        local up = ent:GetUp():GetNormalized()
+
+        row1.x, row1.x, row1.z =  0,  0, -1
+        row2.x, row2.y, row2.z = -1,  0,  0
+        row3.x, row3.y, row3.z =  0,  1,  0
+
+        local pos = ent:GetPos()
+        row1.w = pos.x
+        row2.w = pos.y
+        row3.w = pos.z
 
         local ang = ent:GetAngles()
 
         -- "Coordinates in Source are (X,Y,Z), where X is forward/East, Y is left/North, and Z is up"
         -- https://developer.valvesoftware.com/wiki/Coordinates
-        matrix:RotateY( math.rad( ang.pitch ) )
-        matrix:RotateZ( math.rad( ang.yaw ) )
-        matrix:RotateX( math.rad( ang.roll ) )
+
+        -- Apply Source rotations to the matrix
+        matrix:RotateY( math.rad( ang.yaw    ) )
+        matrix:RotateX( math.rad( -ang.pitch ) )
+        matrix:RotateZ( math.rad( -ang.roll  ) )
+
+        -- Correct Source rotations into Renegade's coordinate space
+        matrix:RotateY( math.rad( 180 ) )
+        matrix:RotateX( math.rad( -90 ) )
+        matrix:RotateZ( math.rad( 90  ) )
 
         return matrix
     end
