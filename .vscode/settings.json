@@ -11,5 +11,7 @@
     "Lua.runtime.nonstandardSymbol": [
         "continue",
         "/**/"
-    ]
+    ],
+    "editor.inlineSuggest.suppressSuggestions": true,
+    "editor.fontFamily": "'Fira Code Retina', 'monospace', monospace"
 }
