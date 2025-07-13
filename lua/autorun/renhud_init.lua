@@ -19,6 +19,21 @@ local function IterateFilesRecursively( name, path, func )
     end
 end
 
+--[[ Shared Init ]] do
+    --- The global table containing all addon content for Command and Conquer: Renegade
+    --- @class Renegade
+    CNC_RENEGADE = CNC_RENEGADE or {}
+
+    -- Load prerequisite libraries
+    include( "renhud/lua-libraries/robustclass.lua" )
+    include( "renhud/lua-libraries/typecheck.lua" )
+    include( "renhud/lua-libraries/imports.lua" )
+    include( "renhud/lua-libraries/gm_throttle.lua" )
+    include( "renhud/lua-libraries/debugdraw.lua" )
+
+    -- Load shared utilities
+    include( "renhud/sh_hud-info-utils.lua" )
+end
 
 --[[ Server Init ]]
 if SERVER then
@@ -32,35 +47,47 @@ if SERVER then
     -- Send all fonts to the clients
     resource.AddFile( "resource/fonts/54251___.ttf" )
     resource.AddFile( "resource/fonts/ARI_____.ttf" )
-end
 
+    -- Load server utilities
+    include( "renhud/server/sv_hud-info-utils.lua" )
+end
 
 --[[ Client Init ]]
 if CLIENT then
-
-    --- The global table containing all addon content for Command and Conquer: Renegade
     --- @class Renegade
-    CNC_RENEGADE = CNC_RENEGADE or {}
-
     local CNC = CNC_RENEGADE
 
-    -- Load prerequisite libraries
-    include( "renhud/lua-libraries/robustclass.lua" )
-    include( "renhud/lua-libraries/typecheck.lua" )
+    hook.Add( "InitPostEntity", "A1_Renegade_ServerRunningCheck", function()
+        CNC.IsServerEnabled = GetGlobal2Bool( "A1_Renegade_ServerRunning", false )
+
+        local color
+        local status
+        if CNC.IsServerEnabled then
+            color = Color( 43, 250, 100 )
+            status = "Online"
+        else
+            color = Color( 250, 100, 43 )
+            status = "Offline"
+        end
+
+        MsgC( "[REN] Server:\t", color, status, "\n" )
+    end )
 
     -- Load Renegade-specific libraries
-    include( "renhud/imports.lua" )
-    include( "renhud/hide-hud.lua" )
+    include( "renhud/client/hide-hud.lua" )
 
     -- Load Renegade bridge libraries
-    IterateFilesRecursively( "renhud/bridges/", "LUA", include )
+    IterateFilesRecursively( "renhud/client/bridges/", "LUA", include )
 
     -- Load the game's kernel file
     --- @type CombatManager
-    local combatManager = CNC.Import( "renhud/code/combat/combat-manager.lua" )
+    local combatManager = CNC.Import( "renhud/client/code/combat/combat-manager.lua" )
 
     -- Load Renegade-specific overrides
-    include( "renhud/updated-global-settings.lua" )
+    include( "renhud/client/updated-global-settings.lua" )
+
+    -- Load client utilities
+    include( "renhud/client/cl_hud-info-utils.lua" )
 
     -- Start the HUD
     combatManager.Init( true )
