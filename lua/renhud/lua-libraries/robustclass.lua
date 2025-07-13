@@ -261,10 +261,10 @@ function robustclass.Register( reginput )
 			local b = robustclass( 'b : a' )
 			local c = robustclass( 'c : b' )
 
-			print( c.test ) -- Output: Hello World!
+			proint( c.test ) -- Output: Hello World!
 
 			local obj = robustclass.Create( 'c' )
-			print( obj.test ) -- Output: Hello World!
+			proint( obj.test ) -- Output: Hello World!
 
 			-- What happens internally (figuratively) — c.BaseClass.BaseClass.test
 
