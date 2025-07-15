@@ -142,6 +142,34 @@ local dispositionEnum = sharedCommon.DISPOSITION
             return false
         end
 
+        --- Attempts to determine how one Player feels about another Player
+        --- @param judged Player The Player about whom we are retrieving the disposition
+        --- @param judger Player The Player whose opinion we are finding
+        --- @return Disposition # How `plyJudging` feels about `plyBeingJudged`
+        function LIB.GetPlayerDisposition( judged, judger )
+            if not IsValid( judged ) or not IsValid( judger ) then
+                return dispositionEnum.Neutral
+            end
+
+            local result = dispositionEnum.Neutral
+
+            -- We like ourselves in this household
+            if judged == judger then
+                result = dispositionEnum.Like
+            end
+
+            -- Being on the same team is a good sign for friendship
+            local judgedTeam = judged:Team()
+            local isJudgedOnATeam = judgedTeam ~= TEAM_UNASSIGNED
+            if isJudgedOnATeam then
+                if judgedTeam == judger:Team() then
+                    result = dispositionEnum.Like
+                end
+            end
+
+            return result
+        end
+
         --- Determines how an Entity feels about a Player
         --- @param ent Entity
         --- @return Disposition
@@ -151,6 +179,19 @@ local dispositionEnum = sharedCommon.DISPOSITION
             if ent:IsNPC() then
                 --- @cast ent NPC
                 result = ent:Disposition( ply )
+            end
+
+            if ent:IsPlayer() then
+                --- @cast ent Player
+                result = LIB.GetPlayerDisposition( ply, ent )
+            end
+
+            -- Check disposition of vehicle occupants
+            if ent:IsVehicle() then
+                --- @cast ent Vehicle
+
+                local driver = ent:GetDriver() --[[@as Player]]
+                result = LIB.GetPlayerDisposition( ply, driver )
             end
 
             return result
