@@ -85,10 +85,27 @@ local dispositionEnum = sharedCommon.DISPOSITION
             local startPos = LocalPlayer():EyePos()
             local endPos = startPos + LocalPlayer():GetAimVector() * LIB.InfoEntityTraceLength
 
+            local ply = LocalPlayer()
+            local filter
+            if ply:InVehicle() then
+                filter = { ply, ply:GetVehicle() }
+
+                -- Support for Glide vehicles
+                if Glide then
+                    local glideVehicle = ply:GlideGetVehicle()
+                    if IsValid( glideVehicle ) then
+                        filter[#filter + 1] = glideVehicle
+                    end
+                end
+
+            else
+                filter = ply
+            end
+
             local trace = util.TraceLine( {
                 start = startPos,
                 endpos = endPos,
-                filter = LocalPlayer(),
+                filter = filter,
                 hitclientonly = true
             } )
 
