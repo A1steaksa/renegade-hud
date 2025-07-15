@@ -450,10 +450,23 @@ local dispositionEnum = sharedCommon.DISPOSITION
             return name
         end
 
+        --- @param ply Player
+        --- @return string
+        local function GetPlayerName( ply )
+            if DarkRP then
+                return ply:getDarkRPVar( "rpname" )
+            end
+
+            return ply:Nick()
+        end
+
         --- A lookup table to pair Entity classes with their printable class names (or a function to determine it)  
         --- <b>Note:</b> Due to early 2000s sexism, male NPCs are called by their last names and female NPCs are called by their first names unless they have a doctorate in which case they are referred to by their last name.
         --- @type table<string, string|fun( ent: Entity ): string> 
         LIB.PrettyClassNames = {
+
+            ["player"]                    = GetPlayerName,
+
             -- Map Entities
             ["class c_basetoggle"]        = "Switch", -- Buttons are called switches in Renegade
             ["prop_door_rotating"]        = GetDoorName,
