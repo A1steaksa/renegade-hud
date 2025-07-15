@@ -854,8 +854,6 @@ local dispositionEnum = sharedCommon.DISPOSITION
             hudInfo.UpdateInfoEntity()
             local targetEnt = hudInfo.GetInfoEntity()
 
-            STATIC.BoxZoomSize = STATIC.BoxZoomSize or 0
-
             if not targetEnt or not IsValid( targetEnt ) then
                 STATIC.TargetNameRenderer:Reset()
                 STATIC.TargetName = ""
