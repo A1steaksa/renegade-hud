@@ -849,6 +849,8 @@ local dispositionEnum = sharedCommon.DISPOSITION
             STATIC.TargetRenderer:Reset()
             STATIC.TargetBoxRenderer:Reset()
 
+            STATIC.BoxZoomSize = STATIC.BoxZoomSize or 0
+
             hudInfo.UpdateInfoEntity()
             local targetEnt = hudInfo.GetInfoEntity()
 
