@@ -192,7 +192,7 @@ end
 
         function STATIC.Think()
 
-            -- Skipping over the vast majority of this function for now
+            -- Omitting over the vast majority of this function for now
 
             STATIC.MainCamera:Update()
 
