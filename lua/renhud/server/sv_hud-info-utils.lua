@@ -122,7 +122,7 @@ local dispositionEnum = sharedCommon.DISPOSITION
                     return true
                 end
 
-                if Glide then
+                if Glide and isfunction( ent.GetFreeSeat ) then
                     -- Support passenger seats
                     local hasOpenSeat = ent:GetFreeSeat() ~= nil
                     if hasOpenSeat then
