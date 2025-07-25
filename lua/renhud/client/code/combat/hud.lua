@@ -208,10 +208,13 @@ local dispositionEnum = infoEntityLib.DISPOSITION
             local targetEntity = hudInfo:GetWeaponTargetEntity()
             if IsValid( targetEntity ) and infoEntityLib.HasEntityInfo( targetEntity ) then
                 local entityInfo = infoEntityLib.GetEntityInfo( targetEntity ) --[[@as InfoEntityData]]
-                reticleColor = globalSettings.Colors.Friendly
-                if physObjBridge.IsPhysicalGameObject( targetEntity ) then
-                    if entityInfo.FeelingTowardPlayer == dispositionEnum.Enemy then
-                        reticleColor = globalSettings.Colors.Enemy
+
+                if entityInfo.ShouldTarget then
+                    reticleColor = globalSettings.Colors.Friendly
+                    if physObjBridge.IsPhysicalGameObject( targetEntity ) then
+                        if entityInfo.FeelingTowardPlayer == dispositionEnum.Enemy then
+                            reticleColor = globalSettings.Colors.Enemy
+                        end
                     end
                 end
             end

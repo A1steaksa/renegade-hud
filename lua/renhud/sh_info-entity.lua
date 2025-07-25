@@ -35,7 +35,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 --- Information used to target and display an Entity on the HUD
 --- @class InfoEntityData
 --- @field InfoEntity Entity
---- @field LastUpdatedTime number The time, relative to CurTime, when this table was last updated
+--- @field ShouldTarget boolean Should this Entity be targeted? This may be different from the result of LIB.IsEntityTargetable depending on the specific situation of this individual Entity.
 --- @field DisplayName string How this Entity's name will be displayed on the HUD
 --- @field TeamToShow PlayerTypeEnum Which icon should be drawn when this Entity is targeted? Note: Neutral will be used as a fallback for options without a unique icon.
 --- @field FeelingTowardPlayer Disposition
@@ -245,6 +245,8 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
             end
 
             data.ShowInteractionChevrons = net.ReadBool()
+
+            data.ShouldTarget = data.ShouldTarget or data.ShowHealthBar or data.ShowInteractionChevrons
         end
         net.Receive( "A1_Renegade_InfoEntity", LIB.ReceiveInfoEntityData )
     end
@@ -383,7 +385,6 @@ end
         end
 
         data.InfoEntity                  = ent
-        data.LastUpdatedTime             = CurTime()
         data.DisplayName                 = LIB.GetEntityDisplayName( ent )
         data.TeamToShow                  = LIB.GetEntityTeamToShow( ent )
         data.FeelingTowardPlayer         = LIB.GetEntityFeelingTowardPlayer( ent, ply )
@@ -391,6 +392,8 @@ end
         data.IsHealthServerAuthoritative = LIB.IsHealthServerAuthoritative( ent )
         data.HealthPercent               = LIB.GetEntityHealthPercent( ent )
         data.ShowInteractionChevrons     = LIB.ShouldShowInteractionChevrons( ent )
+
+        data.ShouldTarget = data.ShouldTarget or data.ShowHealthBar or data.ShowInteractionChevrons
 
         if SERVER then
             LIB.SetServerInfoEntityCacheEntry( ent, ply, data )
