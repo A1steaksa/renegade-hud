@@ -531,11 +531,7 @@ end
             local zSize = math.abs( mins.z ) + maxs.z
 
             -- Try to classify this entity based on its shape
-
-            local heightToDepthRatio = zSize / xSize
-            local heightToWidthRatio = zSize / ySize
             local depthToWidthRatio  = xSize / ySize
-
             local isApproximatelyHorizontallySquare = (
                 depthToWidthRatio > 0.9 and
                 ( 1 / depthToWidthRatio ) > 0.9
