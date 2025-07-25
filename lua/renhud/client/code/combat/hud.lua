@@ -61,7 +61,7 @@ end
     local wWMath = CNC.Import( "renhud/client/code/wwmath/wwmath.lua" )
 
     --- @type PlayerType
-    local playerType = CNC.Import( "renhud/client/code/combat/player-type.lua" )
+    local playerTypeLib = CNC.Import( "renhud/client/code/combat/player-type.lua" )
 
     --- @type InfoEntityLib
     local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua" )
@@ -71,6 +71,7 @@ end
 --#region Enums
 
 local dispositionEnum = infoEntityLib.DISPOSITION
+local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 --#endregion
 
 
@@ -154,6 +155,17 @@ local dispositionEnum = infoEntityLib.DISPOSITION
         -- Health and Armor Upgrades
         STATIC.Materials.Pickups.HealthUpgrade = LoadMaterial( "hud_hemedal" )
         STATIC.Materials.Pickups.ArmorUpgrade  = LoadMaterial( "hud_armedal" )
+
+        -- Team Icons
+        STATIC.Materials.TeamIcons = {}
+        STATIC.Materials.TeamIcons.None      = LoadMaterial( "team-icons/none" )
+        STATIC.Materials.TeamIcons.GDI       = LoadMaterial( "team-icons/gdi" )
+        STATIC.Materials.TeamIcons.Nod       = LoadMaterial( "team-icons/nod" )
+        STATIC.Materials.TeamIcons.Combine   = LoadMaterial( "team-icons/combine" )
+        STATIC.Materials.TeamIcons.Rebels    = LoadMaterial( "team-icons/rebels" )
+        STATIC.Materials.TeamIcons.BlackMesa = LoadMaterial( "team-icons/black-mesa" )
+        STATIC.Materials.TeamIcons.HECU      = LoadMaterial( "team-icons/hecu" )
+        STATIC.Materials.TeamIcons.Aperture  = LoadMaterial( "team-icons/aperture" )
     end
 
     --[[ Load Font3d Instances ]] do
@@ -792,6 +804,7 @@ local dispositionEnum = infoEntityLib.DISPOSITION
 
         --- @class Hud
         --- @field TargetRenderer Render2dInstance
+        --- @field TargetTeamIconRenderer Render2dInstance
         --- @field TargetBoxRenderer Render2dInstance
         --- @field TargetNameRenderer Render2dTextInstance
         --- @field TargetName string
@@ -823,10 +836,34 @@ local dispositionEnum = infoEntityLib.DISPOSITION
         local TARGET_ENTERABLE_UV_LR = Vector( 51, 215 )
         local TARGET_ENTERABLE_BOUNCE = 4
 
+        local teamIconLookup = {
+            [playerTypeEnum.Spectator] = STATIC.Materials.TeamIcons.None,
+            [playerTypeEnum.Mutant]    = STATIC.Materials.TeamIcons.None,
+            [playerTypeEnum.Neutral]   = STATIC.Materials.TeamIcons.None,
+            [playerTypeEnum.Renegade]  = STATIC.Materials.TeamIcons.GDI,
+            [playerTypeEnum.Nod]       = STATIC.Materials.TeamIcons.Nod,
+            [playerTypeEnum.GDI]       = STATIC.Materials.TeamIcons.GDI,
+            [playerTypeEnum.Combine]   = STATIC.Materials.TeamIcons.Combine,
+            [playerTypeEnum.Rebels]    = STATIC.Materials.TeamIcons.Rebels,
+            [playerTypeEnum.BlackMesa] = STATIC.Materials.TeamIcons.BlackMesa,
+            [playerTypeEnum.HECU]      = STATIC.Materials.TeamIcons.HECU,
+            [playerTypeEnum.Aperture]  = STATIC.Materials.TeamIcons.Aperture,
+        }
+
+        local TEAM_ICON_UV_UL = Vector( 0, 0 )
+        local TEAM_ICON_UV_LR = Vector( 18, 15 )
+        local TEAM_ICON_UV_SCALE = Vector( 1 / TEAM_ICON_UV_LR.x, 1 / TEAM_ICON_UV_LR.y )
+
+        --- Adjusts the final position of the team icon
+        local TEAM_ICON_ADJUST = Vector( 1, 0 )
+
         function STATIC.TargetInit()
             STATIC.TargetRenderer = render2d.New()
             STATIC.TargetRenderer:SetMaterial( STATIC.Materials.Hud.Main )
             STATIC.TargetRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+
+            STATIC.TargetTeamIconRenderer = render2d.New()
+            STATIC.TargetTeamIconRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
 
             STATIC.TargetBoxRenderer = render2d.New()
             STATIC.TargetBoxRenderer:EnableMaterial( false )
@@ -839,6 +876,7 @@ local dispositionEnum = infoEntityLib.DISPOSITION
 
         function STATIC.TargetUpdate()
             STATIC.TargetRenderer:Reset()
+            STATIC.TargetTeamIconRenderer:Reset()
             STATIC.TargetBoxRenderer:Reset()
 
             STATIC.BoxZoomSize = STATIC.BoxZoomSize or 0
@@ -860,6 +898,8 @@ local dispositionEnum = infoEntityLib.DISPOSITION
             -- Wait until we have an EntityInfo to show
             if not infoEntityLib.HasEntityInfo( targetEnt ) then return end
             local entityInfo = infoEntityLib.GetEntityInfo( targetEnt ) --[[@as InfoEntityData]]
+
+            if not entityInfo.ShouldTarget then return end
 
             local combatStar = combatManager.GetTheStar()
             if not IsValid( combatStar ) then return end
@@ -999,33 +1039,16 @@ local dispositionEnum = infoEntityLib.DISPOSITION
 
             --[[ Team Icon ]] do
 
-                local team = playerType.PLAYER_TYPE_ENUM.GDI
-                if physObjBridge.IsPhysicalGameObject( targetEnt ) then
-                    team = physObjBridge.GetPlayerType( targetEnt )
-                end
+                local team = entityInfo.TeamToShow
+                STATIC.TargetTeamIconRenderer:SetMaterial( teamIconLookup[ team ] )
 
-                if buildingsBridge.IsBuilding( targetEnt ) then
-                    if buildingsBridge.IsGdi( targetEnt ) then
-                        team = playerType.PLAYER_TYPE_ENUM.GDI
-                    elseif buildingsBridge.IsNod( targetEnt ) then
-                        team = playerType.PLAYER_TYPE_ENUM.Nod
-                    else
-                        team = playerType.PLAYER_TYPE_ENUM.Neutral
-                    end
-                end
-
-                if team == playerType.PLAYER_TYPE_ENUM.Nod then
-                    uv:ReplaceVectors( NOD_ICON_UV_UL, NOD_ICON_UV_LR )
-                elseif team == playerType.PLAYER_TYPE_ENUM.GDI then
-                    uv:ReplaceVectors( GDI_ICON_UV_UL, GDI_ICON_UV_LR )
-                else
-                    uv:ReplaceVectors( NEUTRAL_ICON_UV_UL, NEUTRAL_ICON_UV_LR )
-                end
+                uv:ReplaceVectors( TEAM_ICON_UV_UL, TEAM_ICON_UV_LR )
 
                 draw2 = rect.New( uv )
-                uv:ScaleVector( INFO_UV_SCALE )
-                draw2 = draw2 + draw:UpperLeft() - draw2:UpperRight()
-                STATIC.TargetRenderer:AddQuad( draw2, uv )
+                uv:ScaleVector( TEAM_ICON_UV_SCALE )
+                draw2 = draw2 + draw:UpperLeft() - draw2:UpperRight() - TEAM_ICON_ADJUST
+
+                STATIC.TargetTeamIconRenderer:AddQuad( draw2, uv )
             end
 
             --[[ Chevrons ]] do
@@ -1097,6 +1120,7 @@ local dispositionEnum = infoEntityLib.DISPOSITION
             end
 
             STATIC.TargetRenderer:Render()
+            STATIC.TargetTeamIconRenderer:Render()
             STATIC.TargetBoxRenderer:Render()
             STATIC.TargetNameRenderer:Render()
         end
@@ -1528,7 +1552,6 @@ local dispositionEnum = infoEntityLib.DISPOSITION
                     STATIC.InfoShieldCountRenderer:Reset()
                 end
             end
-
         end
 
         function STATIC.InfoUpdate()
