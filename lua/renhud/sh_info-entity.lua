@@ -187,7 +187,6 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
         --- Alert the server that our InfoEntity has either changed, or that we are keeping it the same
         --- @param ent Entity
         function LIB.SendUpdatedInfoEntity( ent )
-            print( "SendUpdatedInfoEntity", ent )
             net.Start( "A1_Renegade_InfoEntity" )
             net.WriteEntity( ent )
             net.SendToServer()
@@ -690,47 +689,6 @@ end
     --[[ Team to Show ]] do
 
         --- @private
-        --- @type table<CLASS, PlayerTypeEnum>
-        LIB.NpcClassificationTypes = {
-            -- Half-Life 2
-            CLASS_PLAYER_ALLY       = playerTypeEnum.Rebels,
-            CLASS_PLAYER_ALLY_VITAL = playerTypeEnum.Rebels,
-            CLASS_ANTLION           = playerTypeEnum.Neutral,
-            CLASS_BARNACLE          = playerTypeEnum.Neutral,
-            CLASS_CITIZEN_PASSIVE   = playerTypeEnum.Neutral,
-            CLASS_CITIZEN_REBEL     = playerTypeEnum.Rebels,
-            CLASS_COMBINE           = playerTypeEnum.Combine,
-            CLASS_COMBINE_GUNSHIP   = playerTypeEnum.Combine,
-            CLASS_HEADCRAB          = playerTypeEnum.Mutant,
-            CLASS_MANHACK           = playerTypeEnum.Combine,
-            CLASS_METROPOLICE       = playerTypeEnum.Combine,
-            CLASS_MILITARY          = playerTypeEnum.Combine,
-            CLASS_SCANNER           = playerTypeEnum.Combine,
-            CLASS_STALKER           = playerTypeEnum.Combine,
-            CLASS_VORTIGAUNT        = playerTypeEnum.Rebels,
-            CLASS_ZOMBIE            = playerTypeEnum.Mutant,
-            CLASS_PROTOSNIPER       = playerTypeEnum.Combine,
-            CLASS_EARTH_FAUNA       = playerTypeEnum.Neutral,
-            CLASS_HACKED_ROLLERMINE = playerTypeEnum.Rebels,
-            CLASS_COMBINE_HUNTER    = playerTypeEnum.Combine,
-
-            -- Half-Life
-            CLASS_MACHINE           = playerTypeEnum.HECU,
-            CLASS_HUMAN_PASSIVE     = playerTypeEnum.BlackMesa,
-            CLASS_HUMAN_MILITARY    = playerTypeEnum.HECU,
-            CLASS_ALIEN_MILITARY    = playerTypeEnum.Mutant,
-            CLASS_ALIEN_MONSTER     = playerTypeEnum.Mutant,
-            CLASS_ALIEN_PREY        = playerTypeEnum.Mutant,
-            CLASS_ALIEN_PREDATOR    = playerTypeEnum.Mutant,
-            CLASS_INSECT            = playerTypeEnum.Neutral,
-            CLASS_PLAYER_BIOWEAPON  = playerTypeEnum.Mutant,
-            CLASS_ALIEN_BIOWEAPON   = playerTypeEnum.Mutant,
-
-            -- Portal
-            CLASS_PORTAL_TURRET     = playerTypeEnum.Aperture
-        }
-
-        --- @private
         --- @type table<string, PlayerTypeEnum>
         LIB.NpcTeams = {
             -- Half-Life 2
@@ -776,6 +734,7 @@ end
             ["npc_hunter"]                  = playerTypeEnum.Combine,
             ["npc_sniper"]                  = playerTypeEnum.Combine,
             ["proto_sniper"]                = playerTypeEnum.Combine,
+            ["npc_combine_s"]               = playerTypeEnum.Combine,
 
             -- Xen
             ["npc_barnacle"]                = playerTypeEnum.Mutant,
@@ -840,24 +799,13 @@ end
         function LIB.GetEntityTeamToShow( ent )
 
             if ent:IsNPC() then
-                if SERVER then
-                    --- @cast ent NPC
-                    local entClass = ent:Classify()
-                    local playerType = LIB.NpcClassificationTypes[entClass]
-
-                    if playerType then return playerType end
-                end
-
-                if CLIENT then
-                    local class = ent:GetClass()
-                    local playerType = LIB.NpcTeams[class]
-                    if playerType then return playerType end
-                end
+                local class = ent:GetClass()
+                local playerType = LIB.NpcTeams[class]
+                if playerType then return playerType end
             end
 
             return playerTypeEnum.Neutral
         end
-
     end
 
     --[[ Feeling Toward Player ]] do
