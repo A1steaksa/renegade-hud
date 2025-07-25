@@ -13,9 +13,6 @@ local LIB = setmetatable( CNC.CreateExport(), { __index = commonBridge } )
 
 --#region Imports
 
-    --- @type AABox
-    local aABox = CNC.Import( "renhud/client/code/wwmath/aabox.lua" )
-
     --- @type SharedCommon
     local sharedCommon = CNC.Import( "renhud/sh_common.lua" )
 --#endregion
@@ -33,22 +30,5 @@ local LIB = setmetatable( CNC.CreateExport(), { __index = commonBridge } )
         typecheck.AssertArgType( CLASS, 1, ent, sharedCommon.EntTypes )
         -- TODO: Implement something here
         return true
-    end
-
-    --- @param ent Entity
-    --- @return boolean
-    function LIB.IsHudPokableIndicatorEnabled( ent )
-        typecheck.AssertArgType( CLASS, 1, ent, sharedCommon.EntTypes )
-
-        --[[ Vehicles ]] do
-            if ent:IsVehicle() then
-                --- @cast ent Vehicle
-
-                local hasDriver = ent:GetDriver() ~= NULL
-                return not hasDriver
-            end
-        end
-
-        return false
     end
 end

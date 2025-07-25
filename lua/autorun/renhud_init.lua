@@ -31,11 +31,13 @@ end
     include( "renhud/lua-libraries/debugdraw.lua" )
 
     -- Load shared utilities
-    include( "renhud/sh_hud-info-utils.lua" )
+    include( "renhud/sh_info-entity.lua" )
 end
 
 --[[ Server Init ]]
 if SERVER then
+    -- Let clients know that we're running the server side of this addon
+    SetGlobal2Bool( "A1_Renegade_ServerRunning", true )
 
     -- Send all Lua files to clients
     IterateFilesRecursively( "renhud/", "LUA", AddCSLuaFile )
@@ -46,9 +48,6 @@ if SERVER then
     -- Send all fonts to the clients
     resource.AddFile( "resource/fonts/54251___.ttf" )
     resource.AddFile( "resource/fonts/ARI_____.ttf" )
-
-    -- Load server utilities
-    include( "renhud/server/sv_hud-info-utils.lua" )
 end
 
 --[[ Client Init ]]
@@ -84,9 +83,6 @@ if CLIENT then
 
     -- Load Renegade-specific overrides
     include( "renhud/client/updated-global-settings.lua" )
-
-    -- Load client utilities
-    include( "renhud/client/cl_hud-info-utils.lua" )
 
     -- Start the HUD
     combatManager.Init( true )

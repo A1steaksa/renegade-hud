@@ -24,8 +24,8 @@ local gameType = CNC.Import( "renhud/client/code/combat/game-type.lua" )
 --- @type BuildingsBridge
 local buildingsBridge = CNC.Import( "renhud/client/bridges/buildings.lua" )
 
---- @type HudInfoUtilsClient
-local hudInfoUtilsClient = CNC.Import( "renhud/client/cl_hud-info-utils.lua")
+--- @type InfoEntityLib
+local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua" )
 --#endregion
 
 --[[ Console Variables ]] do
@@ -111,17 +111,14 @@ end
             STATIC.LastInfoEntity = STATIC.LastInfoEntity or NULL
             STATIC.LastInfoHealth = STATIC.LastInfoHealth or 0
 
+            local isSameEntity = STATIC.LastInfoEntity == ent
+
             STATIC.IsMct = isMct
 
             if IsValid( ent ) then
-
-                -- Start gathering info about the Entity immediately
-                hudInfoUtilsClient.RequestEntityInfo( ent )
-
                 local health = ent:Health()
-
-                local isSameEntity = STATIC.LastInfoEntity == ent
                 local isSameHealth = STATIC.LastInfoHealth == health
+
                 if buildingsBridge.IsBuilding( ent ) then
                     if isSameEntity and isSameHealth then
                         if not isMct and gameType.IsMission() then
@@ -130,9 +127,15 @@ end
                     end
                 end
 
-                STATIC.LastInfoEntity = ent
                 STATIC.LastInfoHealth = health
             end
+
+            -- Update the server if we've changed our InfoEntity
+            if not isSameEntity then
+                infoEntityLib.SendUpdatedInfoEntity( ent )
+            end
+
+            STATIC.LastInfoEntity = ent
 
             STATIC.InfoEntity = ent
             STATIC.InfoEntityTimer = 0
@@ -165,17 +168,15 @@ end
 
             --[[ Forget Dead Entities ]] do
 
-                if hudInfoUtilsClient.HasEntityInfo( infoEntity ) then
-                    local targetInfo = hudInfoUtilsClient.GetEntityInfo( infoEntity )
-                    if targetInfo.TakesDamage then
-                        if targetInfo.Health == 0 then
+                if infoEntityLib.HasEntityInfo( infoEntity ) then
+                    local targetInfo = infoEntityLib.GetEntityInfo( infoEntity ) --[[@as InfoEntityData]]
+
+                    if targetInfo.ShowHealthBar then
+                        if targetInfo.HealthPercent == 0 then
                             STATIC.InfoEntity = NULL
                             infoEntity = NULL
                         end
                     end
-                else
-                    STATIC.InfoEntity = NULL
-                    infoEntity = NULL
                 end
             end
 
@@ -187,7 +188,7 @@ end
             else
                 if not IsValid( infoEntity ) then return end
 
-                local bounds = hudInfoUtilsClient.GetEntityBoundingBox( infoEntity )
+                local bounds = infoEntityLib.GetEntityBoundingBox( infoEntity )
 
                 local shouldCullTarget = combatManager:GetCamera():CullBox( bounds )
                 if shouldCullTarget then

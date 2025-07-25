@@ -51,12 +51,6 @@ end
     --- @type BuildingsBridge
     local buildingsBridge = CNC.Import( "renhud/client/bridges/buildings.lua" )
 
-    --- @type OffenseObjectsBridge
-    local offObjBridge = CNC.Import( "renhud/client/bridges/offense-objects.lua" )
-
-    --- @type DefenseObjectsBridge
-    local defObjBridge = CNC.Import( "renhud/client/bridges/defense-objects.lua" )
-
     --- @type Matrix3d
     local matrix3d = CNC.Import( "renhud/client/code/wwmath/matrix3d.lua" )
 
@@ -69,17 +63,14 @@ end
     --- @type PlayerType
     local playerType = CNC.Import( "renhud/client/code/combat/player-type.lua" )
 
-    --- @type HudInfoUtilsClient
-    local hudInfoUtilsClient = CNC.Import( "renhud/client/cl_hud-info-utils.lua")
-
-    --- @type SharedCommon
-    local sharedCommon = CNC.Import( "renhud/sh_common.lua" )
+    --- @type InfoEntityLib
+    local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua" )
 --#endregion
 
 
 --#region Enums
 
-local dispositionEnum = sharedCommon.DISPOSITION
+local dispositionEnum = infoEntityLib.DISPOSITION
 --#endregion
 
 
@@ -215,14 +206,12 @@ local dispositionEnum = sharedCommon.DISPOSITION
 
             -- Check for friendly or enemy targets to change the reticle color
             local targetEntity = hudInfo:GetWeaponTargetEntity()
-            if IsValid( targetEntity ) and hudInfoUtilsClient.HasEntityInfo( targetEntity ) then
-                local entityInfo = hudInfoUtilsClient.GetEntityInfo( targetEntity )
-                if entityInfo.IsTargetable then
-                    reticleColor = globalSettings.Colors.Friendly
-                    if physObjBridge.IsPhysicalGameObject( targetEntity ) then
-                        if physObjBridge.IsEnemy( combatStar, targetEntity ) then
-                            reticleColor = globalSettings.Colors.Enemy
-                        end
+            if IsValid( targetEntity ) and infoEntityLib.HasEntityInfo( targetEntity ) then
+                local entityInfo = infoEntityLib.GetEntityInfo( targetEntity ) --[[@as InfoEntityData]]
+                reticleColor = globalSettings.Colors.Friendly
+                if physObjBridge.IsPhysicalGameObject( targetEntity ) then
+                    if entityInfo.FeelingTowardPlayer == dispositionEnum.Enemy then
+                        reticleColor = globalSettings.Colors.Enemy
                     end
                 end
             end
@@ -406,9 +395,9 @@ local dispositionEnum = sharedCommon.DISPOSITION
             data.IconBox = data.IconBox + offset + Vector( 0, -40.0 ) - data.IconBox:UpperLeft()
 
             if addToRightList then
-                STATIC.RightPowerupIconList[ #STATIC.RightPowerupIconList + 1 ] = data
+                STATIC.RightPowerupIconList[#STATIC.RightPowerupIconList + 1] = data
             else
-                STATIC.LeftPowerupIconList[ #STATIC.LeftPowerupIconList + 1 ] = data
+                STATIC.LeftPowerupIconList[#STATIC.LeftPowerupIconList + 1] = data
             end
         end
 
@@ -860,14 +849,14 @@ local dispositionEnum = sharedCommon.DISPOSITION
                 STATIC.TargetNameLocation = Vector( 0, 0 )
 
                 STATIC.BoxZoomSize = 0
+
                 hudInfo.SetInfoEntity( NULL )
                 return
             end
 
             -- Wait until we have an EntityInfo to show
-            if not hudInfoUtilsClient.HasEntityInfo( targetEnt ) then return end
-            local entityInfo = hudInfoUtilsClient.GetEntityInfo( targetEnt )
-            if not entityInfo.IsTargetable then return end
+            if not infoEntityLib.HasEntityInfo( targetEnt ) then return end
+            local entityInfo = infoEntityLib.GetEntityInfo( targetEnt ) --[[@as InfoEntityData]]
 
             local combatStar = combatManager.GetTheStar()
             if not IsValid( combatStar ) then return end
@@ -948,8 +937,8 @@ local dispositionEnum = sharedCommon.DISPOSITION
 
             --[[ Health Bar ]] do
 
-                if entityInfo.TakesDamage then
-                    local healthPercent = entityInfo.Health
+                if entityInfo.ShowHealthBar then
+                    local healthPercent = entityInfo.HealthPercent
 
                     local healthColor = STATIC.GetHealthColor( healthPercent )
 
@@ -994,7 +983,7 @@ local dispositionEnum = sharedCommon.DISPOSITION
 
                 --[[ Name Text ]] do
 
-                    local name = hudInfoUtilsClient.GetPrettyName( targetEnt )
+                    local name = entityInfo.DisplayName
                     local nameLocation = draw:UpperLeft() + Vector( 3, 1 )
 
                     STATIC.TargetNameRenderer:Reset()
@@ -1038,12 +1027,7 @@ local dispositionEnum = sharedCommon.DISPOSITION
 
             --[[ Chevrons ]] do
 
-                local drawChevrons = false
-                if physObjBridge.IsHudPokableIndicatorEnabled( targetEnt ) then
-                    drawChevrons = true
-                end
-
-                if entityInfo.IsUsable then
+                if entityInfo.ShowInteractionChevrons then
                     local enterableBox = rect.New( Vector( 0, 0 ), TARGET_ENTERABLE_SIZE )
                     enterableBox = enterableBox + Vector(
                         box:Center().x - enterableBox:Center().x,
@@ -1104,7 +1088,7 @@ local dispositionEnum = sharedCommon.DISPOSITION
             -- wait for that info before continuing
             if CNC.IsServerEnabled then
                 local ent = hudInfo.GetInfoEntity()
-                if not hudInfoUtilsClient.HasEntityInfo( ent ) then
+                if not infoEntityLib.HasEntityInfo( ent ) then
                     return
                 end
             end
@@ -1126,7 +1110,7 @@ local dispositionEnum = sharedCommon.DISPOSITION
                 -- "tm" here stands for "Transformation Matrix"
                 -- "inv" here stands for "Inverse"
 
-                local entBox = hudInfoUtilsClient.GetEntityBoundingBox( ent )
+                local entBox = infoEntityLib.GetEntityBoundingBox( ent )
                 local entTM = physObjBridge.GetTransform( ent )
 
                 local combatCamera = combatManager.GetCamera()

@@ -15,8 +15,8 @@ local LIB = CNC.CreateExport()
     --- @type PlayerType
     local playerType = CNC.Import( "renhud/client/code/combat/player-type.lua" )
 
-    --- @type HudInfoUtilsClient
-    local hudInfoUtils = CNC.Import( "renhud/client/cl_hud-info-utils.lua" )
+    --- @type InfoEntityLib
+    local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua" )
 
     --- @type SharedCommon
     local sharedCommon = CNC.Import( "renhud/sh_common.lua" )
@@ -25,8 +25,7 @@ local LIB = CNC.CreateExport()
 
 --#region Enums
 
-    local dispositionEnum = sharedCommon.DISPOSITION
-    local playerTypeEnum = playerType.PLAYER_TYPE_ENUM
+    local dispositionEnum = infoEntityLib.DISPOSITION
 --#endregion
 
 
@@ -35,9 +34,6 @@ local LIB = CNC.CreateExport()
     local CLASS = "CommonBridge"
 
     --- [[ Public ]]
-
-    -- Localized for potential performance reasons
-    local isServerEnabled = CNC.IsServerEnabled
 
     --- @param ent Entity
     --- @return boolean
@@ -62,29 +58,12 @@ local LIB = CNC.CreateExport()
         typecheck.AssertArgType( CLASS, 1, ent, sharedCommon.EntTypes )
         typecheck.AssertArgType( CLASS, 2, otherEnt, sharedCommon.EntTypes )
 
-        local info = hudInfoUtils.GetEntityInfo( otherEnt )
-        return info.Disposition == dispositionEnum.Like
+        if infoEntityLib.HasEntityInfo( otherEnt ) then
+            local info = infoEntityLib.GetEntityInfo( otherEnt ) --[[@as InfoEntityData]]
+            return info.FeelingTowardPlayer == dispositionEnum.Friendly
+        end
 
-        -- local entType = LIB.GetPlayerType( ent )
-        -- local otherEntType = LIB.GetPlayerType( otherEnt )
-
-        -- -- Neutral entities can't be enemies
-        -- if entType == playerTypeEnum.Neutral then
-        --     return false
-        -- end
-        -- if otherEntType == playerTypeEnum.Neutral then
-        --     return false
-        -- end
-
-        -- -- Consider Renegade to be GDI
-        -- if entType == playerTypeEnum.Renegade then
-        --     return otherEntType == playerTypeEnum.GDI
-        -- end
-        -- if otherEntType == playerTypeEnum.Renegade then
-        --     return entType == playerTypeEnum.GDI
-        -- end
-
-        -- return LIB.GetPlayerType( ent ) == LIB.GetPlayerType( otherEnt )
+        return false
     end
 
     --- @param ent Entity
@@ -94,31 +73,13 @@ local LIB = CNC.CreateExport()
         typecheck.AssertArgType( CLASS, 1, ent, sharedCommon.EntTypes )
         typecheck.AssertArgType( CLASS, 2, otherEnt, sharedCommon.EntTypes )
 
-        local info = hudInfoUtils.GetEntityInfo( otherEnt )
-        local disposition = info.Disposition
-        return ( disposition == dispositionEnum.Hate ) or ( disposition == dispositionEnum.Fear )
+        if infoEntityLib.HasEntityInfo( otherEnt ) then
+            local info = infoEntityLib.GetEntityInfo( otherEnt ) --[[@as InfoEntityData]]
+            local disposition = info.FeelingTowardPlayer
+            return disposition == dispositionEnum.Enemy
+        end
 
-        -- local entType = LIB.GetPlayerType( ent )
-        -- local otherEntType = LIB.GetPlayerType( otherEnt )
-
-        -- -- Neutral entities can't be enemies
-        -- if entType == playerTypeEnum.Neutral then
-        --     return false
-        -- end
-        -- if otherEntType == playerTypeEnum.Neutral then
-        --     return false
-        -- end
-
-        -- -- Consider Renegade to be GDI
-        -- if entType == playerTypeEnum.Renegade then
-        --     return otherEntType == playerTypeEnum.Nod
-        -- end
-        -- if otherEntType == playerTypeEnum.Renegade then
-        --     return entType == playerTypeEnum.Nod
-        -- end
-
-
-        -- return entType ~= otherEntType
+        return false
     end
 
     --- @param ent Entity
@@ -128,13 +89,12 @@ local LIB = CNC.CreateExport()
         typecheck.AssertArgType( CLASS, 1, ent, sharedCommon.EntTypes )
         typecheck.AssertArgType( CLASS, 2, otherEnt, sharedCommon.EntTypes )
 
-        local info = hudInfoUtils.GetEntityInfo( ent )
-        return info.Disposition == dispositionEnum.Neutral
+        if infoEntityLib.HasEntityInfo( ent ) then
+            local info = infoEntityLib.GetEntityInfo( ent ) --[[@as InfoEntityData]]
+            return info.FeelingTowardPlayer == dispositionEnum.Neutral
+        end
 
-        -- local entType = LIB.GetPlayerType( ent )
-        -- local otherEntType = LIB.GetPlayerType( otherEnt )
-
-        -- return entType == playerTypeEnum.Neutral or otherEntType == playerTypeEnum.Neutral
+        return true
     end
 
     --- Gets a transformation matrix that represents a given Entity

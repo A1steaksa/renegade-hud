@@ -43,17 +43,11 @@ end
     --- @type PhysicalGameObjectsBridge
     local physicalGameObjectsBridge = CNC.Import( "renhud/client/bridges/physical-game-objects.lua" )
 
-    --- @type DamageableGameObjectsBridge
-    local damageableGameObjectsBridge = CNC.Import( "renhud/client/bridges/damageable-game-objects.lua" )
-
     --- @type SmartGameObjectsBridge
     local smartGameObjectsBridge = CNC.Import( "renhud/client/bridges/smart-game-objects.lua" )
 
-    --- @type HudInfoUtilsShared
-    local hudInfoUtilsShared = CNC.Import( "renhud/sh_hud-info-utils.lua")
-
-    --- @type HudInfoUtilsClient
-    local hudInfoUtilsClient = CNC.Import( "renhud/client/cl_hud-info-utils.lua")
+    --- @type InfoEntityLib
+    local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua")
 --#endregion
 
 
@@ -674,9 +668,9 @@ end
 
             -- Omitted tracing logic
 
-            local hitEnt, traceLength = hudInfoUtilsClient.TraceForInfoEntity()
+            local hitEnt, traceLength = infoEntityLib.TraceForInfoEntity()
 
-            if IsValid( hitEnt ) and hudInfoUtilsShared.IsTargetable( hitEnt ) then
+            if IsValid( hitEnt ) and infoEntityLib.IsEntityTargetable( hitEnt ) then
                 --- @cast hitEnt Entity
 
                 -- Check for the MCT
@@ -708,9 +702,9 @@ end
 
         -- Omitted all normal code for now
 
-        local bestObj = hudInfoUtilsClient.TraceForInfoEntity()
+        local bestObj = infoEntityLib.TraceForInfoEntity()
 
-        if hudInfoUtilsShared.IsTargetable( bestObj ) then
+        if infoEntityLib.IsEntityTargetable( bestObj ) then
             --- @cast bestObj Entity
 
             -- "remember this guy"
