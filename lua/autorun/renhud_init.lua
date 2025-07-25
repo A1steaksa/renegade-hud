@@ -28,7 +28,6 @@ end
     include( "renhud/lua-libraries/robustclass.lua" )
     include( "renhud/lua-libraries/typecheck.lua" )
     include( "renhud/lua-libraries/imports.lua" )
-    include( "renhud/lua-libraries/gm_throttle.lua" )
     include( "renhud/lua-libraries/debugdraw.lua" )
 
     -- Load shared utilities
