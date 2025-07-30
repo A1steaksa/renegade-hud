@@ -119,20 +119,10 @@ end
         -- ( nil )
         if argCount == 0 then
             self.Projection = projectionType.PERSPECTIVE
-            self.Viewport = viewport.New( Vector( 0, 0 ), Vector( 1, 1 ) )
-            self.AspectRatio = 4/3
-            self.ZNear = 1
-            self.ZFar = 1000
             self.ZBufferMin = 0
             self.ZBufferMax = 1
-            self.FrustumValid = false
 
             self.ProjectionTransform = matrix4.New()
-
-            -- Omitted self:SetTransform() call as the camera class does not currently modify-
-            -- the game view, it only reads from it.
-
-            self:SetViewPlane( math.rad( 50 ) )
             return
         end
 
@@ -145,19 +135,12 @@ end
             self.Projection = src.Projection
             self.Viewport = src.Viewport
             self.ViewPlane = src.ViewPlane
-            self.ZNear = src.ZNear
-            self.ZFar = src.ZFar
-            self.FrustumValid = src.FrustumValid
             self.Frustum = src.Frustum
             self.NearClipBBox = src.NearClipBBox
             self.ProjectionTransform = src.ProjectionTransform
             self.CameraInverseTransform = src.CameraInverseTransform
-            self.AspectRatio = src.AspectRatio
             self.ZBufferMin = src.ZBufferMin
             self.ZBufferMax = src.ZBufferMax
-
-            -- "just being paraniod in case any parent class doesn't completely copy the entire state..."
-            self.FrustumValid = false
             return
         end
 
@@ -290,7 +273,6 @@ end
     ---@param zNear number
     ---@param zFar number
     function INSTANCE:SetClipPlanes( zNear, zFar )
-        self.FrustumValid = false
         self.ZNear = zNear
         self.ZFar = zFar
     end
@@ -306,12 +288,8 @@ end
     --- @field protected Projection ProjectionType
     --- @field protected Viewport ViewportInstance "pixel viewport to render into"
     --- @field protected ViewPlane ViewportInstance "Corners of a slice through the frustum at z=1.0"
-    --- @field protected AspectRatio number "Aspect ratio of the camera, width / height"
-    --- @field protected ZNear number "Near clip plane distance"
-    --- @field protected ZFar number "Far clip plane distance"
     --- @field protected ZBufferMin number "Smallest value we'll write into the z-Buffer (usually 0)"
     --- @field protected ZBufferMax number "Largest value we'll write into the z-buffer (usually 1)"
-    --- @field protected FrustumValid boolean
     --- @field protected Frustum FrustumInstance "World-space frustum and clip planes"
     --- @field protected ViewSpaceFrustum FrustumInstance "View-space frustum and clip planes"
     --- @field protected NearClipBBox OBBoxInstance "OBBox which bounds the near clip plane"
@@ -334,7 +312,6 @@ end
         local zFar = -zFarDistance
 
         -- "Update the frustum"
-        self.FrustumValid = true
         self.Frustum:Init( cameraMatrix, viewportMin, viewportMax, zNear, zFar )
         self.ViewSpaceFrustum:Init( matrix3d.New( true ), viewportMin, viewportMax, zNear, zFar )
 
