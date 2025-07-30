@@ -96,6 +96,10 @@ end
     --- @field z number
     --- @field w number
 
+    function INSTANCE:__tostring()
+        return "Vector4(" .. self.x .. ", " .. self.y .. ", " .. self.z .. ", " .. self.w .. ")"
+    end
+
     --- Constructs a new Vector4Instance
     function INSTANCE:Renegade_Vector4( ... )
         local args = { ... }
