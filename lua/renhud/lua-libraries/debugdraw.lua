@@ -261,16 +261,16 @@ if CLIENT then
         --- @class DebugDraw.Entity : DebugDraw.Base
         --- @field Entity Entity
 
-        --- @type DebugDraw.Entity[]
         --- @private
+        --- @type DebugDraw.Entity[]
         debugdraw.DebugEntities = {}
 
+        --- @private
         --- Registers a new Entity to draw
         --- @param ent Entity The Entity to draw
         --- @param color Color
         --- @param duration number The length of time, in seconds, to draw this Entity
         --- @param ignoreZ boolean Should the Entity draw through other objects?
-        --- @private
         function debugdraw.AddEntity( ent, color, duration, ignoreZ )
             debugdraw.DebugEntities[#debugdraw.DebugEntities + 1] = {
                 StartTime = CurTime(),
@@ -281,10 +281,10 @@ if CLIENT then
             }
         end
 
+        --- @private
         --- Draws a given Entity's bounding box
         --- @param shapeInfo DebugDraw.Entity
         --- @return boolean? shouldStopDrawing `true` if there was an issue drawing that indicates we should stop trying early 
-        --- @private
         function debugdraw.DrawEntity( shapeInfo )
             if not IsValid( shapeInfo.Entity ) then
                 return true
@@ -309,17 +309,17 @@ if CLIENT then
         --- @field Pos Vector
         --- @field Radius number
 
-        --- @type DebugDraw.Sphere[]
         --- @private
+        --- @type DebugDraw.Sphere[]
         debugdraw.DebugSpheres = {}
 
+        --- @private
         --- Registers a new sphere to draw
         --- @param pos Vector
         --- @param radius number
         --- @param color Color
         --- @param duration number The length of time, in seconds, to draw this Entity
         --- @param ignoreZ boolean Should the Entity draw through other objects?
-        --- @private
         function debugdraw.AddSphere( pos, radius, color, duration, ignoreZ )
             debugdraw.DebugSpheres[#debugdraw.DebugSpheres + 1] = {
                 StartTime = CurTime(),
@@ -330,11 +330,11 @@ if CLIENT then
                 Radius = radius
             }
         end
-
+        
+        --- @private
         --- Draws a given sphere
         --- @param shapeInfo DebugDraw.Sphere
         --- @return boolean? shouldStopDrawing `true` if there was an issue drawing that indicates we should stop trying early 
-        --- @private
         function debugdraw.DrawSphere( shapeInfo )
             render.DrawSphere( shapeInfo.Pos, shapeInfo.Radius, 10, 10, shapeInfo.Color )
         end
@@ -347,10 +347,11 @@ if CLIENT then
         --- @field EndPos Vector
         --- @field Width number
 
-        --- @type DebugDraw.Line[]
         --- @private
+        --- @type DebugDraw.Line[]
         debugdraw.DebugLines = {}
 
+        --- @private
         --- Registers a new line to draw
         --- @param startPos Vector
         --- @param endPos Vector
@@ -358,7 +359,6 @@ if CLIENT then
         --- @param color Color
         --- @param duration number The length of time, in seconds, to draw this Entity
         --- @param ignoreZ boolean Should the Entity draw through other objects?
-        --- @private
         function debugdraw.AddLine( startPos, endPos, width, color, duration, ignoreZ )
             debugdraw.DebugLines[#debugdraw.DebugLines + 1] = {
                 StartTime = CurTime(),
@@ -371,10 +371,10 @@ if CLIENT then
             }
         end
 
+        --- @private
         --- Draws a given line
         --- @param shapeInfo DebugDraw.Line
         --- @return boolean? shouldStopDrawing `true` if there was an issue drawing that indicates we should stop trying early 
-        --- @private
         function debugdraw.DrawLine( shapeInfo )
             render.DrawBeam( shapeInfo.StartPos, shapeInfo.EndPos, shapeInfo.Width, 0, 1, shapeInfo.Color )
             render.DrawLine( shapeInfo.StartPos, shapeInfo.EndPos, shapeInfo.Color, shapeInfo.IgnoreZ )
