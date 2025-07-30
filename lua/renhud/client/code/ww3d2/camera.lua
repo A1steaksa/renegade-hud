@@ -45,6 +45,9 @@ end
 
     --- @type Render2d
     local render2d = CNC.Import( "renhud/client/code/ww3d2/render-2d.lua" )
+
+    --- @type CameraBridge
+    local cameraBridge = CNC.Import( "renhud/client/bridges/camera.lua" )
 --#endregion
 
 
@@ -185,8 +188,9 @@ end
     --- Camera extends RenderObjClass but I don't feel like porting that right now
     --- @return Matrix3dInstance
     function INSTANCE:GetTransform()
-        local viewInfo = render.GetViewSetup() --[[@as ViewSetup]]
-        local viewAng = viewInfo.angles
+        local viewSetup = cameraBridge.GetViewSetup() --[[@as ViewSetup]]
+
+        local viewAng = viewSetup.angles
 
         local matrix = matrix3d.New( false )
         local row = matrix.Row
@@ -196,9 +200,9 @@ end
         row2.x, row2.y, row2.z = -1,  0,  0
         row3.x, row3.y, row3.z =  0,  1,  0
 
-        row1.w = viewInfo.origin.x
-        row2.w = viewInfo.origin.y
-        row3.w = viewInfo.origin.z
+        row1.w = viewSetup.origin.x
+        row2.w = viewSetup.origin.y
+        row3.w = viewSetup.origin.z
 
         -- Rotate the camera's matrix, adjusting the Source angles to match Renegade's coordinate space
         matrix:RotateY( math.rad(  viewAng.yaw   ) )
@@ -225,37 +229,27 @@ end
         if isvector( args[1] ) then
             typecheck.AssertArgType( CLASS, 2, args[2], "vector" )
 
-            local min = args[1] --[[@as Vector]]
-            local max = args[2] --[[@as Vector]]
-
-            self.ViewPlane.Min = min
-            self.ViewPlane.Max = max
-            self.AspectRatio = ( max.x - min.x ) / ( max.y - min.y )
-            self.FrustumValid = false
+            self.ViewPlane.Min = args[1] --[[@as Vector]]
+            self.ViewPlane.Max = args[2] --[[@as Vector]]
 
         -- ( horizontalFov: number, verticalFov: number? )
         else
             typecheck.AssertArgType( CLASS, 1, args[1], "number" )
 
+            local viewSetup = cameraBridge.GetViewSetup()
+
             local horizontalFov = args[1] --[[@as number]]
-            local verticalFov = -1
-            if argCount == 2 then
-                typecheck.AssertArgType( CLASS, 2, args[2], "number" )
-                verticalFov = args[2] --[[@as number]]
+            local verticalFov   = args[2] --[[@as number]]
+
+            if not verticalFov then
+                verticalFov = 2 * math.atan( math.tan( horizontalFov / 2 ) / viewSetup.aspect )
             end
 
             local halfWidth = math.tan( horizontalFov / 2 )
-            local halfHeight = 0
-            if verticalFov == -1 then
-                halfHeight = ( 1 / self.AspectRatio ) * halfWidth -- "Use the aspect ratio"
-            else
-                halfHeight = math.tan( verticalFov / 2 )
-                self.AspectRatio = halfWidth / halfHeight -- "Or, initialize the aspect ratio"
-            end
+            local halfHeight = math.tan( verticalFov / 2 )
 
             self.ViewPlane.Min = Vector( -halfWidth, -halfHeight )
-            self.ViewPlane.max = Vector( halfWidth, halfHeight )
-            self.FrustumValid = false
+            self.ViewPlane.Max = Vector( halfWidth, halfHeight )
         end
     end
 
@@ -326,8 +320,9 @@ end
 
     --- @protected
     function INSTANCE:UpdateFrustum()
-        -- Omitted frustum validation
-        --if self.FrustumValid then return end
+        local viewSetup = cameraBridge.GetViewSetup()
+        self:SetClipPlanes( viewSetup.znear, viewSetup.zfar )
+        self:SetViewPlane( math.rad( viewSetup.fov ) )
 
         local cameraMatrix = self:GetTransform()
 
@@ -357,13 +352,8 @@ end
 
         -- "Update the projection matrix"
         if self.Projection == projectionType.PERSPECTIVE then
-
-            local viewSetup = render.GetViewSetup() --[[@as ViewSetup]]
             local horizontalFov = math.rad( viewSetup.fov )
-
-            local screen = render2d.GetScreenResolution()
-            local aspectRatio = screen:Width() / screen:Height()
-            local verticalFov = 2 * math.atan( math.tan( horizontalFov / 2 ) / aspectRatio )
+            local verticalFov = 2 * math.atan( math.tan( horizontalFov / 2 ) / viewSetup.aspect )
 
             self.ProjectionTransform:InitPerspective(
                 horizontalFov, verticalFov,

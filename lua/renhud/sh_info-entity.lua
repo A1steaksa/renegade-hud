@@ -14,6 +14,9 @@ local playerTypeLib = CNC.Import( "renhud/client/code/combat/player-type.lua" )
 
 --- @type AABox
 local aABox = CNC.Import( "renhud/client/code/wwmath/aabox.lua" )
+
+--- @type CameraBridge
+local cameraBridge = CNC.Import( "renhud/client/bridges/camera.lua" )
 --#endregion
 
 
@@ -275,8 +278,10 @@ end
     --- @return Entity?
     --- @return number traceDistance
     function LIB.TraceForInfoEntity()
-        local startPos = LocalPlayer():EyePos()
-        local endPos = startPos + LocalPlayer():GetAimVector() * traceLengthConVar:GetFloat()
+        local viewSetup = cameraBridge.GetViewSetup()
+
+        local startPos = viewSetup.origin
+        local endPos = startPos + viewSetup.angles:Forward() * traceLengthConVar:GetFloat()
 
         local ply = LocalPlayer()
         local filter
