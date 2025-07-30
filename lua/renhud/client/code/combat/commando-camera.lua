@@ -48,6 +48,9 @@ end
 
     --- @type InfoEntityLib
     local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua")
+
+    --- @type CameraBridge
+    local cameraBridge = CNC.Import( "renhud/client/bridges/camera.lua")
 --#endregion
 
 
@@ -146,9 +149,6 @@ end
 	    self.WeaponHelpTarget = NULL
 	    self.LagPersistTimer = 0
 	    self.DisableLag = false
-
-        self:SetClipPlanes( self.NearClipPlane, self.FarClipPlane )
-        self:SetViewPlane( math.rad( 90 ) )
 
         -- Omitted sniper listener
         --self.SniperListener = listener3d.New()

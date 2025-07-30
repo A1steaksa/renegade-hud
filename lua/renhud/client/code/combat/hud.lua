@@ -928,7 +928,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
             end
 
             local box = render2d.GetScreenResolution()
-
+            
             if physObj then
                 box = STATIC.GetTargetBox( targetEnt )
             else

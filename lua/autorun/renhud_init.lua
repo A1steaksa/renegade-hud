@@ -36,13 +36,14 @@ end
 
 --[[ Server Init ]]
 if SERVER then
-    -- Let clients know that we're running the server side of this addon
+    -- Let clients know that we're running the server side of this addon`
     SetGlobal2Bool( "A1_Renegade_ServerRunning", true )
 
     -- Send all Lua files to clients
     IterateFilesRecursively( "renhud/", "LUA", AddCSLuaFile )
 
     -- Send all materials to the clients
+
     IterateFilesRecursively( "materials/renhud/", "THIRDPARTY", resource.AddFile )
 
     -- Send all fonts to the clients

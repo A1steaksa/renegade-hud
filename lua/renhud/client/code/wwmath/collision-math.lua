@@ -22,8 +22,8 @@ end
     --- Of the volume, the negative (back/inside) space of the volume, or both (overlapping)
     --- @enum OverlapType
     STATIC.OVERLAP_TYPE = {
-        POSITIVE        = 0x01,
-        NEGATIVE        = 0x02,
+        POSITIVE   = 0x01,
+        NEGATIVE   = 0x02,
         ON         = 0x04,
         BOTH       = 0x08,
         OUTSIDE    = 0x01,
