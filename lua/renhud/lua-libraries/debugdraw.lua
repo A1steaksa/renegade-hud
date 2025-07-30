@@ -14,6 +14,7 @@ debugdraw.ShapeType = {
     Box     = 2,
     Line    = 3,
     Sphere  = 4,
+    Text    = 4,
 }
 
 --- Draws the bounding box of a given Entity
@@ -58,6 +59,9 @@ function debugdraw.Sphere( pos, radius, color, duration, ignoreZ )
     if not duration then duration = 1 end
     if not ignoreZ then ignoreZ = false end
 
+    -- To avoid reference issues
+    pos = Vector( pos )
+
     if SERVER then
         net.Start( "A1_DebugDraw" )
 
@@ -91,6 +95,10 @@ function debugdraw.Line( startPos, endPos, width, color, duration, ignoreZ )
     if not duration then duration = 1 end
     if not ignoreZ then ignoreZ = false end
 
+    -- To avoid reference issues
+    startPos = Vector( startPos )
+    endPos = Vector( endPos )
+
     if SERVER then
         net.Start( "A1_DebugDraw" )
 
@@ -110,6 +118,41 @@ function debugdraw.Line( startPos, endPos, width, color, duration, ignoreZ )
 
     if CLIENT then
         debugdraw.AddLine( startPos, endPos, width, color, duration, ignoreZ )
+    end
+end
+
+--- Draws text
+--- @param pos Vector
+--- @param text string
+--- @param color Color? [Default: `Color( 255, 255, 255, 200 )`]
+--- @param duration number? [Default: `1`] The length of time, in seconds, to draw this Entity
+--- @param ignoreZ boolean? [Default: `false`] Should the Entity draw through other objects?
+function debugdraw.Text( pos, text, color, duration, ignoreZ )
+    if not color then color = Color( 255, 255, 255, 200 ) end
+    if not duration then duration = 1 end
+    if not ignoreZ then ignoreZ = false end
+
+    -- To avoid reference issues
+    pos = Vector( pos )
+
+    if SERVER then
+        net.Start( "A1_DebugDraw" )
+
+        -- Write standard arguments
+        net.WriteColor( color )
+        net.WriteFloat( duration )
+        net.WriteBool( ignoreZ )
+
+        -- Write type-dependent arguments
+        net.WriteInt( debugdraw.ShapeType.Text, 8 )
+        net.WriteVector( pos )
+        net.WriteString( text )
+
+        net.Broadcast()
+    end
+
+    if CLIENT then
+        debugdraw.AddText( pos, text, color, duration, ignoreZ )
     end
 end
 
@@ -154,6 +197,14 @@ if CLIENT then
             local width = net.ReadFloat()
 
             debugdraw.AddLine( startPos, endPos, width, color, duration, ignoreZ )
+        end
+
+        -- Text
+        if shapeType == debugdraw.ShapeType.Text then
+            local pos = net.ReadVector()
+            local text = net.ReadString()
+
+            debugdraw.AddText( pos, text, color, duration, ignoreZ )
         end
     end
     net.Receive( "A1_DebugDraw", ReceiveDebugDraw )
@@ -200,6 +251,9 @@ if CLIENT then
 
         -- Lines
         debugdraw.DrawShapeList( time, debugdraw.DebugLines, debugdraw.DrawLine )
+
+        -- Text
+        debugdraw.DrawShapeList( time, debugdraw.DebugTexts, debugdraw.DrawText )
     end )
 
     --[[ Entities ]] do
@@ -323,6 +377,55 @@ if CLIENT then
         --- @private
         function debugdraw.DrawLine( shapeInfo )
             render.DrawBeam( shapeInfo.StartPos, shapeInfo.EndPos, shapeInfo.Width, 0, 1, shapeInfo.Color )
+            render.DrawLine( shapeInfo.StartPos, shapeInfo.EndPos, shapeInfo.Color, shapeInfo.IgnoreZ )
+        end
+    end
+
+    --[[ Text ]] do
+        --- A shape for drawing text
+        --- @class DebugDraw.Text : DebugDraw.Base
+        --- @field Pos Vector
+        --- @field Text string
+
+        --- @private
+        --- @type DebugDraw.Text[]
+        debugdraw.DebugTexts = {}
+
+        --- @private
+        --- Registers new text to draw
+        --- @param pos Vector
+        --- @param text string
+        --- @param color Color
+        --- @param duration number The length of time, in seconds, to draw this Entity
+        --- @param ignoreZ boolean Should the Entity draw through other objects?
+        function debugdraw.AddText( pos, text, color, duration, ignoreZ )
+            debugdraw.DebugTexts[#debugdraw.DebugTexts + 1] = {
+                StartTime = CurTime(),
+                Lifetime = duration,
+                Color = color,
+                IgnoreZ = ignoreZ,
+                Pos = pos,
+                Text = text
+            }
+        end
+
+        --- @private
+        --- Draws given text
+        --- @param shapeInfo DebugDraw.Text
+        --- @return boolean? shouldStopDrawing `true` if there was an issue drawing that indicates we should stop trying early 
+        function debugdraw.DrawText( shapeInfo )
+            local screenPos = shapeInfo.Pos:ToScreen()
+            if not screenPos.visible then return end
+
+            cam.Start2D()
+
+            surface.SetFont( "ChatFont" )
+            local color = shapeInfo.Color
+            surface.SetTextColor( color.r, color.g, color.b, color.a )
+            surface.SetTextPos( screenPos.x, screenPos.y )
+            surface.DrawText( shapeInfo.Text )
+
+            cam.End2D()
         end
     end
 end
