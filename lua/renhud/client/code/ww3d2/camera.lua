@@ -158,6 +158,9 @@ end
     --- @return FrustumInstance
     function INSTANCE:GetFrustum()
         self:UpdateFrustum()
+
+        self.Frustum:DrawDebugView()
+
         return self.Frustum
     end
 

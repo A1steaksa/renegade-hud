@@ -182,4 +182,49 @@ end
     function INSTANCE:GetBoundMax()
         return self.BoundMax
     end
+
+    function INSTANCE:DrawDebugView()
+        if not cameraBridge.ViewOverride then return end
+
+        local corners = self.Corners
+
+        if not corners then return end
+
+        local nearBottomRight = corners[0] -- Near Bottom Right
+        local nearBottomLeft  = corners[1] -- Near Bottom Left
+        local nearTopRight    = corners[2] -- Near Top Right
+        local nearTopLeft     = corners[3] -- Near Top Left
+
+        local farBottomRight  = corners[4] -- Far Bottom Right
+        local farBottomLeft   = corners[5] -- Far Bottom Left
+        local farTopRight     = corners[6] -- Far Top Right
+        local farTopLeft      = corners[7] -- Far Top Left
+
+        local nearLineColor = Color( 0, 255, 255, 255 )
+        local nearThickness = 0.05
+
+        local farLineColor = Color( 255, 0, 255, 255 )
+        local farThickness = 0.75
+
+        local duration = 0.1
+
+        -- Far plane
+        debugdraw.Line( farTopLeft,     farTopRight,    farThickness, farLineColor, duration, true )
+        debugdraw.Line( farTopRight,    farBottomRight, farThickness, farLineColor, duration, true )
+        debugdraw.Line( farBottomRight, farBottomLeft,  farThickness, farLineColor, duration, true )
+        debugdraw.Line( farBottomLeft,  farTopLeft,     farThickness, farLineColor, duration, true )
+
+        -- Near plane
+        debugdraw.Line( nearTopLeft,     nearTopRight,    nearThickness, nearLineColor, duration, true )
+        debugdraw.Line( nearTopRight,    nearBottomRight, nearThickness, nearLineColor, duration, true )
+        debugdraw.Line( nearBottomRight, nearBottomLeft,  nearThickness, nearLineColor, duration, true )
+        debugdraw.Line( nearBottomLeft,  nearTopLeft,     nearThickness, nearLineColor, duration, true )
+
+        -- Connecting near and far
+        debugdraw.Line( nearTopLeft,     farTopLeft,        nearThickness, nearLineColor, duration, true )
+        debugdraw.Line( nearTopRight,    farTopRight,       nearThickness, nearLineColor, duration, true )
+        debugdraw.Line( nearBottomRight, farBottomRight,    nearThickness, nearLineColor, duration, true )
+        debugdraw.Line( nearBottomLeft,  farBottomLeft,     nearThickness, nearLineColor, duration, true )
+    end
+
 end
