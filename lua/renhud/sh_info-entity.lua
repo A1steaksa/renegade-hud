@@ -1057,14 +1057,32 @@ end
 if not CLIENT then return end
 
 
---- Retrieves an AABox that contains a given Entity
+--- Retrieves an AABox that contains a given Entity in Entity-local space
 --- @param ent Entity
 --- @return AABoxInstance
-function LIB.GetEntityBoundingBox( ent )
+function LIB.GetEntityLocalBoundingBox( ent )
     local mins, maxs = ent:GetModelRenderBounds()
 
     local center = -( maxs + mins ) / 2
     center.z = -center.z
+
+    local extent = ( maxs - mins ) / 2
+
+    local boundingBox = aABox.New( center, extent )
+
+    return boundingBox
+end
+
+--- Retrieves an AABox that contains a given Entity in world space
+--- @param ent Entity
+--- @return AABoxInstance
+function LIB.GetEntityWorldBoundingBox( ent )
+    local mins, maxs = ent:GetModelRenderBounds()
+
+    mins = ent:LocalToWorld( mins )
+    maxs = ent:LocalToWorld( maxs )
+
+    local center = ( maxs + mins ) / 2
 
     local extent = ( maxs - mins ) / 2
 
