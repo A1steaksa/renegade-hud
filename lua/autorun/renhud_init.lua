@@ -1,98 +1,90 @@
-if CLIENT then
-    --- The table containing all addon content for Command and Conquer: Renegade
+-- The kernel file for the Command & Conquer Renegade HUD port
+
+--- Finds all files within a directory and its sub-directories and call a function for each file, passing in the file's path 
+--- @param name string
+--- @param path string
+--- @param func fun( filePath: string )
+local function IterateFilesRecursively( name, path, func )
+    local files, directories = file.Find( name .. "*", path )
+
+    -- Run the function on each file in the directory
+    for _, file in ipairs( files ) do
+        func( name .. file )
+    end
+
+    -- Recurse on each sub-directory
+    for _, directory in ipairs( directories ) do
+        local nextDir = name .. directory .. "/"
+        IterateFilesRecursively( nextDir, path, func )
+    end
+end
+
+--[[ Shared Init ]] do
+    --- The global table containing all addon content for Command and Conquer: Renegade
     --- @class Renegade
     CNC_RENEGADE = CNC_RENEGADE or {}
+
+    -- Load prerequisite libraries
+    include( "renhud/lua-libraries/robustclass.lua" )
+    include( "renhud/lua-libraries/typecheck.lua" )
+    include( "renhud/lua-libraries/imports.lua" )
+    include( "renhud/lua-libraries/debugdraw.lua" )
+
+    -- Load shared utilities
+    include( "renhud/sh_info-entity.lua" )
 end
 
-local function RunCS( filePath )
-    AddCSLuaFile( filePath )
-
-    if CLIENT then
-        MsgC( "Running " .. filePath .. "...", "\n" )
-        include( filePath )
-    end
-end
-
-local clientScripts = {
-    -- Lua Libraries
-    "renhud/lua-libraries/robustclass.lua",
-
-    -- code/wmath/*
-    "renhud/code/wwmath/rect.lua",
-
-    -- Lua Library that relies on rect
-    "renhud/lua-libraries/typecheck.lua",
-
-    -- code/combat/wwtranslatedb/*
-    "renhud/code/wwtranslatedb/translatedb.lua",
-
-    -- code/ww3d2/*
-    "renhud/code/ww3d2/ww3d.lua",
-    "renhud/code/ww3d2/shader.lua",
-    "renhud/code/ww3d2/font-chars.lua",
-    "renhud/code/ww3d2/font-3d-data.lua",
-    "renhud/code/ww3d2/font-3d.lua",
-    "renhud/code/ww3d2/render-2d.lua",
-    "renhud/code/ww3d2/render-2d-text.lua",
-
-    -- code/wwui
-    "renhud/code/wwui/style-manager.lua",
-
-    -- code/combat/*
-    "renhud/code/combat/global-settings.lua",
-    "renhud/code/combat/combat-manager.lua",
-    "renhud/code/combat/hud.lua",
-    "renhud/code/combat/objectives.lua",
-
-    -- Update global settings
-    "renhud/updated-global-settings.lua",
-}
-
--- Client Scripts
-for _, filePath in ipairs( clientScripts ) do
-    RunCS( filePath )
-end
-
+--[[ Server Init ]]
 if SERVER then
-    local files = {
-        -- Fonts
-        "resource/fonts/54251___.ttf",
-        "resource/fonts/ARI_____.ttf",
+    -- Let clients know that we're running the server side of this addon`
+    SetGlobal2Bool( "A1_Renegade_ServerRunning", true )
 
-        -- HUD Materials
-        "materials/renhud/font6x8.png",
-        "materials/renhud/font12x16.png",
-        "materials/renhud/hd_reticle.png",
-        "materials/renhud/hd_reticle_hit.png",
-        "materials/renhud/hud_armedal.png",
-        "materials/renhud/hud_armor1.png",
-        "materials/renhud/hud_armor2.png",
-        "materials/renhud/hud_armor3.png",
-        "materials/renhud/hud_cd_rom.png",
-        "materials/renhud/hud_chatpbox.png",
-        "materials/renhud/hud_driverseat.png",
-        "materials/renhud/hud_gunseat.png",
-        "materials/renhud/hud_health1.png",
-        "materials/renhud/hud_health2.png",
-        "materials/renhud/hud_health3.png",
-        "materials/renhud/hud_hemedal.png",
-        "materials/renhud/hud_keycard_green.png",
-        "materials/renhud/hud_keycard_red.png",
-        "materials/renhud/hud_keycard_yellow.png",
-        "materials/renhud/hud_main.png",
-        "materials/renhud/hud_obje_arrow.png",
-        "materials/renhud/hud_passseat.png",
-        "materials/renhud/hud_star.png",
-        "materials/renhud/p_eva1.png",
-        "materials/renhud/p_eva2.png"
-    }
+    -- Send all Lua files to clients
+    IterateFilesRecursively( "renhud/", "LUA", AddCSLuaFile )
 
-    for _, file in ipairs( files ) do
-        resource.AddFile( file )
-    end
+    -- Send all materials to the clients
+
+    IterateFilesRecursively( "materials/renhud/", "THIRDPARTY", resource.AddFile )
+
+    -- Send all fonts to the clients
+    resource.AddFile( "resource/fonts/54251___.ttf" )
+    resource.AddFile( "resource/fonts/ARI_____.ttf" )
 end
 
--- Kick things off
+--[[ Client Init ]]
 if CLIENT then
-    CNC_RENEGADE.CombatManager.Init( true )
+    --- @class Renegade
+    local CNC = CNC_RENEGADE
+
+    hook.Add( "InitPostEntity", "A1_Renegade_ServerRunningCheck", function()
+        CNC.IsServerEnabled = GetGlobal2Bool( "A1_Renegade_ServerRunning", false )
+
+        local color
+        local status
+        if CNC.IsServerEnabled then
+            color = Color( 43, 250, 100 )
+            status = "Online"
+        else
+            color = Color( 250, 100, 43 )
+            status = "Offline"
+        end
+
+        MsgC( "[REN] Server:\t", color, status, "\n" )
+    end )
+
+    -- Load Renegade-specific libraries
+    include( "renhud/client/hide-hud.lua" )
+
+    -- Load Renegade bridge libraries
+    IterateFilesRecursively( "renhud/client/bridges/", "LUA", include )
+
+    -- Load the game's kernel file
+    --- @type CombatManager
+    local combatManager = CNC.Import( "renhud/client/code/combat/combat-manager.lua" )
+
+    -- Load Renegade-specific overrides
+    include( "renhud/client/updated-global-settings.lua" )
+
+    -- Start the HUD
+    combatManager.Init( true )
 end
