@@ -15,6 +15,7 @@ debugdraw.ShapeType = {
     Line    = 3,
     Sphere  = 4,
     Text    = 4,
+    Quad    = 5,
 }
 
 --- Draws the bounding box of a given Entity
@@ -156,6 +157,47 @@ function debugdraw.Text( pos, text, color, duration, ignoreZ )
     end
 end
 
+--- Draws a quad
+--- @param pos Vector
+--- @param size Vector The width (x) and height (y) that the quad will be drawn at
+--- @param normal Vector The direction that the quad's front face will point
+--- @param color Color? [Default: `Color( 255, 255, 255, 200 )`]
+--- @param duration number? [Default: `1`] The length of time, in seconds, to draw this Entity
+--- @param ignoreZ boolean? [Default: `false`] Should the Entity draw through other objects?
+function debugdraw.Quad( pos, size, normal, color, duration, ignoreZ )
+    if not color then color = Color( 255, 255, 255, 200 ) end
+    if not duration then duration = 1 end
+    if not ignoreZ then ignoreZ = false end
+
+    -- To avoid reference issues
+    pos    = Vector( pos )
+    size   = Vector( size )
+    normal = Vector( normal)
+
+    if SERVER then
+        net.Start( "A1_DebugDraw" )
+
+        -- Write standard arguments
+        net.WriteColor( color )
+        net.WriteFloat( duration )
+        net.WriteBool( ignoreZ )
+
+        -- Write type-dependent arguments
+        net.WriteInt( debugdraw.ShapeType.Quad, 8 )
+        net.WriteVector( pos )
+        net.WriteVector( size )
+        net.WriteVector( normal )
+
+        net.Broadcast()
+    end
+
+    if CLIENT then
+        debugdraw.AddQuad( pos, size, normal, color, duration, ignoreZ )
+    end
+end
+
+
+
 if CLIENT then
 
     --- The base for all other shapes
@@ -184,7 +226,7 @@ if CLIENT then
 
         -- Spheres
         if shapeType == debugdraw.ShapeType.Sphere then
-            local pos = net.ReadVector()
+            local pos    = net.ReadVector()
             local radius = net.ReadFloat()
 
             debugdraw.AddSphere( pos, radius, color, duration, ignoreZ )
@@ -193,22 +235,33 @@ if CLIENT then
         -- Lines
         if shapeType == debugdraw.ShapeType.Line then
             local startPos = net.ReadVector()
-            local endPos = net.ReadVector()
-            local width = net.ReadFloat()
+            local endPos   = net.ReadVector()
+            local width    = net.ReadFloat()
 
             debugdraw.AddLine( startPos, endPos, width, color, duration, ignoreZ )
         end
 
         -- Text
         if shapeType == debugdraw.ShapeType.Text then
-            local pos = net.ReadVector()
+            local pos  = net.ReadVector()
             local text = net.ReadString()
 
             debugdraw.AddText( pos, text, color, duration, ignoreZ )
         end
+
+        -- Quad
+        if shapeType == debugdraw.ShapeType.Quad then
+
+            local pos    = net.ReadVector()
+            local size   = net.ReadVector()
+            local normal = net.ReadVector()
+
+            debugdraw.AddQuad( pos, size, normal, color, duration, ignoreZ )
+        end
     end
     net.Receive( "A1_DebugDraw", ReceiveDebugDraw )
 
+    --- @private
     --- @param time number CurTime
     --- @param shapeList DebugDraw.Base[]
     --- @param drawFunction fun( shape: DebugDraw.Base ):boolean
@@ -254,6 +307,9 @@ if CLIENT then
 
         -- Text
         debugdraw.DrawShapeList( time, debugdraw.DebugTexts, debugdraw.DrawText )
+
+        -- Quads
+        debugdraw.DrawShapeList( time, debugdraw.DebugQuads, debugdraw.DrawQuad )
     end )
 
     --[[ Entities ]] do
@@ -330,7 +386,7 @@ if CLIENT then
                 Radius = radius
             }
         end
-        
+
         --- @private
         --- Draws a given sphere
         --- @param shapeInfo DebugDraw.Sphere
@@ -426,6 +482,49 @@ if CLIENT then
             surface.DrawText( shapeInfo.Text )
 
             cam.End2D()
+        end
+    end
+
+    --[[ Quads ]] do
+        --- A shape for drawing a quad
+        --- @class DebugDraw.Quad : DebugDraw.Base
+        --- @field Pos Vector
+        --- @field Size Vector
+        --- @field Normal Vector
+
+        --- @private
+        --- @type DebugDraw.Quad[]
+        debugdraw.DebugQuads = {}
+
+        --- @private
+        --- Registers a new quad to draw
+        --- @param pos Vector
+        --- @param size Vector
+        --- @param normal Vector
+        --- @param color Color
+        --- @param duration number The length of time, in seconds, to draw this Entity
+        --- @param ignoreZ boolean Should the Entity draw through other objects?
+        function debugdraw.AddQuad( pos, size, normal, color, duration, ignoreZ )
+            debugdraw.DebugQuads[#debugdraw.DebugQuads + 1] = {
+                StartTime = CurTime(),
+                Lifetime = duration,
+                Color = color,
+                IgnoreZ = ignoreZ,
+                Pos = pos,
+                Size = size,
+                Normal = normal
+            }
+        end
+
+        --- @private
+        --- Draws a given quad
+        --- @param shapeInfo DebugDraw.Quad
+        --- @return boolean? shouldStopDrawing `true` if there was an issue drawing that indicates we should stop trying early 
+        function debugdraw.DrawQuad( shapeInfo )
+            local screenPos = shapeInfo.Pos:ToScreen()
+            if not screenPos.visible then return end
+
+            render.DrawQuadEasy( shapeInfo.Pos, shapeInfo.Normal, shapeInfo.Size.x, shapeInfo.Size.y, shapeInfo.Color, 0 )
         end
     end
 end
