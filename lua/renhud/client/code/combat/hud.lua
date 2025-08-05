@@ -1143,7 +1143,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
                 -- "tm" here stands for "Transformation Matrix"
                 -- "inv" here stands for "Inverse"
 
-                local entBox = infoEntityLib.GetLocalEntityBoundingBox( ent )
+                local entBox = infoEntityLib.GetEntityLocalBoundingBox( ent )
                 local entTM = physObjBridge.GetTransform( ent )
 
                 local combatCamera = combatManager.GetCamera()
