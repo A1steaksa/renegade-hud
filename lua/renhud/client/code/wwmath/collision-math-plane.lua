@@ -87,7 +87,7 @@ end
     STATIC.AddOverlapTest( "PlaneInstance", "AABoxInstance", function( plane, box )
         -- "First, we determine the the near and far points of the box in the direction of the plane normal"
         local positiveFarPoint = STATIC.GetFarExtent( plane.Normal, box.Extent )
-        local negativeFarPoint = -positiveFarPoint
+        local negativeFarPoint = Vector( -positiveFarPoint )
 
         positiveFarPoint = positiveFarPoint + box.Center
         negativeFarPoint = negativeFarPoint + box.Center
