@@ -48,9 +48,6 @@ end
 
     --- @type InfoEntityLib
     local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua")
-
-    --- @type CameraBridge
-    local cameraBridge = CNC.Import( "renhud/client/bridges/camera.lua")
 --#endregion
 
 

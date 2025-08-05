@@ -65,6 +65,9 @@ end
 
     --- @type InfoEntityLib
     local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua" )
+
+    --- @type CameraBridge
+    local cameraBridge = CNC.Import( "renhud/client/bridges/camera.lua")
 --#endregion
 
 
@@ -297,6 +300,10 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 
         render.PopFilterMag()
         render.PopFilterMin()
+
+        if cameraBridge.ViewOverride then
+            combatManager.GetCamera():DebugDraw()
+        end
     end
     hook.Add( "HUDPaint", "A1_Renegade_RenderHUD", STATIC.Render )
 
@@ -644,7 +651,6 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
             STATIC.StatusBarRenderer = render2d.New()
             STATIC.StatusBarRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
         end
-
     end
 
     --[[ Reticles ]] do
@@ -1137,7 +1143,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
                 -- "tm" here stands for "Transformation Matrix"
                 -- "inv" here stands for "Inverse"
 
-                local entBox = infoEntityLib.GetEntityBoundingBox( ent )
+                local entBox = infoEntityLib.GetLocalEntityBoundingBox( ent )
                 local entTM = physObjBridge.GetTransform( ent )
 
                 local combatCamera = combatManager.GetCamera()

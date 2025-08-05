@@ -183,9 +183,7 @@ end
         return self.BoundMax
     end
 
-    function INSTANCE:DrawDebugView()
-        if not cameraBridge.ViewOverride then return end
-
+    function INSTANCE:DebugDraw()
         local corners = self.Corners
 
         if not corners then return end
@@ -226,5 +224,4 @@ end
         debugdraw.Line( nearBottomRight, farBottomRight,    nearThickness, nearLineColor, duration, true )
         debugdraw.Line( nearBottomLeft,  farBottomLeft,     nearThickness, nearLineColor, duration, true )
     end
-
 end

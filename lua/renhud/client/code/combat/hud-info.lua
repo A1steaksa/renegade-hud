@@ -28,6 +28,7 @@ local buildingsBridge = CNC.Import( "renhud/client/bridges/buildings.lua" )
 local infoEntityLib = CNC.Import( "renhud/sh_info-entity.lua" )
 --#endregion
 
+
 --[[ Console Variables ]] do
     --[[ Info Entity Timer Duration ]] do
 
@@ -188,13 +189,10 @@ end
             else
                 if not IsValid( infoEntity ) then return end
 
-                local bounds = infoEntityLib.GetEntityBoundingBox( infoEntity )
-
+                local bounds = infoEntityLib.GetEntityWorldBoundingBox( infoEntity )
                 local shouldCullTarget = combatManager:GetCamera():CullBox( bounds )
                 if shouldCullTarget then
-                    -- TODO: Fix this
-                    -- Omitted removing info entity while frustum culling logic is broken
-                    -- STATIC.InfoEntity = NULL
+                    STATIC.InfoEntity = NULL
                 end
             end
         end
