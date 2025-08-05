@@ -114,7 +114,6 @@ end
 
         self.ViewPlane = viewport.New()
         self.Frustum = frustum.New()
-        self.ViewSpaceFrustum = frustum.New()
 
         -- ( nil )
         if argCount == 0 then
@@ -147,27 +146,22 @@ end
         typecheck.AssertArgCount( CLASS, argCount )
     end
 
+    function INSTANCE:DebugDraw()
+        self.Frustum:DebugDraw()
+    end
+
     --- @param box AABoxInstance
     --- @return boolean
     function INSTANCE:CullBox( box )
-        local frustum = self:GetFrustum()
-        local overlapResults = collisionMath.OverlapTest( frustum, box )
-        return  overlapResults == collisionMath.OVERLAP_TYPE.OUTSIDE
+        -- If the box is outside of our frustum, it should be culled
+        return collisionMath.OverlapTest( self:GetFrustum(), box ) == collisionMath.OVERLAP_TYPE.OUTSIDE
     end
 
     --- @return FrustumInstance
     function INSTANCE:GetFrustum()
         self:UpdateFrustum()
 
-        self.Frustum:DrawDebugView()
-
         return self.Frustum
-    end
-
-    --- @return FrustumInstance
-    function INSTANCE:GetViewSpaceFrustum()
-        self:UpdateFrustum()
-        return self.ViewSpaceFrustum
     end
 
     --- Originally part of RenderObjClass in Code/ww3d2/rendobj.h/cpp
@@ -294,7 +288,6 @@ end
     --- @field protected ZBufferMin number "Smallest value we'll write into the z-Buffer (usually 0)"
     --- @field protected ZBufferMax number "Largest value we'll write into the z-buffer (usually 1)"
     --- @field protected Frustum FrustumInstance "World-space frustum and clip planes"
-    --- @field protected ViewSpaceFrustum FrustumInstance "View-space frustum and clip planes"
     --- @field protected NearClipBBox OBBoxInstance "OBBox which bounds the near clip plane"
     --- @field protected ProjectionTransform Matrix4Instance
     --- @field protected CameraInverseTransform Matrix3dInstance
@@ -316,16 +309,6 @@ end
 
         -- "Update the frustum"
         self.Frustum:Init( cameraMatrix, viewportMin, viewportMax, zNear, zFar )
-        self.ViewSpaceFrustum:Init( matrix3d.New( true ), viewportMin, viewportMax, zNear, zFar )
-
-        -- Omitted viewspace frustum init    
-
-        -- "Update the OBB around the near clip rectangle"
-        --self.NearClipBBox.Center = cameraMatrix * Vector( 0, 0, zNear )
-        --self.NearClipBBox.Extendt.x = ( viewportMax.x - viewportMin.x ) * -zNear * 0.5
-        --self.NearClipBBox.Extendt.y = ( viewportMax.y - viewportMin.y ) * -zNear * 0.5
-        --self.NearClipBBox.Extendt.z = 0.01
-        --self.NearClipBBox.Basis.Set( cameraMatrix )
 
         -- "Update the inverse camera matrix"
         self.CameraInverseTransform = self:GetTransform():GetInverse()
@@ -339,15 +322,6 @@ end
                 horizontalFov, verticalFov,
                 zNearDistance, zFarDistance
             )
-
-            -- self.ProjectionTransform:InitPerspective(
-            --     viewportMin.x * zNearDistance,
-            --     viewportMax.x * zNearDistance,
-            --     viewportMin.y * zNearDistance,
-            --     viewportMax.y * zNearDistance,
-            --     zNearDistance,
-            --     zFarDistance
-            -- )
         else
             self.ProjectionTransform:InitOrthographic(
                 viewportMin.x,
