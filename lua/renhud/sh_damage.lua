@@ -64,13 +64,33 @@ local isHotload = not table.IsEmpty( LIB )
         }
 
         --- @private
-        --- @param direction integer
-        --- @param ply Player The player to send damage info to
-        function LIB.SendIncomingDamageInfo( direction, ply )
+        --- @param ply Player
+        --- @param dmgInfo CTakeDamageInfo
+        function LIB.SendIncomingDamageInfo( ply, dmgInfo )
+            if not IsValid( ply ) or not isentity( ply ) or not ply:IsPlayer() then return end
+            if not LIB.DamageInfoSubscribers[ply] then return end
+
+            local inflictor = dmgInfo:GetInflictor()
+            local isOmnidirectionalDamage = LIB.OmnidirectionalDamageTypes[dmgInfo:GetDamageType()]
+
             net.Start( "A1_Renegade_PlayerDamage" )
-            net.WriteInt( direction, 4 )
+            net.WriteBool( isOmnidirectionalDamage )
+            if not isOmnidirectionalDamage then
+                local directionVector
+
+                if not isOmnidirectionalDamage and IsValid( inflictor ) then
+                    directionVector = ( inflictor:GetPos() - ply:GetPos() )
+                end
+
+                if directionVector then
+                    net.WriteVector( directionVector )
+                end
+            end
             net.Send( ply )
         end
+
+        -- Listen for damage
+        hook.Add( "PostEntityTakeDamage", "A1_Renegade_PlayerTakesDamage", LIB.SendIncomingDamageInfo )
 
         --- @private
         --- Process player damage info subscription changes
@@ -87,39 +107,6 @@ local isHotload = not table.IsEmpty( LIB )
 
         -- Listen for players (un)subscribing
         net.Receive( "A1_Renegade_PlayerDamage", LIB.ReceiveDamageInfoSubscriptionChange )
-
-        --- @private
-        --- Determine the direction that a player took damage from and send it to them if they have subscribed to incoming damage info
-        --- @param ply Player
-        --- @param dmgInfo CTakeDamageInfo
-        --- @param tookDamage boolean Was damage actually applied?
-        function LIB.ProcessPlayerDamage( ply, dmgInfo, tookDamage )
-            if not IsValid( ply ) or not isentity( ply ) or not ply:IsPlayer() then return end
-
-            if not LIB.DamageInfoSubscribers[ply] then return end
-
-            local direction = damageDirectionEnum.NONE
-
-            local inflictor = dmgInfo:GetInflictor()
-
-            local isDamageOmnidirectional = LIB.OmnidirectionalDamageTypes[dmgInfo:GetDamageType()]
-            if isDamageOmnidirectional then
-                direction = damageDirectionEnum.ALL
-            elseif not IsValid( inflictor ) then
-                direction = damageDirectionEnum.ALL
-            else
-                local directionVector = ( inflictor:GetPos() - ply:GetPos() )
-                local relativeDirection = commonBridge.GetEyeTransform( ply ):InverseRotateVector( directionVector )
-
-                -- "Convert direction into 0 .. 7"
-                local angle = math.atan2( relativeDirection.y, -relativeDirection.x )
-                direction = math.floor( 8 * angle / math.rad( 360 ) + 8.5 )
-            end
-
-            LIB.SendIncomingDamageInfo( direction, ply )
-        end
-
-        hook.Add( "PostEntityTakeDamage", "A1_Renegade_PlayerTakesDamage", LIB.ProcessPlayerDamage )
     end
 
     if CLIENT then
@@ -132,8 +119,23 @@ local isHotload = not table.IsEmpty( LIB )
 
         --- Called when we're informed by the server that we have received damage
         function LIB.ReceiveIncomingDamage()
-            local direction = net.ReadInt( 4 )
-            combatManager.ShowStarDamageDirection( direction )
+
+            local isOmnidirectionalDamage = net.ReadBool()
+
+            if isOmnidirectionalDamage then
+                combatManager.ShowStarDamageDirection( damageDirectionEnum.ALL )
+                return
+            end
+
+            local directionVector = net.ReadVector()
+
+            local relativeDirection = commonBridge.GetCameraTransform():InverseRotateVector( directionVector )
+
+            -- "Convert direction into 0 .. 7"
+            local angle = math.atan2( relativeDirection.y, -relativeDirection.x )
+            local directionInt = math.floor( 8 * angle / math.rad( 360 ) + 8.5 )
+
+            combatManager.ShowStarDamageDirection( directionInt )
         end
 
         -- Listen for incoming damage
