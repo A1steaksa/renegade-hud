@@ -180,20 +180,20 @@ end
 
     --- @enum Mask
     STATIC.MASK = {
-        DEPTHCOMPARE        = bit.lshift(7,  0  ),  -- Mask for depth comparison setting
-        DEPTHMASK           = bit.lshift(1,  3  ),  -- Mask for depth mask setting
-        COLORMASK           = bit.lshift(1,  4  ),  -- Mask for color mask setting
-        DSTBLEND            = bit.lshift(7,  5  ),  -- Mask for destination blend setting
-        FOG                 = bit.lshift(3,  8  ),  -- Mask for fog setting
-        PRIMARYGRADIENT     = bit.lshift(7,  10 ),  -- Mask for primary gradient setting
-        SECONDARYGRADIENT   = bit.lshift(1,  13 ),  -- Mask for secondary gradient setting
-        SRCBLEND            = bit.lshift(3,  14 ),  -- Mask for source blend setting
-        MATERIALING         = bit.lshift(1,  16 ),  -- Mask for materialing setting
-        NPATCHENABLE        = bit.lshift(1,  17 ),  -- Mask for npatch enable
-        ALPHATEST           = bit.lshift(1,  18 ),  -- Mask for alpha test enable
-        CULLMODE            = bit.lshift(1,  19 ),  -- Mask for cullmode setting
-        POSTDETAILCOLORFUNC = bit.lshift(15, 20 ),  -- Mask for post detail color function setting
-        POSTDETAILALPHAFUNC = bit.lshift(7,  24 ),  -- Mask for post detail alpha function setting
+        DEPTHCOMPARE        = bit.lshift( 7,  0  ),  -- Mask for depth comparison setting
+        DEPTHMASK           = bit.lshift( 1,  3  ),  -- Mask for depth mask setting
+        COLORMASK           = bit.lshift( 1,  4  ),  -- Mask for color mask setting
+        DSTBLEND            = bit.lshift( 7,  5  ),  -- Mask for destination blend setting
+        FOG                 = bit.lshift( 3,  8  ),  -- Mask for fog setting
+        PRIMARYGRADIENT     = bit.lshift( 7,  10 ),  -- Mask for primary gradient setting
+        SECONDARYGRADIENT   = bit.lshift( 1,  13 ),  -- Mask for secondary gradient setting
+        SRCBLEND            = bit.lshift( 3,  14 ),  -- Mask for source blend setting
+        MATERIALING         = bit.lshift( 1,  16 ),  -- Mask for materialing setting
+        NPATCHENABLE        = bit.lshift( 1,  17 ),  -- Mask for npatch enable
+        ALPHATEST           = bit.lshift( 1,  18 ),  -- Mask for alpha test enable
+        CULLMODE            = bit.lshift( 1,  19 ),  -- Mask for cullmode setting
+        POSTDETAILCOLORFUNC = bit.lshift( 15, 20 ),  -- Mask for post detail color function setting
+        POSTDETAILALPHAFUNC = bit.lshift( 7,  24 ),  -- Mask for post detail alpha function setting
     }
     local mask = STATIC.MASK
 --#endregion
@@ -260,6 +260,33 @@ end
         end
 
         typecheck.NotImplementedError( CLASS )
+    end
+
+    local dstBlendFuncConverter = {
+        [DST_BLEND_FUNC.ZERO               ] = BLEND_ZERO,
+        [DST_BLEND_FUNC.ONE                ] = BLEND_ONE,
+        [DST_BLEND_FUNC.SRC_ALPHA          ] = BLEND_SRC_ALPHA,
+        [DST_BLEND_FUNC.SRC_COLOR          ] = BLEND_SRC_COLOR,
+        [DST_BLEND_FUNC.ONE_MINUS_SRC_ALPHA] = BLEND_ONE_MINUS_SRC_ALPHA,
+        [DST_BLEND_FUNC.ONE_MINUS_SRC_COLOR] = BLEND_ONE_MINUS_SRC_COLOR,
+    }
+
+    local srcBlendFuncConverter = {
+        [SRC_BLEND_FUNC.ZERO               ] = BLEND_ZERO,
+        [SRC_BLEND_FUNC.ONE                ] = BLEND_ONE,
+        [SRC_BLEND_FUNC.SRC_ALPHA          ] = BLEND_SRC_ALPHA,
+        [SRC_BLEND_FUNC.ONE_MINUS_SRC_ALPHA] = BLEND_ONE_MINUS_SRC_ALPHA,
+    }
+
+    function INSTANCE:Enable()
+        local dstBlendFunc = dstBlendFuncConverter[ self.DstBlendFunc ]
+        local srcBlendFunc = srcBlendFuncConverter[ self.SrcBlendFunc ]
+
+        render.OverrideBlend( true, srcBlendFunc, dstBlendFunc, BLENDFUNC_ADD )
+    end
+
+    function INSTANCE:Disable()
+        render.OverrideBlend( false )
     end
 
     function INSTANCE:Apply()
