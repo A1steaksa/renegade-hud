@@ -1106,10 +1106,15 @@ end
             )
         end
 
-        --- @param vec Vector
+        --- @param vect Vector
         --- @return Vector
-        function INSTANCE:InverseRotateVector( vec )
-            typecheck.NotImplementedError( CLASS, "InverseRotateVector" )
+        function INSTANCE:InverseRotateVector( vect )
+            local row = self.Row
+            return Vector(
+                ( row[1][1] * vect.x + row[2][1] * vect.y + row[3][1] * vect.z ),
+                ( row[1][2] * vect.x + row[2][2] * vect.y + row[3][2] * vect.z ),
+                ( row[1][3] * vect.x + row[2][3] * vect.y + row[3][3] * vect.z )
+            )
         end
     end
 
