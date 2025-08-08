@@ -1384,6 +1384,17 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
                         health = vehicleHealth
                         healthPercent = vehicleHealth / vehicleMaxHealth
                     end
+
+                    --- Support for Glide vehicles
+                    if Glide then
+                        local glideVehicle = combatStar:GlideGetVehicle()
+                        if IsValid( glideVehicle ) then
+                            vehicle = glideVehicle
+                            health = glideVehicle:GetChassisHealth()
+                            local maxHealth = glideVehicle.MaxChassisHealth
+                            healthPercent = health / maxHealth
+                        end
+                    end
                 end
             end
 
