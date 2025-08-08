@@ -137,11 +137,11 @@ local LIB = CNC.CreateExport()
         return LIB.CreateTransform( ent:GetPos(), ent:GetAngles() )
     end
 
-    --- Gets a transformation matrix that represents a given Player's eyes
-    --- @param ply Player
+    --- Gets a transformation matrix that represents the local player's current viewpoint
     --- @return Matrix3dInstance
-    function LIB.GetEyeTransform( ply )
-        return LIB.CreateTransform( ply:EyePos(), Angle( 0, ply:EyeAngles().yaw, 0 ) )
+    function LIB.GetCameraTransform()
+        local viewSetup = render.GetViewSetup() --[[@as ViewSetup]]
+        return LIB.CreateTransform( viewSetup.origin, viewSetup.angles )
     end
 
     --- [[ Private ]]

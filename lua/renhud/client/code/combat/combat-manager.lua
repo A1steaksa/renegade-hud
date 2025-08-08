@@ -76,8 +76,6 @@ local isHotload = not table.IsEmpty( STATIC )
             STATIC.AutoTransitions = true
             STATIC.StarDamageDirection = 0
             STATIC._AreObserversActive = true
-            STATIC.FirstPerson = true
-            STATIC.FirstPersonDefault = true
             STATIC._IsFirstLoad = false
             STATIC.StarKillerId = 0
             STATIC._IsGamePaused = false
@@ -137,8 +135,6 @@ local isHotload = not table.IsEmpty( STATIC )
 
         hud.Init( renderAvailable )
         -- CNC_RENEGADE.ScreenFadeManager.Init()
-
-        STATIC.FirstPerson = STATIC.FirstPersonDefault
 
         hook.Add( "Think", "A1_Renegade_CombatManager_Think", STATIC.Think )
     end
@@ -509,24 +505,9 @@ local isHotload = not table.IsEmpty( STATIC )
 
     --[[ First Person ]] do
 
-        --- @param isFirstPerson boolean
-        function STATIC.SetFirstPerson( isFirstPerson )
-            STATIC.FirstPerson = isFirstPerson
-        end
-
         --- @return boolean
         function STATIC.IsFirstPerson()
-            return STATIC.FirstPerson
-        end
-
-        --- @param isFirstPersonDefault boolean
-        function STATIC.SetFirstPersonDefault( isFirstPersonDefault )
-            STATIC.FirstPersonDefault = isFirstPersonDefault
-        end
-
-        --- @return boolean
-        function STATIC.GetFirstPersonDefault()
-            return STATIC.FirstPersonDefault
+            return not LocalPlayer():ShouldDrawLocalPlayer()
         end
     end
 
@@ -700,8 +681,6 @@ local isHotload = not table.IsEmpty( STATIC )
     --- @field private IsLevelInitialized boolean
     --- @field private _IsFriendlyFirePermitted boolean
     --- @field private BeaconPlacementEndsGame boolean
-    --- @field private FirstPerson boolean
-    --- @field private FirstPersonDefault boolean
     --- @field private MainCamera CommandoCameraInstance
     --- @field private BackgroundScene unknown
     --- @field private SoundEnvironment unknown
