@@ -192,7 +192,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
             STATIC.WeaponInit()
             -- STATIC.WeaponChartInit()
             STATIC.InfoInit()
-            -- STATIC.DamageInit()
+            STATIC.DamageInit()
             STATIC.TargetInit()
             -- STATIC.ObjectiveInit()
 
@@ -209,7 +209,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
         STATIC.PowerupUpdate()
         STATIC.WeaponUpdate()
         -- STATIC.WeaponChartUpdate()
-        -- STATIC.DamageUpdate()
+        STATIC.DamageUpdate()
         STATIC.TargetUpdate()
         -- STATIC.ObjectiveUpdate()
 
@@ -287,7 +287,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
         STATIC.WeaponRender()
         -- STATIC.WeaponChartRender()
         STATIC.InfoRender()
-        -- STATIC.DamageRender()
+        STATIC.DamageRender()
         STATIC.TargetRender()
         -- STATIC.HudHelpTextRender()
         -- STATIC.ObjectiveRender()
@@ -1598,6 +1598,175 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
             STATIC.InfoRenderer:Render()
             STATIC.InfoHealthCountRenderer:Render()
             STATIC.InfoShieldCountRenderer:Render()
+        end
+    end
+
+    --[[ Damage Indicator ]] do
+
+        --- @class Hud
+        --- @field DamageRenderer Render2dInstance
+        --- @field DamageIndicatorIntensity table<integer, number>
+        --- @field DamageIndicatorIntensityChanging boolean
+        --- @field DamageIndicatorOrientation boolean
+
+        --- @type ConVar
+        local damageIndicatorsConVar
+
+        local DAMAGE_1_UV_UL = Vector( 65, 184 )
+        local DAMAGE_1_UV_LR = Vector( 78, 255 )
+        local DAMAGE_2_UV_UL = Vector( 200, 3  )
+        local DAMAGE_2_UV_LR = Vector( 248, 51 )
+
+        local HORIZ_DAMAGE_SIZE  = Vector( 81,  14  )
+        local VERT_DAMAGE_SIZE   = Vector( 15,  78  )
+        local HV_DAMAGE_OFFSET   = Vector( 170, 168 )
+        local DIAG_DAMAGE_SIZE   = Vector( 53,  59  )
+        local DIAG_DAMAGE_OFFSET = Vector( 119, 117 )
+
+        local HORIZ_WIDTH   = HORIZ_DAMAGE_SIZE.x / 640
+        local HORIZ_HEIGHT  = HORIZ_DAMAGE_SIZE.y / 480
+        local VERT_WIDTH    = VERT_DAMAGE_SIZE.x / 640
+        local VERT_HEIGHT   = VERT_DAMAGE_SIZE.y / 480
+        local OFFSET_X      = HV_DAMAGE_OFFSET.x / 640
+        local OFFSET_Y      = HV_DAMAGE_OFFSET.y / 480
+
+        local DIAG_WIDTH	= DIAG_DAMAGE_SIZE.x / 640
+	    local DIAG_HEIGHT	= DIAG_DAMAGE_SIZE.y / 480
+        local DIAG_OFFSET_X	= DIAG_DAMAGE_OFFSET.x / 640
+	    local DIAG_OFFSET_Y	= DIAG_DAMAGE_OFFSET.y / 480
+
+        local NUM_DAMAGE_INDICATORS = 8
+
+        function STATIC.DamageReset()
+            for i = 0, NUM_DAMAGE_INDICATORS do
+                STATIC.DamageIndicatorIntensity[i] = 0
+            end
+            STATIC.DamageIndicatorIntensityChanging = true
+            combatManager.ClearStarDamageDirection()
+        end
+
+        function STATIC.DamageInit()
+            STATIC.DamageIndicatorIntensity = {}
+
+            STATIC.DamageRenderer = render2d.New()
+            STATIC.DamageRenderer:SetMaterial( STATIC.Materials.Hud.Main )
+            STATIC.DamageRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            STATIC.DamageRenderer:EnableAdditive( true )
+
+            STATIC.DamageReset()
+        end
+
+        --- @param index integer
+        --- @param startX number
+        --- @param startY number
+        --- @param endX number
+        --- @param endY number
+        function STATIC.DamageAddIndicator( index, startX, startY, endX, endY )
+
+            --- @type table<number,Vector>
+            local vert = {}
+            vert[0] = Vector( startX, startY )
+            vert[1] = Vector( startX, endY   )
+            vert[2] = Vector( endX,   startY )
+            vert[3] = Vector( endX,   endY   )
+
+            if not combatManager.IsFirstPerson() then
+                for i = 0, 3 do
+                    vert[i].x = vert[i].x * math.abs( 1 + vert[i].y ) -- "Skew"
+                    vert[i].y = vert[i].y / 2                         -- "Squash vertical"
+                    vert[i].y = vert[i].y + 0.25                      -- "Lower"
+                end
+            end
+
+            local resolution = render2d.GetScreenResolution()
+
+            for i = 0, 3 do
+                -- "Numbers are -0.5 to 0.5, switch them to pixels, to match the info_renderer mode"
+                vert[i].x = ( vert[i].x + 0.5 ) * resolution:Width()
+                vert[i].y = ( vert[i].y + 0.5 ) * resolution:Height()
+            end
+
+            --- @type RectInstance
+            local uv
+            if bit.band( index, 1 ) == 1 then
+                uv = rect.New( DAMAGE_2_UV_UL, DAMAGE_2_UV_LR )
+            else
+                uv = rect.New( DAMAGE_1_UV_UL, DAMAGE_1_UV_LR )
+            end
+            uv:ScaleVector( INFO_UV_SCALE )
+
+            local intensity = math.Clamp( STATIC.DamageIndicatorIntensity[index] * 255, 0, 255 )
+            local color = Color( intensity, intensity, intensity )
+
+            if index == 3 or index == 4 then
+                STATIC.DamageRenderer:AddQuad( vert[1], vert[3], vert[0], vert[2], uv, color )
+            elseif index == 5 or index == 6 then
+                STATIC.DamageRenderer:AddQuad( vert[0], vert[1], vert[2], vert[3], uv, color )
+            elseif index == 7 or index == 0 then
+                STATIC.DamageRenderer:AddQuad( vert[2], vert[0], vert[3], vert[1], uv, color )
+            elseif index == 1 or index == 2 then
+                STATIC.DamageRenderer:AddQuad( vert[3], vert[2], vert[1], vert[0], uv, color )
+            end
+        end
+
+        function STATIC.DamageUpdate()
+            STATIC.DamageRenderer:Reset()
+
+            if not damageIndicatorsConVar then
+                damageIndicatorsConVar = GetConVar( "ren_damage_indicators_enabled" )
+                if not damageIndicatorsConVar then
+                    return
+                end
+            end
+
+            local areDamageIndicatorsEnabled = damageIndicatorsConVar:GetBool()
+            if not areDamageIndicatorsEnabled then return end
+
+            local newDamage = combatManager.GetStarDamageDirection()
+
+            if newDamage ~= 0 then
+                STATIC.DamageIndicatorIntensityChanging = true
+            end
+
+            local indicatorsMatchPerspective = STATIC.DamageIndicatorOrientation == combatManager.IsFirstPerson()
+            if not STATIC.DamageIndicatorIntensityChanging and indicatorsMatchPerspective  then
+                return
+            end
+
+            STATIC.DamageIndicatorOrientation = combatManager.IsFirstPerson()
+            STATIC.DamageIndicatorIntensityChanging = false
+
+            -- "Update the intensities"
+            combatManager.ClearStarDamageDirection()
+
+            for i = 0, ( NUM_DAMAGE_INDICATORS - 1 ) do
+                -- "Apply new damage"
+                local tookDamageInThisDirection = bit.band( newDamage, bit.lshift( 1, i ) ) ~= 0
+                if tookDamageInThisDirection then
+                    STATIC.DamageIndicatorIntensity[i] = 1
+                    STATIC.DamageIndicatorIntensityChanging = true
+                else
+                    if STATIC.DamageIndicatorIntensity[i] > 0 then
+                        STATIC.DamageIndicatorIntensity[i] = STATIC.DamageIndicatorIntensity[i] - FrameTime() -- "and fade it away"
+                        STATIC.DamageIndicatorIntensity[i] = math.Clamp( STATIC.DamageIndicatorIntensity[i], 0, 1 )
+                        STATIC.DamageIndicatorIntensityChanging = true
+                    end
+                end
+            end
+
+            -- "Redraw the indicators"
+            STATIC.DamageAddIndicator( 0, -HORIZ_WIDTH / 2,				   -OFFSET_Y - HORIZ_HEIGHT / 2,	  HORIZ_WIDTH / 2,				    -OFFSET_Y + HORIZ_HEIGHT / 2	 )
+        	STATIC.DamageAddIndicator( 2,  OFFSET_X - VERT_WIDTH / 2,      -VERT_HEIGHT / 2,				  OFFSET_X + VERT_WIDTH / 2,		 VERT_HEIGHT / 2			     )
+	        STATIC.DamageAddIndicator( 4, -HORIZ_WIDTH / 2,				    OFFSET_Y - HORIZ_HEIGHT / 2,	  HORIZ_WIDTH / 2,				     OFFSET_Y + HORIZ_HEIGHT / 2	 )
+	        STATIC.DamageAddIndicator( 6, -OFFSET_X - VERT_WIDTH / 2,	   -VERT_HEIGHT / 2,				 -OFFSET_X + VERT_WIDTH / 2,		 VERT_HEIGHT / 2			     )
+	        STATIC.DamageAddIndicator( 1,  DIAG_OFFSET_X - DIAG_WIDTH / 2, -DIAG_OFFSET_Y - DIAG_HEIGHT / 2,  DIAG_OFFSET_X + DIAG_WIDTH / 2,	-DIAG_OFFSET_Y + DIAG_HEIGHT / 2 )
+	        STATIC.DamageAddIndicator( 3,  DIAG_OFFSET_X - DIAG_WIDTH / 2,  DIAG_OFFSET_Y - DIAG_HEIGHT / 2,  DIAG_OFFSET_X + DIAG_WIDTH / 2,	 DIAG_OFFSET_Y + DIAG_HEIGHT / 2 )
+	        STATIC.DamageAddIndicator( 5, -DIAG_OFFSET_X - DIAG_WIDTH / 2,  DIAG_OFFSET_Y - DIAG_HEIGHT / 2, -DIAG_OFFSET_X + DIAG_WIDTH / 2,	 DIAG_OFFSET_Y + DIAG_HEIGHT / 2 )
+	        STATIC.DamageAddIndicator( 7, -DIAG_OFFSET_X - DIAG_WIDTH / 2, -DIAG_OFFSET_Y - DIAG_HEIGHT / 2, -DIAG_OFFSET_X + DIAG_WIDTH / 2,	-DIAG_OFFSET_Y + DIAG_HEIGHT / 2 )
+        end
+
+        function STATIC.DamageRender()
+            STATIC.DamageRenderer:Render()
         end
     end
 end

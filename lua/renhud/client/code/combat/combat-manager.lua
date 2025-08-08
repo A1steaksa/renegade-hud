@@ -559,10 +559,15 @@ end
     end
 
     --[[ Damage Direction ]] do
-        
-        --- @param direction integer
+
+        --- @param direction DamageDirection
         function STATIC.ShowStarDamageDirection( direction )
-            typecheck.NotImplementedError( CLASS, "ShowStarDamageDirection" )
+            if direction == damageDirectionEnum.ALL then
+                STATIC.StarDamageDirection = 255 -- Decimal 255 is binary 1111 1111
+                return
+            end
+
+            STATIC.StarDamageDirection = bit.bor( STATIC.StarDamageDirection, bit.lshift( 1, bit.band( direction, 7 ) ) )
         end
 
         --- @return integer
