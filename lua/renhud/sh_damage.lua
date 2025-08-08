@@ -64,10 +64,37 @@ local isHotload = not table.IsEmpty( LIB )
         }
 
         --- @private
-        --- @param ply Player
+        --- @param ent Player|Entity
         --- @param dmgInfo CTakeDamageInfo
-        function LIB.SendIncomingDamageInfo( ply, dmgInfo )
-            if not IsValid( ply ) or not isentity( ply ) or not ply:IsPlayer() then return end
+        function LIB.SendIncomingDamageInfo( ent, dmgInfo )
+            if not IsValid( ent ) or not isentity( ent ) then return end
+
+            --- @type Player
+            local ply
+
+            if ent:IsPlayer() then
+                ply = ent --[[@as Player]]
+            end
+
+            if ent:IsVehicle() then
+                --- @cast ent Vehicle
+
+                -- Support for Glide vehicles
+                if ent.IsGlideVehicle then
+                    -- Send the damage event to all of the vehicle's occupants
+                    for _, seat in pairs( ent.seats ) do
+                        LIB.SendIncomingDamageInfo( seat:GetDriver(), dmgInfo )
+                    end
+                    return
+                end
+
+                local driver = ent:GetDriver()
+                if IsValid( driver ) then
+                    ply = driver --[[@as Player]]
+                end
+            end
+
+            if not ply then return end
             if not LIB.DamageInfoSubscribers[ply] then return end
 
             local inflictor = dmgInfo:GetInflictor()
@@ -75,16 +102,9 @@ local isHotload = not table.IsEmpty( LIB )
 
             net.Start( "A1_Renegade_PlayerDamage" )
             net.WriteBool( isOmnidirectionalDamage )
-            if not isOmnidirectionalDamage then
-                local directionVector
-
-                if not isOmnidirectionalDamage and IsValid( inflictor ) then
-                    directionVector = ( inflictor:GetPos() - ply:GetPos() )
-                end
-
-                if directionVector then
-                    net.WriteVector( directionVector )
-                end
+            if not isOmnidirectionalDamage and IsValid( inflictor ) then
+                local directionVector = ( inflictor:GetPos() - ent:GetPos() )
+                net.WriteVector( directionVector )
             end
             net.Send( ply )
         end
