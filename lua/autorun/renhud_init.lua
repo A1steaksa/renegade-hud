@@ -32,6 +32,7 @@ end
 
     -- Load shared utilities
     include( "renhud/sh_info-entity.lua" )
+    include( "renhud/sh_damage.lua" )
 end
 
 --[[ Server Init ]]

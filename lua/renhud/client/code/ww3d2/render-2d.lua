@@ -202,7 +202,11 @@ end
             render.PushFilterMin( TEXFILTER.POINT )
             render.PushFilterMag( TEXFILTER.POINT )
 
+            self.Shader:Enable()
+
             self.Mesh:Draw()
+
+            self.Shader:Disable()
 
             render.PopFilterMag()
             render.PopFilterMin()

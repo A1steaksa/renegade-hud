@@ -3,14 +3,26 @@
 --- @class Renegade
 local CNC = CNC_RENEGADE
 
-local STATIC
+--- The static components of CombatManager
+--- @class CombatManager
+local STATIC = CNC.CreateExport()
+local isHotload = not table.IsEmpty( STATIC )
 
---[[ Class Setup ]] do
 
-    --- The static components of CombatManager
-    --- @class CombatManager
-    STATIC = CNC.CreateExport()
-end
+-- #region Imports
+
+    --- @type Hud
+    local hud = CNC.Import( "renhud/client/code/combat/hud.lua" )
+
+    --- @type StyleManager
+    local styleManager = CNC.Import( "renhud/client/code/wwui/style-manager.lua" )
+
+    --- @type CommandoCamera
+    local commandoCamera = CNC.Import( "renhud/client/code/combat/commando-camera.lua" )
+
+    --- @type DamageLib
+    local damageLib = CNC.Import( "renhud/sh_damage.lua" )
+-- #endregion
 
 
 --#region Enums
@@ -28,20 +40,9 @@ end
         SNAPSHOT        = 8
     }
     local combatMode = STATIC.COMBAT_MODE
+
+    local damageDirectionEnum = damageLib.DAMAGE_DIRECTION
 --#endregion
-
-
--- #region Imports
-
-    --- @type Hud
-    local hud = CNC.Import( "renhud/client/code/combat/hud.lua" )
-
-    --- @type StyleManager
-    local styleManager = CNC.Import( "renhud/client/code/wwui/style-manager.lua" )
-
-    --- @type CommandoCamera
-    local commandoCamera = CNC.Import( "renhud/client/code/combat/commando-camera.lua" )
--- #endregion
 
 
 --[[ Static Functions and Variables ]] do
@@ -55,50 +56,50 @@ end
 
     --[[ Default Values ]] do
 
-        STATIC.MainCamera = nil
-        STATIC.BackgroundScene = nil
-        STATIC.SoundEnvironment = nil
-        STATIC.DazzleLayer = nil
+        if not isHotload then
+            STATIC.MainCamera = nil
+            STATIC.BackgroundScene = nil
+            STATIC.SoundEnvironment = nil
+            STATIC.DazzleLayer = nil
 
-        STATIC._IsStarDeterminingTarget = true
-        STATIC._IAmServer = false
-        STATIC._IAmClient = false
-        STATIC.MyId = 0
-        STATIC.SyncTime = 0
+            STATIC._IsStarDeterminingTarget = true
+            STATIC._IAmServer = false
+            STATIC._IAmClient = false
+            STATIC.MyId = 0
+            STATIC.SyncTime = 0
 
-        STATIC.NetworkHandler = nil
-        STATIC.MiscHandler = nil
-        STATIC.MessageWindow = nil
+            STATIC.NetworkHandler = nil
+            STATIC.MiscHandler = nil
+            STATIC.MessageWindow = nil
 
-        STATIC.DifficultyLevel = 1
-        STATIC.AutoTransitions = true
-        STATIC.StarDamageDirection = 0
-        STATIC._AreObserversActive = true
-        STATIC.FirstPerson = true
-        STATIC.FirstPersonDefault = true
-        STATIC._IsFirstLoad = false
-        STATIC.StarKillerId = 0
-        STATIC._IsGamePaused = false
-        STATIC.IsLevelInitialized = false
+            STATIC.DifficultyLevel = 1
+            STATIC.AutoTransitions = true
+            STATIC.StarDamageDirection = 0
+            STATIC._AreObserversActive = true
+            STATIC._IsFirstLoad = false
+            STATIC.StarKillerId = 0
+            STATIC._IsGamePaused = false
+            STATIC.IsLevelInitialized = false
 
-        STATIC.StartScript = nil
-        STATIC.RespawnScript = nil
+            STATIC.StartScript = nil
+            STATIC.RespawnScript = nil
 
-        STATIC._IsAutosaveRequested = false
-        STATIC.LastRoundTripPingMs = 0
-        STATIC.AvgRoundTripPingMs = 0
-        STATIC._IsFriendlyFirePermitted = false
-        STATIC.BeaconPlacementEndsGame = false
-        STATIC._IsHitReticleEnabled = true
-        STATIC._IsGameplayPermitted = false
+            STATIC._IsAutosaveRequested = false
+            STATIC.LastRoundTripPingMs = 0
+            STATIC.AvgRoundTripPingMs = 0
+            STATIC._IsFriendlyFirePermitted = false
+            STATIC.BeaconPlacementEndsGame = false
+            STATIC._IsHitReticleEnabled = true
+            STATIC._IsGameplayPermitted = false
 
-        STATIC.CombatMode = combatMode.NONE
-        STATIC.ReloadCount = 0
-        STATIC.LastLsdName = nil
-        STATIC.LoadProgress = 0
-        STATIC.MultiplayRenderingAllowed = true
+            STATIC.CombatMode = combatMode.NONE
+            STATIC.ReloadCount = 0
+            STATIC.LastLsdName = nil
+            STATIC.LoadProgress = 0
+            STATIC.MultiplayRenderingAllowed = true
 
-        STATIC.GameScene = nil
+            STATIC.GameScene = nil
+        end
     end
 
     --- @param renderAvailable boolean
@@ -134,8 +135,6 @@ end
 
         hud.Init( renderAvailable )
         -- CNC_RENEGADE.ScreenFadeManager.Init()
-
-        STATIC.FirstPerson = STATIC.FirstPersonDefault
 
         hook.Add( "Think", "A1_Renegade_CombatManager_Think", STATIC.Think )
     end
@@ -506,24 +505,9 @@ end
 
     --[[ First Person ]] do
 
-        --- @param isFirstPerson boolean
-        function STATIC.SetFirstPerson( isFirstPerson )
-            STATIC.FirstPerson = isFirstPerson
-        end
-
         --- @return boolean
         function STATIC.IsFirstPerson()
-            return STATIC.FirstPerson
-        end
-
-        --- @param isFirstPersonDefault boolean
-        function STATIC.SetFirstPersonDefault( isFirstPersonDefault )
-            STATIC.FirstPersonDefault = isFirstPersonDefault
-        end
-
-        --- @return boolean
-        function STATIC.GetFirstPersonDefault()
-            return STATIC.FirstPersonDefault
+            return not LocalPlayer():ShouldDrawLocalPlayer()
         end
     end
 
@@ -559,10 +543,15 @@ end
     end
 
     --[[ Damage Direction ]] do
-        
-        --- @param direction integer
+
+        --- @param direction DamageDirection
         function STATIC.ShowStarDamageDirection( direction )
-            typecheck.NotImplementedError( CLASS, "ShowStarDamageDirection" )
+            if direction == damageDirectionEnum.ALL then
+                STATIC.StarDamageDirection = 255 -- Decimal 255 is binary 1111 1111
+                return
+            end
+
+            STATIC.StarDamageDirection = bit.bor( STATIC.StarDamageDirection, bit.lshift( 1, bit.band( direction, 7 ) ) )
         end
 
         --- @return integer
@@ -692,8 +681,6 @@ end
     --- @field private IsLevelInitialized boolean
     --- @field private _IsFriendlyFirePermitted boolean
     --- @field private BeaconPlacementEndsGame boolean
-    --- @field private FirstPerson boolean
-    --- @field private FirstPersonDefault boolean
     --- @field private MainCamera CommandoCameraInstance
     --- @field private BackgroundScene unknown
     --- @field private SoundEnvironment unknown
