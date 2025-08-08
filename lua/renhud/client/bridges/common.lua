@@ -97,10 +97,11 @@ local LIB = CNC.CreateExport()
         return true
     end
 
-    --- Gets a transformation matrix that represents a given Entity
-    --- @param ent Entity
+    --- Create a transformation matrix to represent a given position and angle
+    --- @param pos Vector
+    --- @param ang Angle
     --- @return Matrix3dInstance
-    function LIB.GetTransform( ent )
+    function LIB.CreateTransform( pos, ang )
         local matrix = matrix3d.New( false )
         local row = matrix.Row
         local row1, row2, row3 = row[1], row[2], row[3]
@@ -109,12 +110,9 @@ local LIB = CNC.CreateExport()
         row2.x, row2.y, row2.z = -1,  0,  0
         row3.x, row3.y, row3.z =  0,  1,  0
 
-        local pos = ent:GetPos()
         row1.w = pos.x
         row2.w = pos.y
         row3.w = pos.z
-
-        local ang = ent:GetAngles()
 
         -- "Coordinates in Source are (X,Y,Z), where X is forward/East, Y is left/North, and Z is up"
         -- https://developer.valvesoftware.com/wiki/Coordinates
@@ -130,6 +128,20 @@ local LIB = CNC.CreateExport()
         matrix:RotateZ( math.rad( 90  ) )
 
         return matrix
+    end
+
+    --- Gets a transformation matrix that represents a given Entity
+    --- @param ent Entity
+    --- @return Matrix3dInstance
+    function LIB.GetTransform( ent )
+        return LIB.CreateTransform( ent:GetPos(), ent:GetAngles() )
+    end
+
+    --- Gets a transformation matrix that represents a given Player's eyes
+    --- @param ply Player
+    --- @return Matrix3dInstance
+    function LIB.GetEyeTransform( ply )
+        return LIB.CreateTransform( ply:EyePos(), Angle( 0, ply:EyeAngles().yaw, 0 ) )
     end
 
     --- [[ Private ]]
