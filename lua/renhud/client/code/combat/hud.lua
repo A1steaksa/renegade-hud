@@ -67,6 +67,15 @@ local STATIC = CNC.CreateExport()
 
 --#region Enums
 
+    --- @enum SeatType
+    LIB.SEAT_TYPE = {
+        None      = -1,
+        Passenger =  1,
+        Driver    =  2,
+        Gunner    =  3
+    }
+    local seatTypeEnum = LIB.SEAT_TYPE
+
     local dispositionEnum = infoEntityLib.DISPOSITION
     local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 --#endregion
@@ -163,6 +172,12 @@ local STATIC = CNC.CreateExport()
         STATIC.Materials.TeamIcons.BlackMesa = LoadMaterial( "team-icons/black-mesa" )
         STATIC.Materials.TeamIcons.HECU      = LoadMaterial( "team-icons/hecu" )
         STATIC.Materials.TeamIcons.Aperture  = LoadMaterial( "team-icons/aperture" )
+
+        -- Seat Icons
+        STATIC.Materials.SeatIcons = {}
+        STATIC.Materials.SeatIcons[seatTypeEnum.Driver]    = LoadMaterial( "hud_driverseat" )
+        STATIC.Materials.SeatIcons[seatTypeEnum.Gunner]    = LoadMaterial( "hud_gunseat" )
+        STATIC.Materials.SeatIcons[seatTypeEnum.Passenger] = LoadMaterial( "hud_passseat" )
     end
 
     --[[ Load Font3d Instances ]] do
@@ -673,8 +688,11 @@ local STATIC = CNC.CreateExport()
         --- @field WeaponImageRenderer Render2dInstance
         --- @field WeaponClipCountRenderer Render2dTextInstance
         --- @field WeaponBase Vector
-        --- @field WeaponBoxUvUpperLeft Vector
-        --- @field WeaponBoxUvLowerRight Vector
+        --- @field LastHudWeapon Weapon
+        --- @field LastVehicleSeat SeatType
+
+        STATIC.LastClipCount        = STATIC.LastClipCount or 0
+        STATIC.CenterClipCountTimer = STATIC.CenterClipCountTimer or 0
 
         STATIC.WeaponBoxUvUpperLeft    = Vector( 0, 0 );
         STATIC.WeaponBoxUvLowerRight   = Vector( 95, 95 );
@@ -683,14 +701,16 @@ local STATIC = CNC.CreateExport()
         local CLIP_ROUNDS_OFFSET  = Vector( 15, 27 )
         local TOTAL_ROUNDS_OFFSET = Vector( 65, 34 )
 
+        local BULLET_ICON_UV_UL   = Vector( 2, 211 )
+        local BULLET_ICON_UV_LR   = Vector( 13, 255 )
+        local BULLET_ICON_OFFSET  = Vector( -20, -30 )
+
+        local weaponNameOffset = Vector( 1, 0 )
+        local clipCountOffset = Vector( 4, 15 )
+
+        local CENTER_CLIP_COUNT_TIME = 2
+
         function STATIC.WeaponInit()
-
-            --[[ Weapon Name ]] do
-                local font = styleManager.PeekFont( styleManager.FONT_STYLE.FONT_INGAME_TXT )
-
-                STATIC.WeaponNameRenderer = render2dText.New( font )
-                STATIC.WeaponNameRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
-            end
 
             --[[ Weapon Background ]] do
                 STATIC.WeaponBoxRenderer = render2d.New()
@@ -707,6 +727,18 @@ local STATIC = CNC.CreateExport()
                 STATIC.WeaponBase = drawBox:UpperLeft()
             end
 
+            --[[ Weapon Image ]] do
+                STATIC.WeaponImageRenderer = render2d.New()
+                STATIC.WeaponImageRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            end
+
+            --[[ Weapon Name ]] do
+                local font = styleManager.PeekFont( styleManager.FONT_STYLE.FONT_INGAME_TXT )
+
+                STATIC.WeaponNameRenderer = render2dText.New( font )
+                STATIC.WeaponNameRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+            end
+
             --[[ Weapon Clip Count ]] do
                 STATIC.WeaponClipCountRenderer = render2dText.New( STATIC.Font3dInstances.Large )
                 STATIC.WeaponClipCountRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
@@ -716,85 +748,200 @@ local STATIC = CNC.CreateExport()
                 STATIC.WeaponTotalCountRenderer = render2dText.New( STATIC.Font3dInstances.Small )
                 STATIC.WeaponTotalCountRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
             end
+
+            STATIC.LastHudWeapon = NULL
+            STATIC.LastVehicleSeat = seatTypeEnum.None
         end
 
         function STATIC.WeaponUpdate()
+            -- This function has had to be reorganized to integrate vehicle weapons into the ammo display
 
-            --[[ Weapon Name ]] do
+            STATIC.WeaponClipCountRenderer:Reset()
+            STATIC.WeaponTotalCountRenderer:Reset()
 
-                local name = "Unknown"
+            local combatStar = combatManager.GetTheStar() --[[@as Player]]
+            if not IsValid( combatStar ) then return end
 
-                local wep = LocalPlayer():GetActiveWeapon()
-                if IsValid( wep ) then
+            --- @type Vehicle
+            local vehicle
+            local isGlideVehicle = false
+            local inVehicle = combatStar:InVehicle()
+            if inVehicle then
+                vehicle = combatStar:GetVehicle()
 
-                    local preformattedName = preformattedWeaponNames[ wep:GetClass() ]
+                if Glide then
+                    local glideVehicle = combatStar:GlideGetVehicle()
+                    if IsValid( glideVehicle ) then
+                        vehicle = glideVehicle
+                        isGlideVehicle = true
+                    end
+                end
+            end
 
-                    if preformattedName then
-                        name = preformattedName
+            --[[ Ammo Counts ]] do
+
+                --- @type integer
+                local clipCount
+
+                --- @type integer
+                local totalCount
+
+                -- Figure out the total and clip counts
+                if inVehicle then
+                    if isGlideVehicle then
+                        -- TODO: Find a performant way to network weapon and ammo info for Glide
+                        clipCount = 999
+                        totalCount = 999
                     else
-                        -- Localize the name, if possible
-                        name = language.GetPhrase( wep:GetPrintName() )
+                        local _, _, count = vehicle:GetAmmo()
+                        if count > -1 then
+                            clipCount = count
+                        else
+                            clipCount = 999
+                        end
+
+                        totalCount = 999
+                    end
+                else
+                    local weapon = combatStar:GetActiveWeapon()
+                    if not IsValid( weapon ) then return end
+
+                    local clip1Ammo = math.floor( weapon:Clip1() + 0.5 )
+                    if clip1Ammo < 0 then
+                        clipCount = 999
+                    else
+                        clipCount = clip1Ammo
                     end
 
+                    local totalClip1Ammo = math.floor( combatStar:GetAmmoCount( weapon:GetPrimaryAmmoType() ) + 0.5 )
+                    if totalClip1Ammo < 0 then
+                        totalCount = 999
+                    else
+                        totalCount = totalClip1Ammo
+                    end
                 end
 
-                STATIC.WeaponNameRenderer:Reset()
+                local clipCountText = string.format( "%03d", clipCount )
+                local totalCountText = string.format( "%03d", totalCount )
 
-                local textSize = STATIC.WeaponNameRenderer:GetTextExtents( name ) + Vector( 1, 0 )
-                STATIC.WeaponNameRenderer:SetLocation( render2d.GetScreenResolution():LowerRight() - textSize )
-                STATIC.WeaponNameRenderer:DrawText( name )
-            end
-
-            --[[ Weapon Clip Count ]] do
-                STATIC.WeaponClipCountRenderer:Reset()
                 STATIC.WeaponClipCountRenderer:SetLocation( STATIC.WeaponBase + CLIP_ROUNDS_OFFSET )
+                STATIC.WeaponClipCountRenderer:DrawText( clipCountText )
 
-                local ammoText = "999"
-
-                if IsValid( LocalPlayer() ) then
-                    local wep = LocalPlayer():GetActiveWeapon()
-
-                    if IsValid( wep ) then
-                        local clip1Ammo = math.floor( wep:Clip1() + 0.5 )
-
-                        if clip1Ammo < 0 then
-                            clip1Ammo = 999
-                        end
-
-                        ammoText = string.format( "%03d", clip1Ammo )
-                    end
+                if STATIC.LastClipCount ~= clipCount then
+                    STATIC.LastClipCount = clipCount
+                    STATIC.CenterClipCountTimer = CENTER_CLIP_COUNT_TIME
                 end
 
-                STATIC.WeaponClipCountRenderer:DrawText( ammoText )
+                if STATIC.CenterClipCountTimer > 0 then
+                    -- "Also draw the above at the center"
+                    local centerClipCountOffset = render2d.GetScreenResolution():Center()
+                    centerClipCountOffset.x = centerClipCountOffset.x * 1.5
+
+                    local fade = math.Clamp( STATIC.CenterClipCountTimer, 0, 1 )
+                    local fadeColor = Color( 255, 255, 255, fade * 255 )
+
+                    local uv = rect.New( BULLET_ICON_UV_UL, BULLET_ICON_UV_LR )
+                    local draw = rect.New( uv )
+                    uv:ScaleVector( INFO_UV_SCALE )
+                    draw = draw + centerClipCountOffset + BULLET_ICON_OFFSET - draw:UpperLeft()
+
+                    STATIC.InfoRenderer:AddQuad( draw, uv, fadeColor )
+
+                    STATIC.WeaponClipCountRenderer:SetLocation( draw:UpperRight() + clipCountOffset )
+                    STATIC.WeaponClipCountRenderer:DrawText( clipCountText, fadeColor )
+
+                    STATIC.CenterClipCountTimer = STATIC.CenterClipCountTimer - FrameTime()
+                end
+
+                STATIC.WeaponTotalCountRenderer:SetLocation( STATIC.WeaponBase + TOTAL_ROUNDS_OFFSET )
+                STATIC.WeaponTotalCountRenderer:DrawText( totalCountText )
             end
 
-            --[[ Reserve Ammo Count ]] do
-                STATIC.WeaponTotalCountRenderer:Reset()
-                STATIC.WeaponTotalCountRenderer:SetLocation( STATIC.WeaponBase + TOTAL_ROUNDS_OFFSET )
+            --[[ Weapon Icon and Name ]] do
 
-                local ammoText = "999"
+                -- "If in vehicle, don't draw the weapon icon and name,"
+                -- "draw a seat icon and the vehicle name"
+                if combatStar:InVehicle() then
+                    local vehicle = combatStar:GetVehicle()
+                    local seat = seatTypeEnum.Passenger
 
-                if IsValid( LocalPlayer() ) then
-                    local wep = LocalPlayer():GetActiveWeapon()
+                    -- Glide vehicle support
+                    local isGlideVehicle = false
+                    if Glide then
+                        local playerGlideVehicle = combatStar:GlideGetVehicle()
+                        if IsValid( playerGlideVehicle ) then
+                            isGlideVehicle = true
+                            vehicle = playerGlideVehicle
+                        end
+                    end
 
-                    if IsValid( wep ) then
-                        local clip1Ammo = math.floor( LocalPlayer():GetAmmoCount( wep:GetPrimaryAmmoType() ) + 0.5 )
+                    --[[ Determine Seat Type ]] do
+                        if isGlideVehicle then
+                            -- This is the same check used by Glide internally
+                            local isDriver = combatStar:GlideGetSeatIndex() < 2
 
-                        if clip1Ammo < 0 then
-                            clip1Ammo = 999
+                            if isDriver then
+                                seat = seatTypeEnum.Driver
+                            elseif vehicle.crosshair.enabled then
+                                seat = seatTypeEnum.Gunner
+                            end
+                        else
+                            seat = seatTypeEnum.Driver
+                        end
+                    end
+
+                    if STATIC.LastVehicleSeat ~= seat then
+                        STATIC.LastVehicleSeat = seat
+                        STATIC.LastHudWeapon = nil -- "Force weapon to re-draw next"
+
+                        STATIC.WeaponImageRenderer:Reset()
+                        local fileName = STATIC.Materials.SeatIcons[seat]
+                        STATIC.WeaponImageRenderer:SetMaterial( fileName )
+                        local offset = Vector( 16, 34 )
+                        local iconBox = rect.New( 0, 0, 64, 64 )
+                        iconBox = iconBox + STATIC.WeaponBase + offset - iconBox:UpperLeft()
+                        STATIC.WeaponImageRenderer:AddQuad( iconBox )
+
+                        -- "Draw Name Backdrop"
+                        STATIC.WeaponNameRenderer:Reset()
+                        local name = infoEntityLib.GetEntityDisplayName( vehicle )
+                        local textSize = STATIC.WeaponNameRenderer:GetTextExtents( name )
+                        STATIC.WeaponNameRenderer:SetLocation( render2d.GetScreenResolution():LowerRight() - textSize )
+                        STATIC.WeaponNameRenderer:DrawText( name )
+                    end
+                else
+                    local weapon = combatStar:GetActiveWeapon()
+
+                    if STATIC.LastHudWeapon ~= weapon then
+                        STATIC.LastHudWeapon = weapon
+                        STATIC.LastVehicleSeat = nil
+
+                        STATIC.WeaponImageRenderer:Reset()
+                        STATIC.WeaponNameRenderer:Reset()
+
+                        if IsValid( weapon ) then
+                            -- TODO: Weapon icons
+                            -- Omitted: Weapon icons
                         end
 
-                        ammoText = string.format( "%03d", clip1Ammo )
+                        -- "Draw Name Backdrop"
+                        -- "Right justify Name"
+                        local name = preformattedWeaponNames[ weapon:GetClass() ]
+                        if not name then
+                            name = language.GetPhrase( weapon:GetPrintName() )
+                        end
+
+                        local textSize = STATIC.WeaponNameRenderer:GetTextExtents( name ) + weaponNameOffset
+                        STATIC.WeaponNameRenderer:SetLocation( render2d.GetScreenResolution():LowerRight() - textSize )
+                        STATIC.WeaponNameRenderer:DrawText( name )
                     end
                 end
-
-                STATIC.WeaponTotalCountRenderer:DrawText( ammoText )
             end
         end
 
         function STATIC.WeaponRender()
             STATIC.WeaponBoxRenderer:Render()
-            --STATIC.WeaponImageRenderer:Render()
+            STATIC.WeaponImageRenderer:Render()
             STATIC.WeaponNameRenderer:Render()
             STATIC.WeaponClipCountRenderer:Render()
             STATIC.WeaponTotalCountRenderer:Render()
