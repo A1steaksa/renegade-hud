@@ -599,7 +599,6 @@ end
             ["npc_combine_s"]             = GetCombineSoldierName,
         }
 
-        --- @private
         --- Determines the name to display on the HUD for a given Entity
         --- @param ent Entity
         --- @return string

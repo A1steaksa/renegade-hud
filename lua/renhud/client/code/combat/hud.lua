@@ -3,15 +3,9 @@
 --- @class Renegade
 local CNC = CNC_RENEGADE
 
-local STATIC
-
---[[ Class Setup ]] do
-
-    --- The static components of Hud
-    --- @class Hud
-    STATIC = CNC.CreateExport()
-end
-
+--- The static components of Hud
+--- @class Hud
+local STATIC = CNC.CreateExport()
 
 --#region Imports
 
@@ -73,8 +67,8 @@ end
 
 --#region Enums
 
-local dispositionEnum = infoEntityLib.DISPOSITION
-local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
+    local dispositionEnum = infoEntityLib.DISPOSITION
+    local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 --#endregion
 
 
@@ -673,6 +667,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
     end
 
     --[[ Weapon Display ]] do
+
         --- @class Hud
         --- @field WeaponBoxRenderer Render2dInstance
         --- @field WeaponImageRenderer Render2dInstance
@@ -684,7 +679,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
         STATIC.WeaponBoxUvUpperLeft    = Vector( 0, 0 );
         STATIC.WeaponBoxUvLowerRight   = Vector( 95, 95 );
 
-        local WEAPON_OFFSET = Vector( 100, 110 )
+        local WEAPON_OFFSET       = Vector( 100, 110 )
         local CLIP_ROUNDS_OFFSET  = Vector( 15, 27 )
         local TOTAL_ROUNDS_OFFSET = Vector( 65, 34 )
 
@@ -828,15 +823,6 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
         local TARGET_NAME_UV_UL = Vector( 1, 149 )
         local TARGET_NAME_UV_LR = Vector( 91, 164 )
 
-        local NOD_ICON_UV_UL = Vector( 14, 205 )
-        local NOD_ICON_UV_LR = Vector( 34, 221 )
-
-        local GDI_ICON_UV_UL = Vector( 14, 222 )
-        local GDI_ICON_UV_LR = Vector( 34, 238 )
-
-        local NEUTRAL_ICON_UV_UL = Vector( 14, 238 )
-        local NEUTRAL_ICON_UV_LR = Vector( 33, 257 )
-
         local TARGET_ENTERABLE_SIZE = Vector( 32, 32 )
         local TARGET_ENTERABLE_UV_UL = Vector( 45, 209 )
         local TARGET_ENTERABLE_UV_LR = Vector( 51, 215 )
@@ -934,7 +920,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
             end
 
             local box = render2d.GetScreenResolution()
-            
+
             if physObj then
                 box = STATIC.GetTargetBox( targetEnt )
             else
@@ -1356,8 +1342,6 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
             local shieldPercent = 0
 
             local combatStar = LocalPlayer()
-
-            -- TODO: Vehicle health
 
             -- Get the player's current health or the health of their vehicle
             if IsValid( combatStar ) then
