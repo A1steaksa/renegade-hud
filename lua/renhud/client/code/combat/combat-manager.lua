@@ -122,7 +122,6 @@ local isHotload = not table.IsEmpty( STATIC )
         -- TODO: Check if this is a good way to set up the star
         STATIC.TheStar = LocalPlayer()
 
-
         -- Create the Dazzle Layer
         if renderAvailable then
             -- STATIC.DazzleLayer = dazzleLayer.New()
