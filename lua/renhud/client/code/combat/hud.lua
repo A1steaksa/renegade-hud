@@ -708,7 +708,7 @@ local STATIC = CNC.CreateExport()
         local weaponNameOffset = Vector( 1, 0 )
         local clipCountOffset = Vector( 4, 15 )
 
-        local CENTER_CLIP_COUNT_TIME = 2
+        local centerAmmoDisplayTime = GetConVar( "ren_weaponinfo_center_ammo_display_time" )
 
         function STATIC.WeaponInit()
 
@@ -829,7 +829,7 @@ local STATIC = CNC.CreateExport()
 
                 if STATIC.LastClipCount ~= clipCount then
                     STATIC.LastClipCount = clipCount
-                    STATIC.CenterClipCountTimer = CENTER_CLIP_COUNT_TIME
+                    STATIC.CenterClipCountTimer = centerAmmoDisplayTime:GetFloat()
                 end
 
                 if STATIC.CenterClipCountTimer > 0 then
@@ -1855,7 +1855,7 @@ local STATIC = CNC.CreateExport()
             STATIC.DamageRenderer:Reset()
 
             if not damageIndicatorsConVar then
-                damageIndicatorsConVar = GetConVar( "ren_damage_indicators_enabled" )
+                damageIndicatorsConVar = GetConVar( "ren_damageindicator_enabled" )
                 if not damageIndicatorsConVar then
                     return
                 end

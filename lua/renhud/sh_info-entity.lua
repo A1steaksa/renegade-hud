@@ -50,9 +50,6 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 
 --[[ Networking and Storing InfoEntities ]] do
 
-    CreateConVar( "ren_info_entity_update_delay",     "0.250",  { FCVAR_ARCHIVE },                   "(Renegade) How frequently, in seconds between updates, should the server send updated InfoEntity data to clients?" )
-    CreateConVar( "ren_info_entity_targeting_length", "500",    { FCVAR_REPLICATED, FCVAR_ARCHIVE }, "(Renegade) The maximum distance, in Source units, that an Entity can be from the camera and still be targeted", 1 )
-
     if SERVER then
         -- Used by the server to send info to each Player about their current InfoEntity
         -- Used by clients to let the server know their InfoEntity or lack of one
@@ -148,7 +145,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
                 end
             end
 
-            local updateDelayConVar = GetConVar( "ren_info_entity_update_delay" )
+            local updateDelayConVar = GetConVar( "ren_entityinfo_update_delay" )
 
             -- Schedule the updates
             timer.Create( updateDelayConVar:GetName(), updateDelayConVar:GetFloat(), 0, LIB.DoAllInfoEntityUpdates )
@@ -255,10 +252,11 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
     end
 end
 
+if not CLIENT then return end
 
 --[[ Finding InfoEntities ]] do
 
-    local traceLengthConVar = GetConVar( "ren_info_entity_targeting_length" )
+    local traceLengthConVar = GetConVar( "ren_entityinfo_max_length" )
 
     --- @private
     --- This table provides a blacklist of classes that are never targetable regardless of other factors.  

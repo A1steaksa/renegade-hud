@@ -76,23 +76,24 @@ local isHotload = not table.IsEmpty( LIB )
                 ply = ent --[[@as Player]]
             end
 
-            if ent:IsVehicle() then
-                --- @cast ent Vehicle
+            -- TODO: Make this toggled via ConVar
+            -- if ent:IsVehicle() then
+            --     --- @cast ent Vehicle
 
-                -- Support for Glide vehicles
-                if ent.IsGlideVehicle then
-                    -- Send the damage event to all of the vehicle's occupants
-                    for _, seat in pairs( ent.seats ) do
-                        LIB.SendIncomingDamageInfo( seat:GetDriver(), dmgInfo )
-                    end
-                    return
-                end
+            --     -- Support for Glide vehicles
+            --     if ent.IsGlideVehicle then
+            --         -- Send the damage event to all of the vehicle's occupants
+            --         for _, seat in pairs( ent.seats ) do
+            --             LIB.SendIncomingDamageInfo( seat:GetDriver(), dmgInfo )
+            --         end
+            --         return
+            --     end
 
-                local driver = ent:GetDriver()
-                if IsValid( driver ) then
-                    ply = driver --[[@as Player]]
-                end
-            end
+            --     local driver = ent:GetDriver()
+            --     if IsValid( driver ) then
+            --         ply = driver --[[@as Player]]
+            --     end
+            -- end
 
             if not ply then return end
             if not LIB.DamageInfoSubscribers[ply] then return end
@@ -130,7 +131,7 @@ local isHotload = not table.IsEmpty( LIB )
     end
 
     if CLIENT then
-        local damageIndicatorsEnabledConVar = CreateConVar( "ren_damage_indicators_enabled", "1", { FCVAR_ARCHIVE }, "(Renegade) Should damage direction indicators draw?", 0, 1 )
+        local damageIndicatorsEnabledConVar = GetConVar( "ren_damageindicator_enabled" )
 
         -- Keep the server up to date with our incoming damage subscription status
         cvars.AddChangeCallback( damageIndicatorsEnabledConVar:GetName(), function( _, _, newValue )
