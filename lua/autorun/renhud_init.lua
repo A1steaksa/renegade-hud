@@ -81,8 +81,18 @@ end
 
 --[[ Client Init ]]
 if CLIENT then
-    -- Load Renegade-specific libraries
-    include( "renhud/client/hide-hud.lua" )
+    --- @class Renegade
+    local CNC = CNC_RENEGADE
+
+    --- @type StyleManager
+    local styleManager = CNC.Import( "renhud/client/code/wwui/style-manager.lua" )
+
+    --- @type FontsLib
+    local fontsLib = CNC.Import( "renhud/client/cl_fonts.lua" )
+
+    -- Hide the default HUD
+    -- TODO: Replace this with a per-element system in a menu somewhere that ties in with ConVars for enabling/disabling individual HUD elements
+    include( "renhud/client/cl_hide-hud.lua" )
 
     -- Load Renegade bridge libraries
     IterateFiles( "renhud/client/bridges/", "LUA", include )
@@ -91,42 +101,27 @@ if CLIENT then
     styleManager.Initialize()
 
     local function StartHud()
+
+        -- Ensure that fonts have loaded and that the player exists
+        if not IsValid( LocalPlayer() ) then return end
+        if not fontsLib.IsFontCreated( styleManager.DefaultFonts[ styleManager.FONT_STYLE.FONT_INGAME_TXT ] ) then return end
+
+        -- Check if the server is running the HUD
+        CNC.IsServerEnabled = GetGlobal2Bool( "A1_Renegade_ServerRunning", false )
+        MsgC( "[REN] HUD Server is ", ( CNC.IsServerEnabled and Color( 43, 250, 100 ) or Color( 250, 100, 43 ) ), ( CNC.IsServerEnabled and "Online" or "Offline" ), "\n" )
+
         -- Load the game's kernel file
         --- @type CombatManager
         local combatManager = CNC.Import( "renhud/client/code/combat/combat-manager.lua" )
 
-        -- Load Renegade-specific overrides
-        include( "renhud/client/updated-global-settings.lua" )
+        -- Load overrides for Renegade's default settings
+        include( "renhud/client/cl_updated-global-settings.lua" )
 
         -- Start the HUD
         combatManager.Init( true )
+
+        hook.Remove( "PostRender", "A1_Renegade_Init_StartHud" )
     end
 
-    hook.Add( "InitPostEntity", "A1_Renegade_ServerRunningCheck", function()
-
-        --[[ Server Status ]] do
-
-            CNC.IsServerEnabled = GetGlobal2Bool( "A1_Renegade_ServerRunning", false )
-
-            local color
-            local status
-            if CNC.IsServerEnabled then
-                color = Color( 43, 250, 100 )
-                status = "Online"
-            else
-                color = Color( 250, 100, 43 )
-                status = "Offline"
-            end
-
-            MsgC( "[REN] Server:\t", color, status, "\n" )
-        end
-
-        StartHud()
-
-        hook.Remove( "InitPostEntity", "A1_Renegade_ServerRunningCheck" )
-    end )
-
-    if isHotload then
-        StartHud()
-    end
+    hook.Add( "PostRender", "A1_Renegade_Init_StartHud", StartHud )
 end

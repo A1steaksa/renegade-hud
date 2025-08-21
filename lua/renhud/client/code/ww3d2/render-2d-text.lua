@@ -152,14 +152,15 @@ end
             )
 
             local charUv = font:GetCharUv( char )
-
-            local fontAtlasWidth = font:PeekMaterial():Width() + 0.5
+            
+            -- Adding 0.5 to avoid off by one errors when flooring
+            local fontAtlasWidth  = font:PeekMaterial():Width()  + 0.5
             local fontAtlasHeight = font:PeekMaterial():Height() + 0.5
 
             -- Make sure the UVs align with the pixels of the font atlas material
-            charUv.Left = math.floor( charUv.Left * fontAtlasWidth ) / fontAtlasWidth
-            charUv.Top = math.floor( charUv.Top * fontAtlasHeight ) / fontAtlasHeight
-            charUv.Right = math.floor( charUv.Right * fontAtlasWidth ) / fontAtlasWidth
+            charUv.Left   = math.floor( charUv.Left   * fontAtlasWidth  ) / fontAtlasWidth
+            charUv.Top    = math.floor( charUv.Top    * fontAtlasHeight ) / fontAtlasHeight
+            charUv.Right  = math.floor( charUv.Right  * fontAtlasWidth  ) / fontAtlasWidth
             charUv.Bottom = math.floor( charUv.Bottom * fontAtlasHeight ) / fontAtlasHeight
 
             self:InternalAddQuadVertices( charRect )
