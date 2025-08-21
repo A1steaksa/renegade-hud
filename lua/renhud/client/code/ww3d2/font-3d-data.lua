@@ -28,8 +28,6 @@ end
 
     local CLASS = "Font3dData"
 
-    local TEXTUREFLAGS_POINTSAMPLE = 1
-
     --- [[ Public ]]
 
     --- Creates a new Font3dData
@@ -54,77 +52,12 @@ end
 
     --- @class Font3dData
     --- @field private ProcessingRenderTarget ITexture The Render Target used for per-pixel processing of font materials
-    --- @field private FontsToMakeProportional Font3dDataInstance[]
 
-    STATIC.FontsToMakeProportional = {}
-
-    local function ProportionalizeFontData()
-        if not STATIC.ProcessingRenderTarget then
-            STATIC.ProcessingRenderTarget = GetRenderTargetEx(
-            "Renegade_Font3dData_FontProcessing",
-            ScrW(), ScrH(),
-            RT_SIZE_NO_CHANGE,
-            MATERIAL_RT_DEPTH_NONE,
-            TEXTUREFLAGS_POINTSAMPLE,
-            0,
-            IMAGE_FORMAT_RGBA8888
-        )
-        end
-
-        cam.Start2D()
-
-        local rt = STATIC.ProcessingRenderTarget
-        render.PushRenderTarget( rt )
-
-        for _, fontData in ipairs( STATIC.FontsToMakeProportional ) do
-            local fontMaterial = fontData:PeekMaterial()
-            local texture = fontMaterial:GetTexture( "$basetexture" )
-
-            local materialWidth = fontMaterial:Width()
-            local materialHeight = fontMaterial:Height()
-
-            --- Get the pixels of the material by putting them on our Render Target and capturing it
-            render.Clear( 0, 0, 0, 0 )
-            render.DrawTextureToScreenRect( texture, 0, 0, materialWidth, materialHeight )
-            render.CapturePixels()
-
-            for charIndex = 0, 255 do
-
-                local char = string.char( charIndex )
-
-                local startX, _, charWidth = STATIC.FindHorizontalCharBounds( fontMaterial, charIndex )
-
-                fontData.UOffsetTable[char] = startX / materialWidth
-                fontData.UWidthTable[char] = charWidth / materialWidth
-                fontData.CharWidthTable[char] = charWidth
-            end
-
-            -- Tell the Font3dInstance that owns this Font3dDataInstance that we've changed our values and they need to rebuild their cache
-            fontData.Font3dInstance:BuildCachedTables()
-        end
-
-        render.PopRenderTarget()
-
-        cam.End2D()
-
-        STATIC.FontsToMakeProportional = {}
-
-        hook.Remove( "PreRender", "A1_Renegade_Font3dData_MakeFontsProportional" )
-    end
-
-    --- @param fontData Font3dDataInstance
     --- @private
-    function STATIC.MakeProportional( fontData )
-        STATIC.FontsToMakeProportional[#STATIC.FontsToMakeProportional + 1] = fontData
-
-        hook.Add( "PreRender", "A1_Renegade_Font3dData_MakeFontsProportional", ProportionalizeFontData )
-    end
-
     --- Checks each pixel of the specified index within a given font atlas material and determines its left and right bounds
     --- @param fontMaterial IMaterial The font atlas to be checked.  Assumed to be a 16x16 grid of characters on a completely transparent background.
     --- @param charIndex integer The index of the character to be checked, starting at 0
     --- @return number startX, number endX, number width
-    --- @private
     function STATIC.FindHorizontalCharBounds( fontMaterial, charIndex )
         local gridX = charIndex % 16
         local gridY = math.floor( charIndex / 16 )
@@ -272,6 +205,8 @@ end
     --- @field private VHeight number
     --- @field private CharHeight number
 
+    local TEXTUREFLAGS_POINTSAMPLE = 1
+
     --- @private
     --- @param fontMaterial IMaterial
     --- @return boolean success
@@ -307,8 +242,48 @@ end
     end
 
     --- @private
+    --- Immediately converts this font into a proportional font rather than a monospaced font
     function INSTANCE:MakeProportional()
-        STATIC.MakeProportional( self )
+        -- Make sure we have a Render Target that we can do our processing on
+        if not STATIC.ProcessingRenderTarget then
+            STATIC.ProcessingRenderTarget = GetRenderTargetEx(
+            "Renegade_Font3dData_FontProcessing",
+            ScrW(), ScrH(),
+            RT_SIZE_NO_CHANGE,
+            MATERIAL_RT_DEPTH_NONE,
+            TEXTUREFLAGS_POINTSAMPLE,
+            0,
+            IMAGE_FORMAT_RGBA8888
+        )
+        end
+
+        cam.Start2D()
+        render.PushRenderTarget( STATIC.ProcessingRenderTarget )
+
+        local fontMaterial = self:PeekMaterial()
+        local texture = fontMaterial:GetTexture( "$basetexture" )
+
+        local materialWidth = fontMaterial:Width()
+        local materialHeight = fontMaterial:Height()
+
+        --- Get the pixels of the material by putting them on our Render Target and capturing it
+        render.Clear( 0, 0, 0, 0 )
+        render.SetColorMaterial()
+        render.DrawTextureToScreenRect( texture, 0, 0, materialWidth, materialHeight )
+        render.CapturePixels()
+
+        for charIndex = 0, 255 do
+            local char = string.char( charIndex )
+
+            local startX, _, charWidth = STATIC.FindHorizontalCharBounds( fontMaterial, charIndex )
+
+            self.UOffsetTable[char] = startX / materialWidth
+            self.UWidthTable[char] = charWidth / materialWidth
+            self.CharWidthTable[char] = charWidth
+        end
+
+        render.PopRenderTarget()
+        cam.End2D()
     end
 
     --- @private

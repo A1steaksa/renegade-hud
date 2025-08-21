@@ -122,7 +122,7 @@ end
         self.ShouldRebuildMesh = false
 
         self:SetMaterial( material )
-        self.Shader = STATIC.GetDefaultShader();
+        self.Shader = STATIC.GetDefaultShader()
 
         self:UpdateBias()
     end

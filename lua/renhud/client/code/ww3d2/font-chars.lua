@@ -176,7 +176,7 @@ end
     --- @field private IsBold boolean
     --- @field private IsArialMt boolean Storing this so we don't have to re-evaluate it constantly
     --- @field private CharWidths table<string, integer> A map of characters to their widths
-    
+
     --- @param fontName string
     --- @private
     function INSTANCE:CreateGdiFont( fontName )
