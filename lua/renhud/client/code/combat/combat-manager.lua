@@ -130,8 +130,6 @@ local isHotload = not table.IsEmpty( STATIC )
             -- dazzleLayer.SetCurrentDazzleLayer( nil )
         end
 
-        styleManager.Initialize()
-
         hud.Init( renderAvailable )
         -- CNC_RENEGADE.ScreenFadeManager.Init()
 

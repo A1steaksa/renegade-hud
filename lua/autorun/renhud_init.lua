@@ -87,8 +87,8 @@ if CLIENT then
     -- Load Renegade bridge libraries
     IterateFiles( "renhud/client/bridges/", "LUA", include )
 
-    --- @class Renegade
-    local CNC = CNC_RENEGADE
+    -- Begin creating fonts because they are a prerequisite for the rest of the HUD
+    styleManager.Initialize()
 
     local function StartHud()
         -- Load the game's kernel file
