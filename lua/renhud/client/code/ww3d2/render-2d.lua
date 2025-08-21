@@ -342,7 +342,7 @@ end
                 -- Fifth arg must be Color
                 if fifthArg then
                     typecheck.AssertArgType( CLASS, 5, fifthArg, "color" )
-                    
+
                     --- @cast fifthArg Color
                     color = fifthArg
                 end

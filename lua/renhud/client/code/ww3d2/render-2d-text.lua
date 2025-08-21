@@ -127,7 +127,6 @@ end
     ---@param char string
     ---@param color Color
     function INSTANCE:DrawChar( char, color )
-        
         local cursor = self.Cursor
         local font = self.Font
 

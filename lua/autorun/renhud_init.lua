@@ -44,7 +44,7 @@ if SERVER then
     -- Load ConVars
     include( "renhud/server/sv_convars.lua" )
 
-    -- Let clients know that we're running the server side of this addon`
+    -- Let clients know that we're running the server side of this addon
     SetGlobal2Bool( "A1_Renegade_ServerRunning", true )
 
     -- Send Lua files to clients

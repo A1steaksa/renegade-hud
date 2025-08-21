@@ -159,10 +159,8 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 
     if CLIENT then
 
-        --- @private
-        --- Pairs Entities with the InfoEntity data we have about them
-        --- @type table<Entity, InfoEntityData>
-        LIB.EntityInfoCache = {}
+        --- @class EntityInfoLib
+        --- @field private EntityInfoCache table<Entity, InfoEntityData> Pairs Entities with the InfoEntity data we have about them
 
         --- @param ent Entity
         --- @return boolean
