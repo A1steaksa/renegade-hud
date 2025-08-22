@@ -81,6 +81,22 @@ local STATIC = CNC.CreateExport()
 --#endregion
 
 
+--#region Console Variables
+
+    local entityInfoEnabledConVar = GetConVar( "ren_entityinfo_enabled" )
+    local entityInfoEnabled = entityInfoEnabledConVar:GetBool()
+    cvars.AddChangeCallback( entityInfoEnabledConVar:GetName(), function( _, _, newValue )
+        if entityInfoEnabledConVar:GetBool() then
+            STATIC.TargetInit()
+            entityInfoEnabled = true
+        else
+            STATIC.TargetShutdown()
+            entityInfoEnabled = false
+        end
+    end, "Default" )
+--#endregion
+
+
 --[[ Static Functions and Variables ]] do
 
     local CLASS = "Hud"
@@ -202,7 +218,12 @@ local STATIC = CNC.CreateExport()
             -- STATIC.WeaponChartInit()
             STATIC.InfoInit()
             STATIC.DamageInit()
-            STATIC.TargetInit()
+
+            if entityInfoEnabled then
+                STATIC.TargetInit()
+                infoEntityLib.Init()
+            end
+
             -- STATIC.ObjectiveInit()
 
             -- STATIC.HudHelpTextInit()
@@ -219,7 +240,11 @@ local STATIC = CNC.CreateExport()
         STATIC.WeaponUpdate()
         -- STATIC.WeaponChartUpdate()
         STATIC.DamageUpdate()
-        STATIC.TargetUpdate()
+
+        if entityInfoEnabled then
+            STATIC.TargetUpdate()
+        end
+
         -- STATIC.ObjectiveUpdate()
 
         local combatStar = combatManager.GetTheStar()
@@ -297,7 +322,11 @@ local STATIC = CNC.CreateExport()
         -- STATIC.WeaponChartRender()
         STATIC.InfoRender()
         STATIC.DamageRender()
-        STATIC.TargetRender()
+
+        if entityInfoEnabled then
+            STATIC.TargetRender()
+        end
+
         -- STATIC.HudHelpTextRender()
         -- STATIC.ObjectiveRender()
         -- radarManager:Render()
@@ -708,7 +737,7 @@ local STATIC = CNC.CreateExport()
         local weaponNameOffset = Vector( 1, 0 )
         local clipCountOffset = Vector( 4, 15 )
 
-        local CENTER_CLIP_COUNT_TIME = 2
+        local centerAmmoDisplayTime = GetConVar( "ren_weaponinfo_center_ammo_display_time" )
 
         function STATIC.WeaponInit()
 
@@ -829,7 +858,7 @@ local STATIC = CNC.CreateExport()
 
                 if STATIC.LastClipCount ~= clipCount then
                     STATIC.LastClipCount = clipCount
-                    STATIC.CenterClipCountTimer = CENTER_CLIP_COUNT_TIME
+                    STATIC.CenterClipCountTimer = centerAmmoDisplayTime:GetFloat()
                 end
 
                 if STATIC.CenterClipCountTimer > 0 then
@@ -1011,9 +1040,21 @@ local STATIC = CNC.CreateExport()
             local font = styleManager.PeekFont( styleManager.FONT_STYLE.FONT_INGAME_TXT )
             STATIC.TargetNameRenderer = render2dText.New( font )
             STATIC.TargetNameRenderer:SetCoordinateRange( render2d.GetScreenResolution() )
+
+            infoEntityLib.Init()
+        end
+
+        function STATIC.TargetShutdown()
+            STATIC.TargetRenderer = nil
+            STATIC.TargetBoxRenderer = nil
+            STATIC.TargetNameRenderer = nil
+
+            infoEntityLib.Shutdown()
         end
 
         function STATIC.TargetUpdate()
+            if not entityInfoEnabled then return end
+
             STATIC.TargetRenderer:Reset()
             STATIC.TargetTeamIconRenderer:Reset()
             STATIC.TargetBoxRenderer:Reset()
@@ -1751,8 +1792,7 @@ local STATIC = CNC.CreateExport()
         --- @field DamageIndicatorIntensityChanging boolean
         --- @field DamageIndicatorOrientation boolean
 
-        --- @type ConVar
-        local damageIndicatorsConVar
+        local damageIndicatorsConVar = GetConVar( "ren_damageindicator_enabled" )
 
         local DAMAGE_1_UV_UL = Vector( 65, 184 )
         local DAMAGE_1_UV_LR = Vector( 78, 255 )
@@ -1854,13 +1894,7 @@ local STATIC = CNC.CreateExport()
         function STATIC.DamageUpdate()
             STATIC.DamageRenderer:Reset()
 
-            if not damageIndicatorsConVar then
-                damageIndicatorsConVar = GetConVar( "ren_damage_indicators_enabled" )
-                if not damageIndicatorsConVar then
-                    return
-                end
-            end
-
+            -- Don't show if damage indicators are disabled
             local areDamageIndicatorsEnabled = damageIndicatorsConVar:GetBool()
             if not areDamageIndicatorsEnabled then return end
 

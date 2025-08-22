@@ -68,14 +68,15 @@ end
     --- Constructs a new Font3dInstance
     --- @param fontMaterial IMaterial
     function INSTANCE:Renegade_Font3d( fontMaterial )
-        self.FontData = font3dData.New( self, fontMaterial )
-        self.MonoSpacing = 0
-        self.Scale = 1
-        self.SpaceSpacing = self.FontData:GetCharWidth( "H" ) / 2
-        self.InterCharSpacing = 1
-
         self.ScaledSpacingTable = {}
         self.ScaledWidthTable = {}
+
+        self.MonoSpacing = 0
+        self.Scale = 1
+        self.InterCharSpacing = 1
+
+        self.FontData = font3dData.New( self, fontMaterial )
+        self.SpaceWidth = self.FontData:GetCharWidth( "H" ) / 2
 
         self:BuildCachedTables()
     end
@@ -85,7 +86,7 @@ end
         return self.FontData:PeekMaterial()
     end
 
-    --- @param spacing integer The spacing between characters, in pixels, at a scale of 1
+    --- @param spacing integer The spacing between characters, in pixels, when drawn at a scale of 1
     function INSTANCE:SetInterCharSpacing( spacing )
         self.InterCharSpacing = math.floor( spacing )
         self:BuildCachedTables()
@@ -107,7 +108,7 @@ end
         self:BuildCachedTables()
     end
 
-    --- @return integer # The spacing between characters, in pixels, at a scale of 1
+    --- @return integer # The spacing between characters, in pixels, when drawn at a scale of 1
     function INSTANCE:GetInterCharSpacing()
         return self.InterCharSpacing
     end
@@ -156,7 +157,7 @@ end
 
     --- @class Font3dInstance
     --- @field FontData Font3dDataInstance
-    --- @field private SpaceSpacing number The unscaled width of a space, in pixels [Default: 1/2 'H' width]
+    --- @field private SpaceWidth number The unscaled width of a space, in pixels [Default: 1/2 'H' width]
     --- @field private InterCharSpacing number The unscaled width between characters, in pixels
     --- @field private MonoSpacing number The unscaled width between monospaced characters, in pixels (Set to `0` to disable monospacing)
     --- @field private ScaledWidthTable number[] The scaled cache of character widths, in pixels
@@ -169,7 +170,7 @@ end
             local width = self.FontData:GetCharWidth( char )
             local isSpace = char == " "
             if isSpace then
-                width = self.SpaceSpacing
+                width = self.SpaceWidth
             end
 
             self.ScaledWidthTable[char] = math.floor( self.Scale * width )

@@ -122,7 +122,7 @@ end
         self.ShouldRebuildMesh = false
 
         self:SetMaterial( material )
-        self.Shader = STATIC.GetDefaultShader();
+        self.Shader = STATIC.GetDefaultShader()
 
         self:UpdateBias()
     end
@@ -342,7 +342,7 @@ end
                 -- Fifth arg must be Color
                 if fifthArg then
                     typecheck.AssertArgType( CLASS, 5, fifthArg, "color" )
-                    
+
                     --- @cast fifthArg Color
                     color = fifthArg
                 end

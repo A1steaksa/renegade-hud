@@ -26,16 +26,6 @@ local isHotload = not table.IsEmpty( LIB )
 --#endregion
 
 
---#region Imports
-
-    --- @type CombatManager
-    local combatManager = CNC.Import( "renhud/client/code/combat/combat-manager.lua" )
-
-    --- @type CommonBridge
-    local commonBridge = CNC.Import( "renhud/client/bridges/common.lua" )
---#endregion
-
-
 --[[ Networking Damage ]] do
 
     if SERVER then
@@ -63,11 +53,16 @@ local isHotload = not table.IsEmpty( LIB )
             [DMG_DISSOLVE] = true
         }
 
+        local VECTOR_ZERO = Vector( 0, 0, 0 )
+
         --- @private
         --- @param ent Player|Entity
         --- @param dmgInfo CTakeDamageInfo
-        function LIB.SendIncomingDamageInfo( ent, dmgInfo )
+        --- @param isVehicleDamage boolean?
+        function LIB.SendIncomingDamageInfo( ent, dmgInfo, isVehicleDamage )
             if not IsValid( ent ) or not isentity( ent ) then return end
+
+            if isVehicleDamage == nil then isVehicleDamage = false end
 
             --- @type Player
             local ply
@@ -79,12 +74,15 @@ local isHotload = not table.IsEmpty( LIB )
             if ent:IsVehicle() then
                 --- @cast ent Vehicle
 
+                isVehicleDamage = true
+
                 -- Support for Glide vehicles
                 if ent.IsGlideVehicle then
                     -- Send the damage event to all of the vehicle's occupants
                     for _, seat in pairs( ent.seats ) do
-                        LIB.SendIncomingDamageInfo( seat:GetDriver(), dmgInfo )
+                        LIB.SendIncomingDamageInfo( seat:GetDriver(), dmgInfo, true )
                     end
+
                     return
                 end
 
@@ -102,10 +100,15 @@ local isHotload = not table.IsEmpty( LIB )
 
             net.Start( "A1_Renegade_PlayerDamage" )
             net.WriteBool( isOmnidirectionalDamage )
+
             if not isOmnidirectionalDamage and IsValid( inflictor ) then
                 local directionVector = ( inflictor:GetPos() - ent:GetPos() )
                 net.WriteVector( directionVector )
+            else
+                net.WriteVector( VECTOR_ZERO )
             end
+
+            net.WriteBool( isVehicleDamage )
             net.Send( ply )
         end
 
@@ -130,7 +133,18 @@ local isHotload = not table.IsEmpty( LIB )
     end
 
     if CLIENT then
-        local damageIndicatorsEnabledConVar = CreateConVar( "ren_damage_indicators_enabled", "1", { FCVAR_ARCHIVE }, "(Renegade) Should damage direction indicators draw?", 0, 1 )
+
+        --#region Imports
+
+            --- @type CombatManager
+            local combatManager = CNC.Import( "renhud/client/code/combat/combat-manager.lua" )
+
+            --- @type CommonBridge
+            local commonBridge = CNC.Import( "renhud/client/bridges/common.lua" )
+        --#endregion
+
+        local damageIndicatorsEnabledConVar = GetConVar( "ren_damageindicator_enabled" )
+        local vehicleDamageIndicatorsConVar = GetConVar( "ren_damageindicator_vehicles_enabled" )
 
         -- Keep the server up to date with our incoming damage subscription status
         cvars.AddChangeCallback( damageIndicatorsEnabledConVar:GetName(), function( _, _, newValue )
@@ -139,15 +153,19 @@ local isHotload = not table.IsEmpty( LIB )
 
         --- Called when we're informed by the server that we have received damage
         function LIB.ReceiveIncomingDamage()
-
             local isOmnidirectionalDamage = net.ReadBool()
+            local directionVector = net.ReadVector()
+            local isVehicleDamage = net.ReadBool()
+
+            -- Don't show vehicle damage if the Player has it disabled
+            if isVehicleDamage and not vehicleDamageIndicatorsConVar:GetBool() then
+                return
+            end
 
             if isOmnidirectionalDamage then
                 combatManager.ShowStarDamageDirection( damageDirectionEnum.ALL )
                 return
             end
-
-            local directionVector = net.ReadVector()
 
             local relativeDirection = commonBridge.GetCameraTransform():InverseRotateVector( directionVector )
 

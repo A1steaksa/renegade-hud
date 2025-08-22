@@ -47,11 +47,24 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 --- @field HealthPercent number How much health this Entity has, as a percentage between `0` and `1`
 --- @field ShowInteractionChevrons boolean Should this Entity draw the three triangles that indicate it is interactable?
 
+--- @class InfoEntityLib
+--- @field private Enabled boolean
+
+function LIB.Init()
+    if CLIENT then
+        LIB.EntityInfoCache = {}
+        LIB.Enabled = true
+    end
+end
+
+function LIB.Shutdown()
+    if CLIENT then
+        LIB.EntityInfoCache = nil
+        LIB.Enabled = nil
+    end
+end
 
 --[[ Networking and Storing InfoEntities ]] do
-
-    CreateConVar( "ren_info_entity_update_delay",     "0.250",  { FCVAR_ARCHIVE },                   "(Renegade) How frequently, in seconds between updates, should the server send updated InfoEntity data to clients?" )
-    CreateConVar( "ren_info_entity_targeting_length", "500",    { FCVAR_REPLICATED, FCVAR_ARCHIVE }, "(Renegade) The maximum distance, in Source units, that an Entity can be from the camera and still be targeted", 1 )
 
     if SERVER then
         -- Used by the server to send info to each Player about their current InfoEntity
@@ -148,7 +161,7 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
                 end
             end
 
-            local updateDelayConVar = GetConVar( "ren_info_entity_update_delay" )
+            local updateDelayConVar = GetConVar( "ren_entityinfo_update_delay" )
 
             -- Schedule the updates
             timer.Create( updateDelayConVar:GetName(), updateDelayConVar:GetFloat(), 0, LIB.DoAllInfoEntityUpdates )
@@ -162,15 +175,13 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
 
     if CLIENT then
 
-        --- @private
-        --- Pairs Entities with the InfoEntity data we have about them
-        --- @type table<Entity, InfoEntityData>
-        LIB.EntityInfoCache = {}
+        --- @class EntityInfoLib
+        --- @field private EntityInfoCache table<Entity, InfoEntityData> Pairs Entities with the InfoEntity data we have about them
 
         --- @param ent Entity
         --- @return boolean
         function LIB.HasEntityInfo( ent )
-            return LIB.EntityInfoCache[ent] ~= nil
+            return ( LIB.EntityInfoCache ~= nil ) and ( LIB.EntityInfoCache[ent] ~= nil )
         end
 
         --- Retrieves data about a given Entity or `nil` if no data is available.
@@ -221,6 +232,8 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
         --- @private
         --- Receives and stores an InfoEntityData table from the server
         function LIB.ReceiveInfoEntityData()
+            if not LIB.Enabled then return end
+
             local ent = net.ReadEntity()
 
             if not IsValid( ent ) then return end
@@ -255,126 +268,127 @@ local playerTypeEnum = playerTypeLib.PLAYER_TYPE_ENUM
     end
 end
 
+if CLIENT then
+    --[[ Finding InfoEntities ]] do
 
---[[ Finding InfoEntities ]] do
+        local traceLengthConVar = GetConVar( "ren_entityinfo_max_length" )
 
-    local traceLengthConVar = GetConVar( "ren_info_entity_targeting_length" )
-
-    --- @private
-    --- This table provides a blacklist of classes that are never targetable regardless of other factors.  
-    --- * It is used to quickly determine if an Entity might ever be a valid target before doing more expensive data gathering.  
-    --- * Entries should be lowercase.
-    --- @type table<string, boolean>
-    LIB.UntargetableClasses = {
-        ["func_wall"]             = true,
-        ["func_brush"]            = true,
-        ["func_lod"]              = true,
-        ["func_reflective_glass"] = true, -- It looks weird to target mirrors
-        ["func_breakable_surf"]   = true, -- Shatterable glass in Renegade does not get targeted
-    }
+        --- @private
+        --- This table provides a blacklist of classes that are never targetable regardless of other factors.  
+        --- * It is used to quickly determine if an Entity might ever be a valid target before doing more expensive data gathering.  
+        --- * Entries should be lowercase.
+        --- @type table<string, boolean>
+        LIB.UntargetableClasses = {
+            ["func_wall"]             = true,
+            ["func_brush"]            = true,
+            ["func_lod"]              = true,
+            ["func_reflective_glass"] = true, -- It looks weird to target mirrors
+            ["func_breakable_surf"]   = true, -- Shatterable glass in Renegade does not get targeted
+        }
 
 
-    --- Performs a trace from the camera to find a valid Entity to be our new InfoEntity
-    --- @return Entity?
-    --- @return number traceDistance
-    function LIB.TraceForInfoEntity()
-        local viewSetup = cameraBridge.GetViewSetup()
+        --- Performs a trace from the camera to find a valid Entity to be our new InfoEntity
+        --- @return Entity?
+        --- @return number traceDistance
+        function LIB.TraceForInfoEntity()
+            local viewSetup = cameraBridge.GetViewSetup()
 
-        local startPos = viewSetup.origin
-        local endPos = startPos + viewSetup.angles:Forward() * traceLengthConVar:GetFloat()
+            local startPos = viewSetup.origin
+            local endPos = startPos + viewSetup.angles:Forward() * traceLengthConVar:GetFloat()
 
-        local ply = LocalPlayer()
-        local filter
-        if ply:InVehicle() then
-            filter = { ply, ply:GetVehicle() }
+            local ply = LocalPlayer()
+            local filter
+            if ply:InVehicle() then
+                filter = { ply, ply:GetVehicle() }
 
-            -- Support for Glide vehicles
-            if Glide then
-                local glideVehicle = ply:GlideGetVehicle()
-                if IsValid( glideVehicle ) then
-                    filter[#filter + 1] = glideVehicle
+                -- Support for Glide vehicles
+                if Glide then
+                    local glideVehicle = ply:GlideGetVehicle()
+                    if IsValid( glideVehicle ) then
+                        filter[#filter + 1] = glideVehicle
+                    end
+                end
+            else
+                filter = ply
+            end
+
+            local trace = util.TraceLine( {
+                start = startPos,
+                endpos = endPos,
+                filter = filter,
+                hitclientonly = true
+            } )
+
+            local newInfoEntity = trace.Entity
+
+            -- If the normal trace failed to find anything, run a backup
+            -- to find secret buttons
+            if not IsValid( newInfoEntity ) or newInfoEntity:IsWorld() then
+                local foundEnts = ents.FindAlongRay( startPos, trace.HitPos )
+
+                for _, ent in ipairs( foundEnts ) do
+                    if  ent:GetClass() == "class C_BaseToggle" then
+                        newInfoEntity = ent
+                        break
+                    end
                 end
             end
-        else
-            filter = ply
+
+            if IsValid( newInfoEntity ) then
+                local distance = startPos:Distance( newInfoEntity:GetPos() )
+                return newInfoEntity, distance
+            end
+
+            local distance = startPos:Distance( trace.HitPos )
+            return nil, distance
         end
 
-        local trace = util.TraceLine( {
-            start = startPos,
-            endpos = endPos,
-            filter = filter,
-            hitclientonly = true
-        } )
+        --- Determines if a given Entity can be targeted by the HUD
+        --- @param ent Entity?
+        --- @return boolean
+        function LIB.IsEntityTargetable( ent )
+            if not IsValid( ent ) then return false end
+            --- @cast ent Entity
 
-        local newInfoEntity = trace.Entity
+            -- Check the class blacklist
+            local class = ent:GetClass():lower()
+            if LIB.UntargetableClasses[class] then return false end
 
-        -- If the normal trace failed to find anything, run a backup
-        -- to find secret buttons
-        if not IsValid( newInfoEntity ) or newInfoEntity:IsWorld() then
-            local foundEnts = ents.FindAlongRay( startPos, trace.HitPos )
-
-            for _, ent in ipairs( foundEnts ) do
-                if  ent:GetClass() == "class C_BaseToggle" then
-                    newInfoEntity = ent
-                    break
+            if DarkRP then
+                if ent:isKeysOwnable() then
+                    return true
                 end
             end
+
+            return true
         end
 
-        if IsValid( newInfoEntity ) then
-            local distance = startPos:Distance( newInfoEntity:GetPos() )
-            return newInfoEntity, distance
-        end
-
-        local distance = startPos:Distance( trace.HitPos )
-        return nil, distance
-    end
-
-    --- Determines if a given Entity can be targeted by the HUD
-    --- @param ent Entity?
-    --- @return boolean
-    function LIB.IsEntityTargetable( ent )
-        if not IsValid( ent ) then return false end
-        --- @cast ent Entity
-
-        -- Check the class blacklist
-        local class = ent:GetClass():lower()
-        if LIB.UntargetableClasses[class] then return false end
-
-        if DarkRP then
-            if ent:isKeysOwnable() then
-                return true
+        --- @private
+        --- Makes a given button solid so that it can be found by 
+        --- `ents.FindAlongRay` as a backup for the info Entity's trace.
+        --- @param buttonEnt Entity
+        function LIB.MakeButtonFindable( buttonEnt )
+            if not IsValid( buttonEnt ) or buttonEnt:GetClass() ~= "class C_BaseToggle" then
+                return
             end
+            --- Some `func_button` entities cannot be traced against or found via `ents.FindAlongRay` unless
+            --- they are made solid through a handful of different flags and values being updated
+            buttonEnt:RemoveSpawnFlags( 16384 ) -- 16384 is Non-Solid
+            buttonEnt:SetSolid( SOLID_BSP )
+            buttonEnt:RemoveSolidFlags( FSOLID_NOT_SOLID )
         end
 
-        return true
+        --- Ensure all buttons are made findable
+        hook.Add( "NetworkEntityCreated", "A1_Renegade_HudInfoUtilsClient_MakeButtonsFindable", LIB.MakeButtonFindable )
     end
-
-    --- @private
-    --- Makes a given button solid so that it can be found by 
-    --- `ents.FindAlongRay` as a backup for the info Entity's trace.
-    --- @param buttonEnt Entity
-    function LIB.MakeButtonFindable( buttonEnt )
-        if not IsValid( buttonEnt ) or buttonEnt:GetClass() ~= "class C_BaseToggle" then
-            return
-        end
-        --- Some `func_button` entities cannot be traced against or found via `ents.FindAlongRay` unless
-        --- they are made solid through a handful of different flags and values being updated
-        buttonEnt:RemoveSpawnFlags( 16384 ) -- 16384 is Non-Solid
-        buttonEnt:SetSolid( SOLID_BSP )
-        buttonEnt:RemoveSolidFlags( FSOLID_NOT_SOLID )
-    end
-
-    --- Ensure all buttons are made findable
-    hook.Add( "NetworkEntityCreated", "A1_Renegade_HudInfoUtilsClient_MakeButtonsFindable", LIB.MakeButtonFindable )
 end
-
 
 --[[ Gathering InfoEntity Data ]] do
 
     --- @private
     --- Gathers and stores data about an Entity relative to a given Player  
-    --- **Note:** If called on the client the results will be of a worse quality 
+    --- **Note:** If called on the client the results will be of a worse quality due
+    --- to some information being available only on the server.
     --- @param ent Entity
     --- @param ply Player
     --- @return InfoEntityData

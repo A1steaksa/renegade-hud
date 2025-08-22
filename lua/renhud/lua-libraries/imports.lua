@@ -3,7 +3,7 @@
 --- @class Renegade
 local CNC = CNC_RENEGADE
 
---- @class Imports
+--- @class ImportsLib
 local LIB = {}
 
 local CLASS = "Imports"

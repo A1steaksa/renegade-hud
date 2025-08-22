@@ -18,11 +18,8 @@ end
     --- @type Render2d
     local render2d = CNC.Import( "renhud/client/code/ww3d2/render-2d.lua" )
 
-    --- @type FontChars
-    local fontChars = CNC.Import( "renhud/client/code/ww3d2/font-chars.lua" )
-
-    --- @type Font3d
-    local font3d = CNC.Import( "renhud/client/code/ww3d2/font-3d.lua" )
+    --- @type FontsLib
+    local fontsLib = CNC.Import( "renhud/client/cl_fonts.lua" )
 --#endregion
 
 
@@ -65,34 +62,41 @@ end
         EVENT_AUDIO_MAX   = 4
     }
     local eventAudio = STATIC.EVENT_AUDIO
+--#endregion
 
-    --- @class FONT_DESC
-    --- @field name string
-    --- @field pointSize integer
-    --- @field interCharSpacing integer
-    --- @field isBold boolean
+
+--[[ Default Fonts ]] do
+
+    --- @class FontDescription
+    --- @field Name string
+    --- @field PointSize integer
+    --- @field InterCharSpacing integer
+    --- @field IsBold boolean
+
+    --- The amount to multiply Renegade font point sizes by to convert them to the same visual size in Garry's Mod
+    --- This value was determined by experimentation and is not yet understood.
+    local sizeMultipler = 1.75
 
     --- The font defaults as found in stylemgr.cpp and, seemingly identically, in data/stylemgr.ini
-    --- @type FONT_DESC[]
-    STATIC.DEFAULT_FONTS = {
-    [ fontStyle.FONT_TITLE              ] = { name = "Regatta Condensed LET", pointSize = 52, interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_LG_CONTROLS        ] = { name = "Arial MT",              pointSize = 12, interCharSpacing = 2, isBold = true  },
-    [ fontStyle.FONT_CONTROLS           ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = true  },
-    [ fontStyle.FONT_LISTS              ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_TOOLTIPS           ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_MENU               ] = { name = "Regatta Condensed LET", pointSize = 32, interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_SM_MENU            ] = { name = "Regatta Condensed LET", pointSize = 20, interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_HEADER             ] = { name = "Arial MT",              pointSize = 9,  interCharSpacing = 2, isBold = true  },
-    [ fontStyle.FONT_BIG_HEADER         ] = { name = "Arial MT",              pointSize = 12, interCharSpacing = 2, isBold = true  },
-    [ fontStyle.FONT_CREDITS            ] = { name = "Arial MT",              pointSize = 10, interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_CREDITS_BOLD       ] = { name = "Arial MT",              pointSize = 10, interCharSpacing = 2, isBold = true  },
-    [ fontStyle.FONT_INGAME_TXT         ] = { name = "Arial MT",              pointSize = 8,  interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_INGAME_BIG_TXT     ] = { name = "Arial MT",              pointSize = 16, interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_INGAME_SUBTITLE_TXT] = { name = "Arial MT",              pointSize = 14, interCharSpacing = 2, isBold = false },
-    [ fontStyle.FONT_INGAME_HEADER_TXT  ] = { name = "Arial MT",              pointSize = 9,  interCharSpacing = 2, isBold = true  },
+    --- @type FontDescription[]
+    STATIC.DefaultFonts = {
+        [ fontStyle.FONT_TITLE              ] = { Name = "Regatta Condensed LET", PointSize = math.floor( sizeMultipler * 52 ), InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_LG_CONTROLS        ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 12 ), InterCharSpacing = 2, IsBold = true  },
+        [ fontStyle.FONT_CONTROLS           ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 8  ),  InterCharSpacing = 2, IsBold = true  },
+        [ fontStyle.FONT_LISTS              ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 8  ),  InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_TOOLTIPS           ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 8  ),  InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_MENU               ] = { Name = "Regatta Condensed LET", PointSize = math.floor( sizeMultipler * 32 ), InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_SM_MENU            ] = { Name = "Regatta Condensed LET", PointSize = math.floor( sizeMultipler * 20 ), InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_HEADER             ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 9  ),  InterCharSpacing = 2, IsBold = true  },
+        [ fontStyle.FONT_BIG_HEADER         ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 12 ), InterCharSpacing = 2, IsBold = true  },
+        [ fontStyle.FONT_CREDITS            ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 10 ), InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_CREDITS_BOLD       ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 10 ), InterCharSpacing = 2, IsBold = true  },
+        [ fontStyle.FONT_INGAME_TXT         ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 8  ),  InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_INGAME_BIG_TXT     ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 16 ), InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_INGAME_SUBTITLE_TXT] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 14 ), InterCharSpacing = 2, IsBold = false },
+        [ fontStyle.FONT_INGAME_HEADER_TXT  ] = { Name = "Arial MT",              PointSize = math.floor( sizeMultipler * 9  ),  InterCharSpacing = 2, IsBold = true  },
     }
-    local defaultFonts = STATIC.DEFAULT_FONTS
---#endregion
+end
 
 
 --[[ Static Functions and Variables ]] do
@@ -104,25 +108,16 @@ end
     --[[ Initialization ]] do
 
         function STATIC.Initialize()
-
             -- Compute font scale for this resolution
             local screenRes = render2d.GetScreenResolution()
             STATIC.ScaleX = screenRes:Width() / 800
             STATIC.ScaleY = screenRes:Height() / 600
 
             -- Create font atlases for the default fonts
-            for _, index in pairs( STATIC.FONT_STYLE ) do
-                local fontDetails = defaultFonts[ index ]
-
-                -- Convert from Renegade's font sizing to Garry's Mod's font sizing
-                local convertedFontSize = fontDetails.pointSize * 1.75
-
-                local createdFont3d = STATIC.GetOrCreateFontAtlas( fontDetails.name, convertedFontSize, fontDetails.isBold )
-                createdFont3d:SetInterCharSpacing( fontDetails.interCharSpacing )
-
-                --createdFont3d:SetScale( 1 )
-
-                STATIC.FontStyleToFont3d[ index ] = createdFont3d
+            for _, fontDescription in pairs( STATIC.DefaultFonts ) do
+                if not fontsLib.IsFontCreated( fontDescription ) then
+                    fontsLib.QueueRenegadeFontCreation( fontDescription )
+                end
             end
 
             -- Not loading backdrop here because I don't need it (yet?)
@@ -149,7 +144,23 @@ end
         --- @param style FONT_STYLE
         --- @return Font3dInstance
         function STATIC.PeekFont( style )
-            return STATIC.FontStyleToFont3d[ style ]
+            -- Pull the font from the cache
+            local cachedFont = STATIC.FontStyleToFont3d[ style ]
+
+            -- If this font isn't already cached, cache it
+            if not cachedFont then
+                local fontDescription = STATIC.DefaultFonts[ style ]
+                if not fontsLib.IsFontCreated( fontDescription ) then
+                    typecheck.Error( CLASS, "PeekFont",
+                        "Unable to peek un-created font: '" .. fontDescription.Name .. "', size: " ..fontDescription.PointSize .. ", boldness:" .. tostring( fontDescription.IsBold )
+                    )
+                end
+
+                STATIC.FontStyleToFont3d[ style ] = fontsLib.GetCreatedFont( fontDescription )
+                cachedFont = STATIC.FontStyleToFont3d[ style ]
+            end
+
+            return cachedFont
         end
 
         --- @param renderer Render2dTextInstance
@@ -340,134 +351,8 @@ end
     --- @field private FontFileList string[]
     --- @field private EventAudioList string[]
 
-    --- The byte in the ASCII char range that font atlas rendering range starts at
     --- @private
-    STATIC.FontAtlasStartChar = 33
-
-    --- The byte in the ASCII char range that font atlas rendering range stops at
-    --- @private
-    STATIC.FontAtlasEndChar = 127
-
-    --- What color text should be when it is rendered to a new font atlas
-    --- @private
-    STATIC.FontAtlasTextColor = Color( 255, 255, 255, 255 )
-
-    --- A map of [string: System Font Name][integer: Point Size][boolean: Is Bold?] -> Font3dInstance
-    --- @type table<string, table<integer, table<boolean, Font3dInstance>>>
-    --- @private
-    STATIC.FontAtlases = {}
-
     --- A map of FONT_STYLE to its matching Font3dInstance
     --- @type table<FONT_STYLE, Font3dInstance>
-    --- @private
     STATIC.FontStyleToFont3d = {}
-
-    --- @param fontChars FontCharsInstance
-    --- @return IMaterial # The font atlas that was created
-    --- @private
-    function STATIC.CreateFontAtlas( fontChars )
-        local fontName = fontChars:GetCreatedFontName()
-        surface.SetFont( fontName )
-        surface.SetTextColor( STATIC.FontAtlasTextColor )
-
-        -- Find the font's widest character width 
-        local maxCharWidth, maxCharHeight = 0, 0
-        for byte = STATIC.FontAtlasStartChar, STATIC.FontAtlasEndChar do
-            local char = string.char( byte )
-
-            local charWidth, charHeight = surface.GetTextSize( char )
-
-            maxCharWidth = ( charWidth > maxCharWidth ) and charWidth or maxCharWidth
-            maxCharHeight = ( charHeight > maxCharHeight ) and charHeight or maxCharHeight
-        end
-
-        -- Add a couple of pixels just as a safety margin
-        maxCharWidth = maxCharWidth + 2
-        maxCharHeight = maxCharHeight + 2
-
-        -- Create a Render Target to hold the atlas
-        -- Assumes a 16 x 16 grid
-        local atlasWidth = maxCharWidth * 16
-        local atlasHeight = maxCharHeight * 16
-
-        local atlas = GetRenderTargetEx( "RENEGADE_FONT-ATLAS-RT_" .. fontName, atlasWidth, atlasHeight, RT_SIZE_OFFSCREEN, MATERIAL_RT_DEPTH_NONE, bit.bor( 1 ), 0, IMAGE_FORMAT_RGBA8888 )
-        local atlasMaterial = CreateMaterial( "RENEGADE_FONT-ATLAS-MAT_" .. fontName, "UnlitGeneric", {
-            ["$basetexture"] = atlas:GetName(),
-            ["$translucent"] = 1,
-            ["$gammacolorread"] = 1,    -- Disables SRGB conversion of color texture read.  Credit: Noaccess
-            ["$linearwrite"] = 1,        -- Disables SRGB conversion of shader results.      Credit: Noaccess
-            ["$vertexcolor"] = 1
-        } )
-
-        -- Render the font to the atlas
-        render.PushRenderTarget( atlas )
-        cam.Start2D()
-
-        render.Clear( 0, 0, 0, 0 )
-
-        for byte = STATIC.FontAtlasStartChar, STATIC.FontAtlasEndChar do
-            local char = string.char( byte )
-
-            local gridX = ( byte % 16 )
-            local gridY = math.floor( byte / 16 )
-
-            local charOriginX = gridX * maxCharWidth
-            local charOriginY = gridY * maxCharHeight
-
-            local charWidth, charHeight = surface.GetTextSize( char )
-
-            local charDrawX = math.floor( charOriginX + ( maxCharWidth / 2 ) - ( charWidth / 2 ) )
-            local charDrawY = math.floor( charOriginY + ( maxCharHeight / 2 ) - ( charHeight / 2 ) )
-
-            surface.SetTextPos( charDrawX, charDrawY )
-            surface.DrawText( char )
-        end
-
-        cam.End2D()
-        render.PopRenderTarget()
-
-        return atlasMaterial
-    end
-
-    --- @param systemFontName string
-    --- @param pointSize integer
-    --- @param isBold boolean?
-    --- @return Font3dInstance
-    function STATIC.GetOrCreateFontAtlas( systemFontName, pointSize, isBold )
-        if not isBold then
-            isBold = false
-        end
-
-        local fontsWithName = STATIC.FontAtlases[ systemFontName ]
-
-        if not fontsWithName then
-            fontsWithName = {}
-            STATIC.FontAtlases[ systemFontName ] = fontsWithName
-        end
-
-        local fontsWithSize = fontsWithName[ pointSize ]
-
-        if not fontsWithSize then
-            fontsWithSize = {}
-            fontsWithName[ pointSize ] = fontsWithSize
-        end
-
-        local fontWithBold = fontsWithName[ pointSize ][ isBold ]
-
-        -- We may need to create this font atlas from scratch
-        if not fontWithBold then
-            -- Register the font with Garry's Mod
-            local createdFontChars = fontChars.New()
-            createdFontChars:InitializeGdiFont( systemFontName, pointSize, isBold )
-
-            -- Create a font atlas for the registered font
-            local fontAtlas = STATIC.CreateFontAtlas( createdFontChars )
-
-            -- Create and store the Font3dInstance for the font atlas
-            fontWithBold = font3d.New( fontAtlas )
-            fontsWithName[ pointSize ][ isBold ] = fontWithBold
-        end
-
-        return fontWithBold
-    end
 end
