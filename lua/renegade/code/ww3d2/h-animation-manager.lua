@@ -43,6 +43,9 @@ INSTANCE.IsHAnimationManager = true
 
 	--- @type HAnimationManagerClass
 	local hAnimationManagerClass = CNC.Import( "code/ww3d2/h-animation-manager.lua" )
+
+	--- @type HCompressedAnimationClass
+	local hCompressedAnimationClass = CNC.Import( "code/ww3d2/h-compressed-animation.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -176,8 +179,25 @@ function INSTANCE:ResetMissing()
     end
 end
 
-function INSTANCE:LoadCompressedAnimation()
-	typecheck.NotImplementedError()
+--- @param cload ChunkLoadInstance
+--- @return integer
+function INSTANCE:LoadCompressedAnimation( cload )
+	local newAnimation = hCompressedAnimationClass.New()
+    if newAnimation == nil then
+        return 1
+    end
+
+    if newAnimation:LoadW3d( cload ) ~= hCompressedAnimationClass.OK then
+        -- "Load failed"
+        return 1
+    elseif INSTANCE.PeekAnimation( self, newAnimation:GetName() ) ~= nil then
+        -- "Duplicate exists!"
+        return 1
+    else
+        INSTANCE.AddAnimation( self, newAnimation )
+    end
+
+    return 0
 end
 
 --- "Load a raw anim"
