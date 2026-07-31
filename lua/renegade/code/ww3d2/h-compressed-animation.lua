@@ -33,6 +33,9 @@ INSTANCE.IsHCompressedAnimation = true
 
     --- @class HCompressedAnimationClass
 
+	STATIC.OK = 0
+	STATIC.LOAD_ERROR = 1
+
     --- Creates a new HCompressedAnimationInstance
     --- @return HCompressedAnimationInstance
     function STATIC.New()
@@ -53,13 +56,13 @@ end
 
 
 --- @class HCompressedAnimationInstance
---- @field Name any
---- @field HierarchyName any
+--- @field Name string
+--- @field HierarchyName string
 --- @field NumFrames integer
 --- @field NumNodes integer
 --- @field Flavor integer
 --- @field FrameRate number
---- @field NodeMotion any
+--- @field NodeMotion NodeCompressedMotionStructInstance
 
 function INSTANCE:Renegade_HCompressedAnimation()
 	typecheck.NotImplementedError()
@@ -73,71 +76,100 @@ function INSTANCE:LoadW3d()
 	typecheck.NotImplementedError()
 end
 
+--- @return string
 function INSTANCE:GetName()
-	typecheck.NotImplementedError()
+	return self.Name
 end
 
+--- @return string
 function INSTANCE:GetHName()
-	typecheck.NotImplementedError()
+	return self.HierarchyName
 end
 
+--- @return integer
 function INSTANCE:GetNumFrames()
-	typecheck.NotImplementedError()
+	return self.NumFrames
 end
 
+--- @return number
 function INSTANCE:GetFrameRate()
-	typecheck.NotImplementedError()
+	return self.FrameRate
 end
 
+--- @return number
 function INSTANCE:GetTotalTime()
-	typecheck.NotImplementedError()
+	return self.NumFrames / self.FrameRate
 end
 
+--- @return integer
 function INSTANCE:GetFlavor()
+	return self.Flavor
+end
+
+--- @param pivotIndex integer
+--- @param frame number
+--- @return Vector
+function INSTANCE:GetTranslation( pivotIndex, frame )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:GetTranslation()
+--- @param pivotIndex integer
+--- @param frame number
+--- @return QuaternionInstance
+function INSTANCE:GetOrientation( pivotIndex, frame )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:GetOrientation()
+--- @param pivotIndex integer
+--- @param frame number
+--- @return Matrix3dInstance
+function INSTANCE:GetTransform( pivotIndex, frame )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:GetTransform()
+--- @return boolean
+function INSTANCE:GetVisibility( pivotIndex, frame )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:GetVisibility()
+--- @param pivotIndex integer
+--- @return boolean
+function INSTANCE:IsNodeMotionPresent( pivotIndex )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:IsNodeMotionPresent()
-	typecheck.NotImplementedError()
-end
-
+--- @return integer
 function INSTANCE:GetNumPivots()
+	return self.NumNodes
+end
+
+--- @param pivotIndex integer
+--- @return boolean
+function INSTANCE:HasXTranslation( pivotIndex )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:HasXTranslation()
+--- @param pivotIndex integer
+--- @return boolean
+function INSTANCE:HasYTranslation( pivotIndex )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:HasYTranslation()
+--- @param pivotIndex integer
+--- @return boolean
+function INSTANCE:HasZTranslation( pivotIndex )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:HasZTranslation()
+--- @param pivotIndex integer
+--- @return boolean
+function INSTANCE:HasRotation( pivotIndex )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:HasRotation()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:HasVisibility()
+--- @param pivotIndex integer
+--- @return boolean
+function INSTANCE:HasVisibility( pivotIndex )
 	typecheck.NotImplementedError()
 end
 
@@ -145,18 +177,26 @@ function INSTANCE:Free()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:ReadChannel()
+--- @param cload ChunkLoadInstance
+--- @param newChannel TimeCodedMotionChannelInstance[][]|AdaptiveDeltaMotionChannelClass[][]
+--- @return boolean
+function INSTANCE:ReadChannel( cload, newChannel )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:AddChannel()
+--- @param newChannel TimeCodedMotionChannelInstance[][]|AdaptiveDeltaMotionChannelClass[][]
+function INSTANCE:AddChannel( newChannel )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:ReadBitChannel()
+--- @param cload ChunkLoadInstance
+--- @param newChannel TimeCodedBitChannelInstance[][]
+--- @return boolean
+function INSTANCE:ReadBitChannel( cload, newChannel )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:AddBitChannel()
+--- @param newChannel TimeCodedBitChannelInstance[][]
+function INSTANCE:AddBitChannel( newChannel )
 	typecheck.NotImplementedError()
 end
