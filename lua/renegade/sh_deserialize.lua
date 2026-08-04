@@ -213,7 +213,7 @@ end
             -- If there's a null byte in the string, treat that as the end of the string
             local nullIndex = textUtils.IndexOf( bytes, "\0" )
             if nullIndex ~= nil then
-                return bytes:sub( 0, nullIndex )
+                return bytes:sub( 0, nullIndex - 1 )
             end
 
             return bytes
