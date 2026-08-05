@@ -1,0 +1,27 @@
+{
+  "Name": "UnitCoordinationZoneManager",
+  "ParentNames": [],
+  "FileName": "unit-coordination-zone-manager",
+  "CppName": "UnitCoordinationZoneMgr",
+  "CppPath": "Code/Combat/unitcoordinationzonemgr.h",
+  "Static": {
+    "Fields": [
+      {
+        "Name": "ZoneList",
+        "DataType": "any"
+      }
+    ],
+    "Functions": [
+      "BuildZones",
+      "Reset",
+      "IsUnitInZone",
+      "DisplayDebugBoxes",
+      "DetectLadderZones",
+      "DetectElevatorZones"
+    ]
+  },
+  "Instance": {
+    "Fields": [],
+    "Functions": []
+  }
+}
