@@ -87,12 +87,10 @@ end
 
 function INSTANCE:Renegade_CommandoSaveLoad()
 	saveLoadSubSystemClass.Instance.Renegade_SaveLoadSubSystem( self )
-
-	-- This function is empty in the original code
 end
 
 function INSTANCE:_Renegade_CommandoSaveLoad()
-	-- This function is empty in the original code
+	-- Empty in the original code
 end
 
 --- @return integer

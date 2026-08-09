@@ -106,7 +106,7 @@ end
 
 --- @param renderInfo RenderInfoInstance
 function INSTANCE:Render( renderInfo )
-    -- Empty in original code
+    -- empty in the original code
 end
 
 --- @return SphereInstance

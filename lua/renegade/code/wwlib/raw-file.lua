@@ -299,7 +299,7 @@ function INSTANCE:Seek( pos, direction )
             pos = pos + self.BiasStart
 
         elseif direction == seekDirectionEnum.SEEK_CUR then
-            -- Left intentionally empty in the original code
+            -- Empty in the original code
 
         elseif direction ==seekDirectionEnum.SEEK_END then
             direction = seekDirectionEnum.SEEK_SET
