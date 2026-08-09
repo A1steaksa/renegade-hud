@@ -203,6 +203,7 @@ function INSTANCE:Renegade_HLod( ... )
 					definition.Aggregates.ModelName[aggregateIndex]
 				)
 				local boneIndex = definition.Aggregates.BoneIndex[aggregateIndex]
+
 				if renderObject ~= nil then
 					INSTANCE.AddSubObjectToBone( self, renderObject, boneIndex )
 					renderObject = nil
@@ -802,7 +803,7 @@ function INSTANCE:UpdateObjectSpaceBoundingVolumes()
 	end
 
 	self.ObjectSphere = sphere
-	self.ObjectBox = box
+	self.ObjectBox = aABoxClass.New( box )
 
 	self:InvalidateCachedBoundingVolumes()
 	self:SetHierarchyValid( false )
