@@ -629,6 +629,7 @@ function INSTANCE:GetBoundingBox()
 	if self.BoundingBoxIndex >= 1 then
 		-- "Get the bounding box in local coordinates"
 		local box = self:GetObjectSpaceBoundingBox()
+		assert( box ~= nil, INSTANCE.Class .. " - GetBoundingBox - Failed to get ObjectSpaceBoundingBox for: " .. tostring( self ) )
 
 		-- "Transform the bounding box to world coordinates"
 		self:GetTransform():TransformCenterExtentAABox( box.Center, box.Extent )
@@ -709,8 +710,10 @@ function INSTANCE:SetHidden()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetHTree()
-	typecheck.NotImplementedError()
+--- "Replace the hierarchy tree"
+--- @param htree HTreeInstance
+function INSTANCE:SetHTree( htree )
+	animatable3dObjectClass.Instance.SetHTree( self, htree )
 end
 
 function INSTANCE:Free()
