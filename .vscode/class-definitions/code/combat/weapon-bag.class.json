@@ -1,0 +1,72 @@
+{
+  "Name": "WeaponBag",
+  "ParentNames": [],
+  "FileName": "weapon-bag",
+  "CppName": "WeaponBagClass",
+  "CppPath": "Code/Combat/weaponbag.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Owner",
+        "DataType": "ArmedGameObjectInstance"
+      },
+      {
+        "Name": "WeaponList",
+        "DataType": "WeaponInstance[]"
+      },
+      {
+        "Name": "WeaponIndex",
+        "DataType": "integer"
+      },
+      {
+        "Name": "IsChanged",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "HudIsChanged",
+        "DataType": "boolean"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "Save",
+      "Load",
+      "IsWeaponOwned",
+      "IsAmmoFull",
+      "AddWeapon",
+      "AddWeapon",
+      "RemoveWeapon",
+      "ClearWeapons",
+      "GetCount",
+      "PeekWeapon",
+      "GetWeapon",
+      "GetNextWeapon",
+      "ImportWeaponList",
+      "ExportWeaponList",
+      "GetIndex",
+      "SelectIndex",
+      "SelectNext",
+      "SelectPrevious",
+      "SelectKeyNumber",
+      "SelectWeapon",
+      "SelectWeaponId",
+      "SelectWeaponName",
+      "Deselect",
+      "IsChanged",
+      "ForceChanged",
+      "ResetChanged",
+      "HudIsChanged",
+      "HudResetChanged",
+      "MoveContents",
+      "StoreInventory",
+      "RestoreInventory",
+      "FindWeapon",
+      "MarkOwnerDirty"
+    ]
+  }
+}

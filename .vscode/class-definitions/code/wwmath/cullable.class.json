@@ -1,0 +1,39 @@
+{
+  "Name": "Cullable",
+  "ParentNames": [],
+  "FileName": "cullable",
+  "CppName": "CullableClass",
+  "CppPath": "Code/WWMath/cullsys.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "CullLink",
+        "DataType": "CullLinkInstance"
+      },
+      {
+        "Name": "CullBox",
+        "DataType": "AaBoxInstance"
+      },
+      {
+        "Name": "NextCollected",
+        "DataType": "CullableInstance"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "GetCullBox",
+      "SetCullBox",
+      "SetCullingSystem",
+      "GetCullingSystem",
+      "SetCullLink",
+      "GetCullLink",
+      "SetNextCollected",
+      "GetNextCollected"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "Name": "TransitionInstance",
+  "ParentNames": [],
+  "FileName": "transition-instance",
+  "CppName": "TransitionInstanceClass",
+  "CppPath": "Code/Combat/transition.h",
+  "Static": {
+    "Fields": [],
+    "Functions": [
+      "End"
+    ]
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "EndingTM",
+        "DataType": "Matrix3d"
+      },
+      {
+        "Name": "Zone",
+        "DataType": "ObBoxInstance"
+      },
+      {
+        "Name": "Vehicle",
+        "DataType": "ScriptableGameObjectInstance"
+      },
+      {
+        "Name": "Data",
+        "DataType": "ConstTransitionDataInstance"
+      },
+      {
+        "Name": "LadderIndex",
+        "DataType": "integer"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "Check",
+      "Start",
+      "GetType",
+      "SetParentTransform",
+      "GetVehicle",
+      "SetVehicle",
+      "GetZone",
+      "GetEndingTm",
+      "GetLadderIndex",
+      "SetLadderIndex"
+    ]
+  }
+}

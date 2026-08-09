@@ -1,0 +1,135 @@
+{
+  "Name": "SoldierObserver",
+  "ParentNames": [
+    "PersistentGameObjectObserver"
+  ],
+  "FileName": "soldier-observer",
+  "CppName": "SoldierObserverClass",
+  "CppPath": "Code/Combat/soldierobserver.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "State",
+        "DataType": "integer"
+      },
+      {
+        "Name": "StateTimer",
+        "DataType": "number"
+      },
+      {
+        "Name": "HomeLocation",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "HomeRadius",
+        "DataType": "number"
+      },
+      {
+        "Name": "AlertPosition",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "ActionTimer",
+        "DataType": "number"
+      },
+      {
+        "Name": "EnemyObject",
+        "DataType": "ScriptableGameObjectInstance"
+      },
+      {
+        "Name": "CoveredAttack",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "CoverPosition",
+        "DataType": "CoverEntryInstance"
+      },
+      {
+        "Name": "ConversationTimer",
+        "DataType": "number"
+      },
+      {
+        "Name": "IsAlerted",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "Aggressiveness",
+        "DataType": "number"
+      },
+      {
+        "Name": "TakeCoverProbability",
+        "DataType": "number"
+      },
+      {
+        "Name": "IsStationary",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "SubStateString",
+        "DataType": "string"
+      },
+      {
+        "Name": "LastEvent",
+        "DataType": "integer"
+      },
+      {
+        "Name": "LastWeaponIndex",
+        "DataType": "integer"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "GetName",
+      "GetFactory",
+      "Save",
+      "Load",
+      "Attach",
+      "Detach",
+      "Created",
+      "Destroyed",
+      "Killed",
+      "Damaged",
+      "Custom",
+      "SoundHeard",
+      "EnemySeen",
+      "ActionComplete",
+      "TimerExpired",
+      "AnimationComplete",
+      "Poked",
+      "Entered",
+      "Exited",
+      "ResetConversationTimer",
+      "SetHomeLocation",
+      "SetAggressiveness",
+      "SetTakeCoverProbability",
+      "SetIsStationary",
+      "GetInformation",
+      "SetState",
+      "StateChanged",
+      "NotifyNeighborsSound",
+      "NotifyNeighborsEnemy",
+      "Think",
+      "StateAct",
+      "StateActIdle",
+      "StateActFootstepsHeard",
+      "StateActBulletHeard",
+      "StateActGunshotHeard",
+      "StateActAttack",
+      "ActionReset",
+      "ActionFaceLocation",
+      "ActionGotoLocation",
+      "ActionGotoLocationFacing",
+      "ActionAttackObject",
+      "ActionDive",
+      "StayWithinHome",
+      "TakeCover",
+      "LookRandom",
+      "ReleaseCoverPosition"
+    ]
+  }
+}
