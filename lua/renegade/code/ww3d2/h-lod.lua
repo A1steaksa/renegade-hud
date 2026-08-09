@@ -430,11 +430,20 @@ end
 
 --- "Adds a sub-object to a bone"
 --- @param subObject RenderObjectInstance
---- @param boneIndex integer
+--- @param bone integer|string
 --- @return boolean wasSuccessful
-function INSTANCE:AddSubObjectToBone( subObject, boneIndex )
+function INSTANCE:AddSubObjectToBone( subObject, bone )
 
-	section.Print( self, " - BoneIndex: '", boneIndex, "', HTree NumPivots: '", self.HTree._NumPivots, "'" )
+	-- HLod only overrides one of this function's overloads
+	-- So we're passing the un-overridden call to the parent class's overload
+	-- ( subObject: RenderObjectInstance, boneIndex: string )
+    if typecheck.IsOfType( bone, "string" ) then
+        local boneName = bone --[[@as string]]
+
+		return animatable3dObjectClass.Instance.AddSubObjectToBone( self, subObject, boneName )
+    end
+
+	local boneIndex = bone --[[@as integer]]
 
 	if boneIndex < 0 or boneIndex > self.HTree:NumPivots() then
 		return false
