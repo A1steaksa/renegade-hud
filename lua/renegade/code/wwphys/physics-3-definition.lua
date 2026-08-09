@@ -114,9 +114,6 @@ end
 --- @param connectedEntity Entity
 --- @return PersistInstance
 function INSTANCE:Create( connectedEntity )
-
-    section.Print( self.Class, " - Create - ", connectedEntity )
-
     local object = physics3Class.New()
     object:Init( self, connectedEntity )
     return object

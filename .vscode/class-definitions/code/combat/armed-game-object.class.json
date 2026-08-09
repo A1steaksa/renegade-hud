@@ -1,0 +1,71 @@
+{
+  "Name": "ArmedGameObject",
+  "ParentNames": [
+    "PhysicalGameObject"
+  ],
+  "FileName": "armed-game-object",
+  "CppName": "ArmedGameObj",
+  "CppPath": "Code/Combat/armedgameobj.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "WeaponBag",
+        "DataType": "WeaponBagInstance"
+      },
+      {
+        "Name": "TargetingPos",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "MuzzleA0bOne",
+        "DataType": "integer"
+      },
+      {
+        "Name": "MuzzleA1bOne",
+        "DataType": "integer"
+      },
+      {
+        "Name": "MuzzleB0bOne",
+        "DataType": "integer"
+      },
+      {
+        "Name": "MuzzleB1bOne",
+        "DataType": "integer"
+      },
+      {
+        "Name": "MuzzleRecoilController",
+        "DataType": "MuzzleRecoilInstance"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "Init",
+      "CopySettings",
+      "ReInit",
+      "GetDefinition",
+      "Save",
+      "Load",
+      "OnPostLoad",
+      "ImportFrequent",
+      "ExportFrequent",
+      "ImportStateCs",
+      "ExportStateCs",
+      "PostThink",
+      "GetWeapon",
+      "GetWeaponBag",
+      "MuzzleExists",
+      "GetMuzzle",
+      "StartRecoil",
+      "GetWeaponError",
+      "GetTargetingPos",
+      "SetTargeting",
+      "AsArmedGameObject",
+      "InitMuzzleBones"
+    ]
+  }
+}

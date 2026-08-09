@@ -8,9 +8,21 @@
   "CppPath": "Code/wwphys/phys3.h",
   "Static": {
     "Fields": [
-      "CorrectionTime",
-      "AllowableError",
-      "PopError"
+      {
+        "Name": "CorrectionTime",
+        "DataType": "number",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "AllowableError",
+        "DataType": "number",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "PopError",
+        "DataType": "number",
+        "ArrayDepth": 0
+      }
     ],
     "Functions": [
       "SetCorrectionTime",
@@ -23,31 +35,111 @@
   },
   "Instance": {
     "Fields": [
-      "CollisionBox",
-      "OnGround",
-      "InCollision",
-      "HeadingChanged",
-      "GroundSurface",
-      "State",
-      "Heading",
-      "NormSpeed",
-      "SlideAngle",
-      "SlideNormalZ",
-      "SlideAngleTan",
-      "StepHeight",
-      "MoveMode",
-      "GroundObject",
-      "GroundState",
-      "AnimationMove",
-      "History",
-      "LatencyError",
-      "LastKnownPosition",
-      "LastKnownVelocity"
+      {
+        "Name": "CollisionBox",
+        "DataType": "AABoxInstance",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "OnGround",
+        "DataType": "boolean",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "InCollision",
+        "DataType": "boolean",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "HeadingChanged",
+        "DataType": "boolean",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "GroundSurface",
+        "DataType": "integer",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "State",
+        "DataType": "StateStruct",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "Heading",
+        "DataType": "number",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "NormSpeed",
+        "DataType": "number",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "SlideAngle",
+        "DataType": "number",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "SlideNormalZ",
+        "DataType": "number",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "SlideAngleTan",
+        "DataType": "number",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "StepHeight",
+        "DataType": "number",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "MoveMode",
+        "DataType": "MoveModeType",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "GroundObject",
+        "DataType": "PhysicsInstance",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "GroundState",
+        "DataType": "GroundStateStruct",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "AnimationMove",
+        "DataType": "Vector",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "History",
+        "DataType": "Physics3hIstoryClass",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "LatencyError",
+        "DataType": "Vector",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "LastKnownPosition",
+        "DataType": "Vector",
+        "ArrayDepth": 0
+      },
+      {
+        "Name": "LastKnownVelocity",
+        "DataType": "Vector",
+        "ArrayDepth": 0
+      }
     ],
     "Functions": [
       "Constructor",
       "Destructor",
-      "AsPhysics3class",
+      "AsPhysics3cLass",
       "Init",
       "GetBoundingBox",
       "GetTransform",

@@ -1,0 +1,194 @@
+{
+  "Name": "VehicleGameObject",
+  "ParentNames": [
+    "SmartGameObject"
+  ],
+  "FileName": "vehicle-game-object",
+  "CppName": "VehicleGameObj",
+  "CppPath": "Code/Combat/vehicle.h",
+  "Static": {
+    "Fields": [
+      {
+        "Name": "DefaultDriverIsGunner",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "CameraLockedToTurret",
+        "DataType": "boolean"
+      }
+    ],
+    "Functions": [
+      "SetPrecision",
+      "ToggleTargetSteering",
+      "SetTargetSteering",
+      "IsTargetSteering",
+      "SetDefaultDriverIsGunner",
+      "SetCameraLockedToTurret",
+      "GetCameraLockedToTurret"
+    ]
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Sound",
+        "DataType": "Sound3dcLassInstance"
+      },
+      {
+        "Name": "EngineSoundState",
+        "DataType": "integer"
+      },
+      {
+        "Name": "CachedEngineSound",
+        "DataType": "AudibleSoundInstance"
+      },
+      {
+        "Name": "TurretBone",
+        "DataType": "integer"
+      },
+      {
+        "Name": "BarrelBone",
+        "DataType": "integer"
+      },
+      {
+        "Name": "TurretTurn",
+        "DataType": "number"
+      },
+      {
+        "Name": "BarrelTilt",
+        "DataType": "number"
+      },
+      {
+        "Name": "BarrelOffset",
+        "DataType": "number"
+      },
+      {
+        "Name": "TransitionsEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "HasEnterTransitions",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "HasExitTransitions",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VehicleDelivered",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "DriverIsGunner",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "WheelSurfaceEmitters",
+        "DataType": "VectorClassPersistantSurfaceEmitterInstance"
+      },
+      {
+        "Name": "WheelSurfaceSound",
+        "DataType": "PersistantSurfaceSoundInstance"
+      },
+      {
+        "Name": "SeatOccupants",
+        "DataType": "VectorClassSoldierGameObjectInstance"
+      },
+      {
+        "Name": "OccupiedSeats",
+        "DataType": "integer"
+      },
+      {
+        "Name": "TransitionInstances",
+        "DataType": "TransitionInstanceInstance[]"
+      },
+      {
+        "Name": "LockOwner",
+        "DataType": "ScriptableGameObjectInstance"
+      },
+      {
+        "Name": "LockTimer",
+        "DataType": "number"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "Init",
+      "GetDefinition",
+      "Save",
+      "Load",
+      "OnPostLoad",
+      "GetFactory",
+      "Startup",
+      "PeekVehiclePhysics",
+      "Think",
+      "PostThink",
+      "ApplyControl",
+      "GetWeaponControlOwner",
+      "SetTargeting",
+      "Use2dAiming",
+      "GetLookTransform",
+      "HasTurret",
+      "AsVehicleGameObject",
+      "IsAircraft",
+      "IsTurret",
+      "GetPlayerType",
+      "AddOccupant",
+      "RemoveOccupant",
+      "ContainsOccupant",
+      "GetOccupantCount",
+      "FindSeat",
+      "GetDriver",
+      "GetGunner",
+      "GetActualGunner",
+      "IsEntryPermitted",
+      "PassengerEntering",
+      "PassengerExiting",
+      "SetVehicleDelivered",
+      "ExportCreation",
+      "ImportCreation",
+      "ExportRare",
+      "ImportRare",
+      "ImportFrequent",
+      "ExportFrequent",
+      "ImportStateCs",
+      "ExportStateCs",
+      "GetProfile",
+      "GetVelocity",
+      "SetVelocity",
+      "GetDescription",
+      "GetTurnRadius",
+      "IsEngineEnabled",
+      "EnableEngine",
+      "InitWheelEffects",
+      "ShutdownWheelEffects",
+      "UpdateWheelEffects",
+      "ApplyDamage",
+      "UpdateDamageMeshes",
+      "GetSquishVelocity",
+      "ScriptEnableTransitions",
+      "GetVehicleName",
+      "ObjectExpired",
+      "LockVehicle",
+      "IsLocked",
+      "GetLockOwner",
+      "GetDriverIsGunner",
+      "ToggleDriverIsGunner",
+      "GetStealthFadeDistance",
+      "GetFilterDistance",
+      "IgnoreOccupants",
+      "UnignoreOccupants",
+      "RemoveTransitions",
+      "CreateNewTransitions",
+      "DestroyTransitions",
+      "UpdateTransitions",
+      "CreateAndDestroyTransitions",
+      "AquireTurretBones",
+      "ReleaseTurretBones",
+      "UpdateTurret",
+      "UpdateSoundEffects",
+      "ChangeEngineSoundState",
+      "UpdateEngineSoundPitch"
+    ]
+  }
+}
