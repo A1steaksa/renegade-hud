@@ -1,0 +1,72 @@
+{
+  "Name": "HCompressedAnimation",
+  "ParentNames": [
+    "HAnimation"
+  ],
+  "FileName": "h-compressed-animation",
+  "CppName": "HCompressedAnimClass",
+  "CppPath": "Code/ww3d2/hcanim.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Name",
+        "DataType": "any"
+      },
+      {
+        "Name": "HierarchyName",
+        "DataType": "any"
+      },
+      {
+        "Name": "NumFrames",
+        "DataType": "integer"
+      },
+      {
+        "Name": "NumNodes",
+        "DataType": "integer"
+      },
+      {
+        "Name": "Flavor",
+        "DataType": "integer"
+      },
+      {
+        "Name": "FrameRate",
+        "DataType": "number"
+      },
+      {
+        "Name": "NodeMotion",
+        "DataType": "any"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "LoadW3d",
+      "GetName",
+      "GetHName",
+      "GetNumFrames",
+      "GetFrameRate",
+      "GetTotalTime",
+      "GetFlavor",
+      "GetTranslation",
+      "GetOrientation",
+      "GetTransform",
+      "GetVisibility",
+      "IsNodeMotionPresent",
+      "GetNumPivots",
+      "HasXTranslation",
+      "HasYTranslation",
+      "HasZTranslation",
+      "HasRotation",
+      "HasVisibility",
+      "Free",
+      "ReadChannel",
+      "AddChannel",
+      "ReadBitChannel",
+      "AddBitChannel"
+    ]
+  }
+}

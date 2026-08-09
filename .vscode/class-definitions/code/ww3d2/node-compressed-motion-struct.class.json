@@ -1,0 +1,40 @@
+{
+  "Name": "NodeCompressedMotionStruct",
+  "ParentNames": [],
+  "FileName": "node-compressed-motion-struct",
+  "CppName": "NodeCompressedMotionStruct",
+  "CppPath": "Code/ww3d2/hcanim.cpp",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+        {
+            "Name": "Flavor",
+            "DataType": "integer"
+        },
+        {
+            "Name": "TimeCoded",
+            "DataType": "any"
+        },
+        {
+            "Name": "AdaptiveDelta",
+            "DataType": "any"
+        },
+        {
+            "Name": "VectorDelta",
+            "DataType": "any"
+        },
+        {
+            "Name": "Visibility",
+            "DataType": "TimeCodedBitChannelInstance"
+        }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "SetFlavor"
+    ]
+  }
+}
