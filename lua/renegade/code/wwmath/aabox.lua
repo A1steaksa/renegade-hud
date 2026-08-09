@@ -63,9 +63,15 @@ end
 --- @field Extent Vector The size of the box each of the three dimensions
 
 --- Constructs a new AABoxInstance
+--- @overload fun( self ): AABoxInstance
+--- @overload fun( self, minMaxBox: MinMaxAABoxInstance ): AABoxInstance
+--- @overload fun( self, center: Vector, extent: Vector ): AABoxInstance
+--- @overload fun( self, center: Vector, extent: Vector ): AABoxInstance
 function INSTANCE:Renegade_AABox( ... )
     local args = { ... }
     local argCount = select( "#", ... )
+
+    typecheck.AssertArgCount( STATIC.Class, argCount, { 0, 1, 2 } )
 
     -- ( nil )
     if argCount == 0 then
@@ -75,7 +81,16 @@ function INSTANCE:Renegade_AABox( ... )
     end
 
     if argCount == 1 then
-        typecheck.AssertArgType( STATIC.Class, 1, args[1], "table" )
+        local arg = args[1]
+        typecheck.AssertArgType( STATIC.Class, 1, arg, { "table", "MinMaxAABoxInstance" } )
+
+        -- ( minMaxBox: MinMaxAABoxInstance )
+        if typecheck.IsOfType( arg, "MinMaxAABoxInstance" ) then
+            local minMaxBox = args[1] --[[@as MinMaxAABoxInstance]]
+
+            self:Init( minMaxBox )
+            return
+        end
 
         -- ( points: Vector[] )
         local firstIndexContainsVector = isvector( args[1][1] )
@@ -83,12 +98,8 @@ function INSTANCE:Renegade_AABox( ... )
             local points = args[1] --[[@as Vector[] ]]
 
             self:Init( points )
-
             return
         end
-
-        -- Omitted MinMaxAABox logic
-        typecheck.NotImplementedError( "MinMaxAABox constructor" )
     end
 
     -- ( center: Vector, extent: Vector )
@@ -101,11 +112,8 @@ function INSTANCE:Renegade_AABox( ... )
 
         self.Center = center
         self.Extent = extent
-
         return
     end
-
-    typecheck.AssertArgCount( STATIC.Class, argCount )
 end
 
 --- @param other AABoxInstance
@@ -117,6 +125,7 @@ function INSTANCE:__eq( other )
     return ( self.Center == other.Center ) and ( self.Extent == other.Extent )
 end
 
+--- @overload fun( self, minMaxBox: MinMaxAABoxInstance )
 --- @overload fun( self, center: Vector, extent: Vector )
 --- @overload fun( self, points: Vector[] )
 function INSTANCE:Init( ... )
@@ -125,13 +134,24 @@ function INSTANCE:Init( ... )
     typecheck.AssertArgCount( INSTANCE.Class, argCount, { 1, 2 } )
 
     if argCount == 1 then
-        typecheck.AssertArgType( STATIC.Class, 1, args[1], "table" )
+        local arg = args[1]
+        typecheck.AssertArgType( STATIC.Class, 1, arg, { "table", "MinMaxAABoxInstance" } )
+
+        -- "Initialize from a min-max form of a box"
+        -- ( minMaxbox: MinMaxAABoxInstance )
+        if typecheck.IsOfType( arg, "MinMaxAABoxInstance" ) then
+            local minMaxBox = arg --[[@as MinMaxAABoxInstance]]
+
+            self.Center = ( minMaxBox.MaxCorner + minMaxBox.MinCorner ) * 0.5
+            self.Extent = ( minMaxBox.MaxCorner - minMaxBox.MinCorner ) * 0.5
+            return
+        end
 
         -- ( points: Vector[] )
-        local isVectorList = args[1][1] and isvector( args[1][1] )
+        local isVectorList = arg[1] and isvector( arg[1] )
         if isVectorList then
 
-            local points = args[1] --[[@as Vector[] ]]
+            local points = arg --[[@as Vector[] ]]
 
             local min = Vector( 0, 0, 0 )
             local max = Vector( 0, 0, 0 )
@@ -152,7 +172,7 @@ function INSTANCE:Init( ... )
             return
         end
 
-        typecheck.NotImplementedError( "MinMaxAABox and LineSeg" )
+        typecheck.NotImplementedError( "LineSeg" )
     end
 
     if argCount == 2 then
@@ -170,12 +190,6 @@ function INSTANCE:Init( ... )
 
     end
 
-end
-
---- @param min Vector
---- @param max Vector
-function INSTANCE:InitMinMax( min, max )
-    typecheck.NotImplementedError( "InitMinMax" )
 end
 
 --- Initializes this box to a random state
@@ -258,6 +272,7 @@ function INSTANCE:Volume()
     return 2 * self.Extent.x * 2 * self.Extent.y * 2 * self.Extent.z
 end
 
+--- @return boolean
 function INSTANCE:Contains( ... )
     typecheck.NotImplementedError( "Contains" )
 end
