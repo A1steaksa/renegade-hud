@@ -62,7 +62,7 @@ end
 --- @field Frame number
 --- @field PreviousFrame number
 --- @field Weight number
---- @field PivotMap table
+--- @field PivotMap number[]
 --- @field Shared boolean "This is set to false when the HAnimCombo allocates it"
 
 --- @param shared boolean? [Default: `false`]
@@ -101,8 +101,21 @@ function INSTANCE:_Renegade_HAnimationComboData()
 	self.PivotMap = nil
 end
 
-function INSTANCE:Copy()
-	typecheck.NotImplementedError()
+--- @param src HAnimationComboDataInstance?
+function INSTANCE:Copy( src )
+	if src then
+		self.HAnimation    = src:GetHAnimation()
+		self.PivotMap      = src:GetPivotMap()
+		self.Frame         = src:GetFrame()
+		self.PreviousFrame = src:GetPreviousFrame()
+		self.Weight        = src:GetWeight()
+	else
+		self.HAnimation    = hAnimationClass.New()
+		self.PivotMap      = {}
+		self.Frame         = 0
+		self.PreviousFrame = 0
+		self.Weight        = 1
+	end
 end
 
 function INSTANCE:Clear()
@@ -125,8 +138,12 @@ function INSTANCE:SetHAnimation( motion )
 	self.HAnimation = motion
 end
 
-function INSTANCE:GiveHAnimation()
-	typecheck.NotImplementedError()
+--- "Used for giving this object the reference"
+--- @param motion HAnimationInstance
+function INSTANCE:GiveHAnimation( motion )
+	if self.HAnimation then
+		self.HAnimation = motion
+	end
 end
 
 --- @param frame number
@@ -136,7 +153,7 @@ function INSTANCE:SetFrame( frame )
 end
 
 --- @param frame number
-function INSTANCE:SetPrevFrame( frame )
+function INSTANCE:SetPreviousFrame( frame )
 	self.PreviousFrame = frame
 end
 
@@ -145,7 +162,7 @@ function INSTANCE:SetWeight( weight )
 	self.Weight = weight
 end
 
---- @param map table
+--- @param map number[]
 function INSTANCE:SetPivotMap( map )
 	self.PivotMap = map
 end
@@ -175,12 +192,12 @@ function INSTANCE:GetWeight()
 	return self.Weight
 end
 
---- @return table
+--- @return number[]
 function INSTANCE:PeekPivotMap()
 	return self.PivotMap
 end
 
---- @return table
+--- @return number[]
 function INSTANCE:GetPivotMap()
 	return self.PivotMap
 end
@@ -190,6 +207,31 @@ function INSTANCE:IsShared()
 	return self.Shared
 end
 
+--- " 
+--- This function will replace the current pivot map (if any) with another pivot map that is
+--- set to 1 for only those pivot indices that actually have data.
+--- "
 function INSTANCE:BuildActivePivotMap()
-	typecheck.NotImplementedError()
+	if self.PivotMap ~= nil then
+		self.PivotMap = nil
+	end
+
+	if self.HAnimation == nil then
+		self.PivotMap = {}
+		return
+	end
+
+	local numPivots = self.HAnimation:GetNumPivots()
+	self.PivotMap = {}
+
+	local count = 1
+	while count <= numPivots do
+		if self.HAnimation:IsNodeMotionPresent( count ) then
+			self.PivotMap[#self.PivotMap + 1] = 1
+		else
+			self.PivotMap[#self.PivotMap + 1] = 0
+		end
+
+		count = count + 1
+	end
 end
