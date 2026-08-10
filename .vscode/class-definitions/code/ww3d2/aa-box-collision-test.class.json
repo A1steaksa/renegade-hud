@@ -1,0 +1,41 @@
+{
+  "Name": "AABoxCollisionTest",
+  "ParentNames": [
+    "CollisionTest"
+  ],
+  "FileName": "aa-box-collision-test",
+  "CppName": "AABoxCollisionTestClass",
+  "CppPath": "Code/ww3d2/coltest.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Box",
+        "DataType": "AaBoxInstance"
+      },
+      {
+        "Name": "Move",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "SweepMin",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "SweepMax",
+        "DataType": "Vector"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Cull",
+      "CastToTriangle",
+      "Translate",
+      "Rotate",
+      "Transform"
+    ]
+  }
+}

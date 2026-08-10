@@ -1,0 +1,36 @@
+{
+  "Name": "PhysicsOBBoxCollisionTest",
+  "ParentNames": [
+    "OBBoxCollisionTest"
+  ],
+  "FileName": "physics-ob-box-collision-test",
+  "CppName": "PhysOBBoxCollisionTestClass",
+  "CppPath": "Code/wwphys/physcoltest.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "CollidedPhysicsObject",
+        "DataType": "PhysicsInstance"
+      },
+      {
+        "Name": "CollisionGroup",
+        "DataType": "integer"
+      },
+      {
+        "Name": "CheckStaticObjects",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "CheckDynamicObjects",
+        "DataType": "boolean"
+      }
+    ],
+    "Functions": [
+      "Constructor"
+    ]
+  }
+}

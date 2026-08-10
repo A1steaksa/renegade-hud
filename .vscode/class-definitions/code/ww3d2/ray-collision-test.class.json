@@ -1,0 +1,30 @@
+{
+  "Name": "RayCollisionTest",
+  "ParentNames": [
+    "CollisionTest"
+  ],
+  "FileName": "ray-collision-test",
+  "CppName": "RayCollisionTestClass",
+  "CppPath": "Code/ww3d2/coltest.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Ray",
+        "DataType": "LineSegInstance"
+      },
+      {
+        "Name": "IgnoreTranslucentMeshes",
+        "DataType": "boolean"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Cull",
+      "CastToTriangle"
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "Name": "OBBoxCollisionTest",
+  "ParentNames": [
+    "CollisionTest"
+  ],
+  "FileName": "ob-box-collision-test",
+  "CppName": "OBBoxCollisionTestClass",
+  "CppPath": "Code/ww3d2/coltest.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Box",
+        "DataType": "ObBoxInstance"
+      },
+      {
+        "Name": "Move",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "SweepMin",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "SweepMax",
+        "DataType": "Vector"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Constructor",
+      "Cull",
+      "CastToTriangle"
+    ]
+  }
+}

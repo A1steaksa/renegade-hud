@@ -1,0 +1,36 @@
+{
+  "Name": "PhysicsRayCollisionTest",
+  "ParentNames": [
+    "RayCollisionTest"
+  ],
+  "FileName": "physics-ray-collision-test",
+  "CppName": "PhysRayCollisionTestClass",
+  "CppPath": "Code/wwphys/physcoltest.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "CollidedPhysicsObject",
+        "DataType": "PhysicsInstance"
+      },
+      {
+        "Name": "CollisionGroup",
+        "DataType": "integer"
+      },
+      {
+        "Name": "CheckStaticObjects",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "CheckDynamicObjects",
+        "DataType": "boolean"
+      }
+    ],
+    "Functions": [
+      "Constructor"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "Name": "CollisionTest",
+  "ParentNames": [],
+  "FileName": "collision-test",
+  "CppName": "CollisionTestClass",
+  "CppPath": "Code/ww3d2/coltest.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Result",
+        "DataType": "CastResultStructInstance"
+      },
+      {
+        "Name": "CollisionType",
+        "DataType": "integer"
+      },
+      {
+        "Name": "CollidedRenderObject",
+        "DataType": "RenderObjectInstance"
+      }
+    ],
+    "Functions": [
+      "Constructor"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "Name": "PhysicsAABoxCollisionTest",
+  "ParentNames": [
+    "AABoxCollisionTest"
+  ],
+  "FileName": "physics-aa-box-collision-test",
+  "CppName": "PhysAABoxCollisionTestClass",
+  "CppPath": "Code/wwphys/physcoltest.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "CollidedPhysicsObject",
+        "DataType": "PhysicsInstance"
+      },
+      {
+        "Name": "CollisionGroup",
+        "DataType": "integer"
+      },
+      {
+        "Name": "CheckStaticObjects",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "CheckDynamicObjects",
+        "DataType": "boolean"
+      }
+    ],
+    "Functions": [
+      "Constructor"
+    ]
+  }
+}
