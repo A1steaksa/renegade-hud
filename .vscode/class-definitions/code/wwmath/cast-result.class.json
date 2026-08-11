@@ -1,0 +1,43 @@
+{
+  "Name": "CastResultStruct",
+  "ParentNames": [],
+  "FileName": "cast-result",
+  "CppName": "CastResultStruct",
+  "CppPath": "Code/WWMath/castres.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "StartBad",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "Fraction",
+        "DataType": "number"
+      },
+      {
+        "Name": "Normal",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "SurfaceType",
+        "DataType": "integer"
+      },
+      {
+        "Name": "ComputeContactPoint",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "ContactPoint",
+        "DataType": "Vector"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Reset"
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "Name": "LineSeg",
+  "ParentNames": [],
+  "FileName": "line-seg",
+  "CppName": "LineSegClass",
+  "CppPath": "Code/WWMath/lineseg.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "P0",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "P1",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "Dp",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "Dir",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "Length",
+        "DataType": "number"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Constructor",
+      "Set",
+      "SetRandom",
+      "GetP0",
+      "GetP1",
+      "GetDp",
+      "GetDir",
+      "GetLength",
+      "ComputePoint",
+      "FindPointClosestTo",
+      "FindIntersection",
+      "Recalculate"
+    ]
+  }
+}
