@@ -1,0 +1,66 @@
+{
+  "Name": "RenderInfo",
+  "ParentNames": [],
+  "FileName": "render-info",
+  "CppName": "RenderInfoClass",
+  "CppPath": "Code/ww3d2/rinfo.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Camera",
+        "DataType": "CameraInstance"
+      },
+      {
+        "Name": "FogScale",
+        "DataType": "number"
+      },
+      {
+        "Name": "FogStart",
+        "DataType": "number"
+      },
+      {
+        "Name": "FogEnd",
+        "DataType": "number"
+      },
+      {
+        "Name": "LightEnvironment",
+        "DataType": "LightEnvironmentInstance"
+      },
+      {
+        "Name": "AdditionalMaterialPassArray",
+        "DataType": "MaterialPassInstance"
+      },
+      {
+        "Name": "AdditionalMaterialPassCount",
+        "DataType": "UnsignedInstance"
+      },
+      {
+        "Name": "RejectedMaterialPasses",
+        "DataType": "UnsignedInstance"
+      },
+      {
+        "Name": "OverrideFlag",
+        "DataType": "RinfoOverrideFlagsInstance"
+      },
+      {
+        "Name": "OverrideFlagLevel",
+        "DataType": "UnsignedInstance"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "PushMaterialPass",
+      "PopMaterialPass",
+      "AdditionalPassCount",
+      "PeekAdditionalPass",
+      "PushOverrideFlags",
+      "PopOverrideFlags",
+      "CurrentOverrideFlags"
+    ]
+  }
+}

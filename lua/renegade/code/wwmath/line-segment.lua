@@ -1,19 +1,19 @@
--- Based on LineSegClass within Code/WWMath/lineseg.h
+-- Based on LineSegmentClass within Code/WWMath/lineseg.h
 
 --- @class Renegade
 local CNC = CNC_RENEGADE
 
 
---- @class LineSegClass
---- @field Instance LineSegInstance The metatable used by LineSegInstance
+--- @class LineSegmentClass
+--- @field Instance LineSegmentInstance The metatable used by LineSegmentInstance
 local STATIC = CNC.CreateExport()
 local isHotload = not table.IsEmpty( STATIC )
-STATIC.Class = "LineSegClass"
+STATIC.Class = "LineSegmentClass"
 
---- @class LineSegInstance
---- @field Static LineSegClass The static table for this instance's class
-local INSTANCE = robustclass.Register( "Renegade_LineSeg" )
-INSTANCE.Class = "LineSegInstance"
+--- @class LineSegmentInstance
+--- @field Static LineSegmentClass The static table for this instance's class
+local INSTANCE = robustclass.Register( "Renegade_LineSegment" )
+INSTANCE.Class = "LineSegmentInstance"
 STATIC.Instance = INSTANCE
 INSTANCE.Static = STATIC
 INSTANCE.IsLineSeg = true
@@ -29,16 +29,16 @@ INSTANCE.IsLineSeg = true
 
 --[[ Static Functions and Variables ]] do
 
-    --- @class LineSegClass
+    --- @class LineSegmentClass
 
-    --- Creates a new LineSegInstance
-    --- @return LineSegInstance
+    --- Creates a new LineSegmentInstance
+    --- @return LineSegmentInstance
     function STATIC.New()
-        return robustclass.New( "Renegade_LineSeg" )
+        return robustclass.New( "Renegade_LineSegment" )
     end
 
     --- @param arg any
-    --- @return boolean `true` if the passed argument is a(n) LineSegInstance, `false` otherwise
+    --- @return boolean `true` if the passed argument is a(n) LineSegmentInstance, `false` otherwise
     function STATIC.IsLineSeg( arg )
         if not istable( arg ) then return false end
         if getmetatable( arg ) ~= INSTANCE then return false end
@@ -46,22 +46,18 @@ INSTANCE.IsLineSeg = true
         return arg.IsLineSeg and true or false
     end
 
-    typecheck.RegisterType( "LineSegInstance", STATIC.IsLineSeg )
+    typecheck.RegisterType( "LineSegmentInstance", STATIC.IsLineSeg )
 end
 
 
---- @class LineSegInstance
+--- @class LineSegmentInstance
 --- @field P0 Vector
 --- @field P1 Vector
 --- @field Dp Vector
 --- @field Dir Vector
 --- @field Length number
 
-function INSTANCE:Renegade_LineSeg()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:Renegade_LineSeg()
+function INSTANCE:Renegade_LineSegment()
 	typecheck.NotImplementedError()
 end
 

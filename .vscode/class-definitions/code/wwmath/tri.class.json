@@ -1,0 +1,28 @@
+{
+  "Name": "Triangle",
+  "ParentNames": [],
+  "FileName": "triangle",
+  "CppName": "TriClass",
+  "CppPath": "Code/WWMath/tri.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "N",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "V",
+        "DataType": "Vector"
+      }
+    ],
+    "Functions": [
+      "ComputeNormal",
+      "ContainsPoint",
+      "FindDominantPlane"
+    ]
+  }
+}

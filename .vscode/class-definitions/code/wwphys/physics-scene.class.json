@@ -1,0 +1,530 @@
+{
+  "Name": "PhysicsScene",
+  "ParentNames": [
+    "SceneClass"
+  ],
+  "FileName": "physics-scene",
+  "CppName": "PhysicsSceneClass",
+  "CppPath": "Code/wwphys/pscene.h",
+  "Static": {
+    "Fields": [
+      {
+        "Name": "AllowCollisionFlags",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "TheScene",
+        "DataType": "PhysicsSceneInstance"
+      }
+    ],
+    "Functions": [
+      "GetInstance"
+    ]
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "VisibleStaticObjectList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "VisibleWsMeshList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "VisibleDynamicObjectList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "ActiveTextureProjectors",
+        "DataType": "TexProjListInstance"
+      },
+      {
+        "Name": "FrameNum",
+        "DataType": "integer"
+      },
+      {
+        "Name": "LastCameraPosition",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "LastValidVisibilityId",
+        "DataType": "integer"
+      },
+      {
+        "Name": "DebugDisplayEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "ProjectorDebugDisplayEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "DirtyCullDebugDisplayEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "LightingDebugDisplayEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "LastValidStats",
+        "DataType": "StatsStructInstance"
+      },
+      {
+        "Name": "CurrentStats",
+        "DataType": "StatsStructInstance"
+      },
+      {
+        "Name": "StaticProjectorsDirty",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilityEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilityInverted",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilityQuickAndDirty",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilityResetNeeded",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilitySectorDisplayEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilitySectorHistoryEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilityGridDisplayMode",
+        "DataType": "integer"
+      },
+      {
+        "Name": "VisibilitySectorMissing",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilitySectorFallbackEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "BackfaceDebugEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "VisibilitySamplePointLocked",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "LockedVisibilitySamplePoint",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "VisibilityCamera",
+        "DataType": "CameraInstance"
+      },
+      {
+        "Name": "CurrentVisibilityTable",
+        "DataType": "VisibilityTableInstance"
+      },
+      {
+        "Name": "StaticProjectorsEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "DynamicProjectorsEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "ShadowMode",
+        "DataType": "ShadowEnumInstance"
+      },
+      {
+        "Name": "ShadowAttenStart",
+        "DataType": "number"
+      },
+      {
+        "Name": "ShadowAttenEnd",
+        "DataType": "number"
+      },
+      {
+        "Name": "ShadowNormalIntensity",
+        "DataType": "number"
+      },
+      {
+        "Name": "ShadowBlobTexture",
+        "DataType": "TextureInstance"
+      },
+      {
+        "Name": "ShadowRenderContext",
+        "DataType": "SpecialRenderInfoInstance"
+      },
+      {
+        "Name": "ShadowCamera",
+        "DataType": "CameraInstance"
+      },
+      {
+        "Name": "ShadowMaterialPass",
+        "DataType": "MaterialPassInstance"
+      },
+      {
+        "Name": "ShadowResWidth",
+        "DataType": "integer"
+      },
+      {
+        "Name": "ShadowResHeight",
+        "DataType": "integer"
+      },
+      {
+        "Name": "DecalSystem",
+        "DataType": "PhysicsDecalSystemInstance"
+      },
+      {
+        "Name": "Pathfinder",
+        "DataType": "PathfindInstance"
+      },
+      {
+        "Name": "CameraShakeSystem",
+        "DataType": "CameraShakeSystemInstance"
+      },
+      {
+        "Name": "UpdateList",
+        "DataType": "RefRenderObjectListInstance"
+      },
+      {
+        "Name": "VertexProcList",
+        "DataType": "RefRenderObjectListInstance"
+      },
+      {
+        "Name": "ReleaseList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "HighlightMaterialPass",
+        "DataType": "MaterialPassInstance"
+      },
+      {
+        "Name": "StaticCullingSystem",
+        "DataType": "StaticAabTreeCullInstance"
+      },
+      {
+        "Name": "StaticLightingSystem",
+        "DataType": "StaticLightCullInstance"
+      },
+      {
+        "Name": "DynamicCullingSystem",
+        "DataType": "PhysicsGridCullInstance"
+      },
+      {
+        "Name": "DynamicObjectVisibilitySystem",
+        "DataType": "DynamicAabTreeCullInstance"
+      },
+      {
+        "Name": "StaticProjectorCullingSystem",
+        "DataType": "TypedAabTreeCullSystemClassTexProjectInstance"
+      },
+      {
+        "Name": "DynamicProjectorCullingSystem",
+        "DataType": "TypedGridCullSystemClassTexProjectInstance"
+      },
+      {
+        "Name": "VisibilityTableManager",
+        "DataType": "VisibilityTableManagerInstance"
+      },
+      {
+        "Name": "LightingMode",
+        "DataType": "integer"
+      },
+      {
+        "Name": "SceneAmbientLight",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "UseSun",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "SunPitch",
+        "DataType": "number"
+      },
+      {
+        "Name": "SunYaw",
+        "DataType": "number"
+      },
+      {
+        "Name": "SunLight",
+        "DataType": "LightInstance"
+      },
+      {
+        "Name": "DynamicPolyBudget",
+        "DataType": "integer"
+      },
+      {
+        "Name": "StaticPolyBudget",
+        "DataType": "integer"
+      },
+      {
+        "Name": "ObjectList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "StaticObjectList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "StaticLightList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "StaticProjectorList",
+        "DataType": "TexProjListInstance"
+      },
+      {
+        "Name": "DynamicProjectorList",
+        "DataType": "TexProjListInstance"
+      },
+      {
+        "Name": "DirtyCullList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "TimestepList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "StaticAnimationList",
+        "DataType": "RefPhysicsListInstance"
+      },
+      {
+        "Name": "CollisionRegionList",
+        "DataType": "NonRefPhysicsListInstance"
+      },
+      {
+        "Name": "UpdateOnlyVisibleObjects",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "CurrentFrameNumber",
+        "DataType": "UnsignedInstance"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "Update",
+      "PreRenderProcessing",
+      "PostRenderProcessing",
+      "AddDynamicObject",
+      "AddStaticObject",
+      "AddDynamicLight",
+      "AddStaticLight",
+      "RemoveObject",
+      "RemoveAll",
+      "DelayedRemoveObject",
+      "ProcessReleaseList",
+      "Contains",
+      "GetDynamicObjectIterator",
+      "GetStaticObjectIterator",
+      "GetStaticAnimationObjectIterator",
+      "GetStaticLightIterator",
+      "GetStaticProjectorIterator",
+      "GetDynamicProjectorIterator",
+      "GetStaticObjectById",
+      "AddToDirtyCullList",
+      "RemoveFromDirtyCullList",
+      "IsInDirtyCullList",
+      "GetLightingMode",
+      "SetLightingMode",
+      "SetAmbientLight",
+      "GetAmbientLight",
+      "SetLightingLodCutoff",
+      "GetLightingLodCutoff",
+      "IsSunLightEnabled",
+      "EnableSunLight",
+      "GetSunLight",
+      "SetSunLightOrientation",
+      "GetSunLightOrientation",
+      "GetSunLightVector",
+      "ComputeStaticLighting",
+      "InvalidateLightingCaches",
+      "SetCollisionRegion",
+      "ReleaseCollisionRegion",
+      "CastRay",
+      "CastAaBox",
+      "CastObBox",
+      "IntersectionTest",
+      "IntersectionTest",
+      "ForceDynamicObjectsAwake",
+      "CollectObjects",
+      "CollectObjects",
+      "CollectCollideableObjects",
+      "CollectLights",
+      "FindStaticObject",
+      "EnableCollisionDetection",
+      "DisableCollisionDetection",
+      "EnableAllCollisionDetections",
+      "DisableAllCollisionDetections",
+      "DoGroupsCollide",
+      "RePartitionStaticObjects",
+      "RePartitionStaticLights",
+      "RePartitionStaticProjectors",
+      "RePartitionDynamicCullingSystem",
+      "UpdateCullingSystemBoundingBoxes",
+      "VerifyCullingSystems",
+      "EnableVisibility",
+      "InvertVisibility",
+      "SetVisibilityQuickAndDirty",
+      "EnableVisibilitySectorDisplay",
+      "EnableVisibilitySectorHistoryDisplay",
+      "EnableVisibilitySectorFallback",
+      "EnableBackfaceOccluderDebug",
+      "IsVisibilityEnabled",
+      "IsVisibilityInverted",
+      "IsVisibilityQuickAndDirty",
+      "IsVisibilitySectorDisplayEnabled",
+      "IsVisibilitySectorHistoryDisplayEnabled",
+      "IsVisibilitySectorMissing",
+      "IsVisibilitySectorFallbackEnabled",
+      "IsBackfaceOccluderDebugEnabled",
+      "LockVisibilitySamplePoint",
+      "IsVisibilitySamplePointLocked",
+      "ComputeVisibilitySamplePoint",
+      "GetVisibilityTable",
+      "GetVisibilityTable",
+      "GetVisibilityTableForRendering",
+      "OnVisibilityOccludersRendered",
+      "SetVisibilityGridDisplayMode",
+      "GetVisibilityGridDisplayMode",
+      "VisibilityGridDebugResetNode",
+      "VisibilityGridDebugEnterParent",
+      "VisibilityGridDebugEnterSibling",
+      "VisibilityGridDebugEnterFrontChild",
+      "VisibilityGridDebugEnterBackChild",
+      "GetDynamicObjectVisibilityId",
+      "DebugDisplayDynamicVisibilityNode",
+      "ResetVisibility",
+      "ValidateVisibility",
+      "AllocateVisibilityObjectId",
+      "AllocateVisibilitySectorId",
+      "GetVisibilityTableSize",
+      "GetVisibilityTableCount",
+      "UpdateVisibility",
+      "GetStaticLightCount",
+      "GenerateVisibilityForLight",
+      "ExportVisibilityData",
+      "ImportVisibilityData",
+      "ShowVisibilityWindow",
+      "IsVisibilityWindowVisible",
+      "GenerateVisibilityStatisticsReport",
+      "OptimizeVisibilityData",
+      "EnableStaticProjectors",
+      "AreStaticProjectorsEnabled",
+      "EnableDynamicProjectors",
+      "AreDynamicProjectorsEnabled",
+      "AddStaticTextureProjector",
+      "RemoveStaticTextureProjector",
+      "AddDynamicTextureProjector",
+      "RemoveDynamicTextureProjector",
+      "RemoveTextureProjector",
+      "SetShadowMode",
+      "GetShadowMode",
+      "SetShadowAttenuation",
+      "GetShadowAttenuation",
+      "SetShadowNormalIntensity",
+      "GetShadowNormalIntensity",
+      "SetShadowResolution",
+      "GetShadowResolution",
+      "SetMaxSimultaneousShadows",
+      "GetMaxSimultaneousShadows",
+      "GetShadowCamera",
+      "GetShadowRenderContext",
+      "GetShadowMaterialPass",
+      "InvalidateStaticShadowProjectors",
+      "GenerateStaticShadowProjectors",
+      "SetupStaticDirectionalShadow",
+      "CreateDecal",
+      "RemoveDecal",
+      "ShatterMesh",
+      "AddCameraShake",
+      "ApplyCameraShakes",
+      "IsVisibilityResetNeeded",
+      "VisibilityResetNeeded",
+      "SaveLevelStaticData",
+      "LoadLevelStaticData",
+      "PostLoadLevelStaticData",
+      "SaveLevelStaticObjects",
+      "LoadLevelStaticObjects",
+      "PostLoadLevelStaticObjects",
+      "SaveLevelDynamicData",
+      "LoadLevelDynamicData",
+      "PostLoadLevelDynamicData",
+      "SetPolygonBudgets",
+      "GetPolygonBudgets",
+      "SetUpdateOnlyVisibleObjects",
+      "GetUpdateOnlyVisibleObjects",
+      "AddRenderObject",
+      "RemoveRenderObject",
+      "CreateIterator",
+      "DestroyIterator",
+      "Register",
+      "Unregister",
+      "GetLevelExtents",
+      "EnableDebugDisplay",
+      "IsDebugDisplayEnabled",
+      "EnableProjectorDebugDisplay",
+      "IsProjectorDebugDisplayEnabled",
+      "EnableDirtyCullDebugDisplay",
+      "IsDirtyCullDebugDisplayEnabled",
+      "EnableLightingDebugDisplay",
+      "IsLightingDebugDisplayEnabled",
+      "GetLastCameraPosition",
+      "PerFrameStatisticsUpdate",
+      "GetStatistics",
+      "ComputeVisibilityMeshRam",
+      "CustomizedRender",
+      "RenderObjects",
+      "RenderObject",
+      "RenderBackfaceOccluders",
+      "OptimizeLoDs",
+      "ReleaseVisibilityResources",
+      "InternalVisibilityReset",
+      "GetVisibilityCamera",
+      "VisibilityRenderAndScan",
+      "MergeVisibilitySectorIDs",
+      "MergeVisibilityObjectIDs",
+      "ReleaseProjectorResources",
+      "ApplyProjectors",
+      "ApplyProjectorToObjects",
+      "ComputeProjectorAttenuation",
+      "AllocateDecalResources",
+      "ReleaseDecalResources",
+      "SaveLddVariables",
+      "SaveStaticObjects",
+      "SaveDynamicObjects",
+      "SaveStaticLights",
+      "SaveStaticObjectStates",
+      "LoadLddVariables",
+      "LoadStaticObjects",
+      "LoadDynamicObjects",
+      "LoadStaticLights",
+      "LoadStaticObjectStates",
+      "InternalAddDynamicObject",
+      "InternalAddStaticObject",
+      "InternalAddStaticLight",
+      "ResetSunLight",
+      "LoadSunLight",
+      "SaveSunLight",
+      "AddCollectedObjectsToList",
+      "AddCollectedCollideableObjectsToList",
+      "AddCollectedLightsToList"
+    ]
+  }
+}

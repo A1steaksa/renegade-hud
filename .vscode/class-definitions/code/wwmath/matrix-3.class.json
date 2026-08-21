@@ -1,0 +1,88 @@
+{
+  "Name": "Matrix3",
+  "ParentNames": [],
+  "FileName": "matrix-3",
+  "CppName": "Matrix3",
+  "CppPath": "Code/WWMath/matrix3.h",
+  "Static": {
+    "Fields": [
+      {
+        "Name": "Identity",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateX90",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateX180",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateX270",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateY90",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateY180",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateY270",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateZ90",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateZ180",
+        "DataType": "ConstMatrix3Instance"
+      },
+      {
+        "Name": "RotateZ270",
+        "DataType": "ConstMatrix3Instance"
+      }
+    ],
+    "Functions": [
+      "Add",
+      "Subtract",
+      "Multiply",
+      "Multiply",
+      "RotateVector",
+      "TransposeRotateVector"
+    ]
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Row",
+        "DataType": "Vector"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Set",
+      "Transpose",
+      "Inverse",
+      "Determinant",
+      "MakeIdentity",
+      "RotateX",
+      "RotateY",
+      "RotateZ",
+      "GetXRotation",
+      "GetYRotation",
+      "GetZRotation",
+      "GetXVector",
+      "GetYVector",
+      "GetZVector",
+      "Swap",
+      "IsOrthogonal",
+      "ReOrthogonalize",
+      "RotateAABoxExtent"
+    ]
+  }
+}

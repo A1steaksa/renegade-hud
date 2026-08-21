@@ -1,0 +1,28 @@
+{
+  "Name": "AAPlane",
+  "ParentNames": [],
+  "FileName": "aa-plane",
+  "CppName": "AAPlaneClass",
+  "CppPath": "Code/WWMath/aaplane.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "Normal",
+        "DataType": "AxisEnumInstance"
+      },
+      {
+        "Name": "Dist",
+        "DataType": "number"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Set",
+      "GetNormal"
+    ]
+  }
+}

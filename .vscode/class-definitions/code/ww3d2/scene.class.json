@@ -1,0 +1,72 @@
+{
+  "Name": "Scene",
+  "ParentNames": [],
+  "FileName": "scene",
+  "CppName": "SceneClass",
+  "CppPath": "Code/ww3d2/scene.h",
+  "Static": {
+    "Fields": [],
+    "Functions": []
+  },
+  "Instance": {
+    "Fields": [
+      {
+        "Name": "AmbientLight",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "PolyRenderMode",
+        "DataType": "PolyRenderTypeInstance"
+      },
+      {
+        "Name": "ExtraPassPolyRenderMode",
+        "DataType": "ExtraPassPolyRenderTypeInstance"
+      },
+      {
+        "Name": "FogEnabled",
+        "DataType": "boolean"
+      },
+      {
+        "Name": "FogColor",
+        "DataType": "Vector"
+      },
+      {
+        "Name": "FogStart",
+        "DataType": "number"
+      },
+      {
+        "Name": "FogEnd",
+        "DataType": "number"
+      }
+    ],
+    "Functions": [
+      "Constructor",
+      "Destructor",
+      "AddRenderObject",
+      "RemoveRenderObject",
+      "CreateIterator",
+      "DestroyIterator",
+      "SetAmbientLight",
+      "GetAmbientLight",
+      "SetFogEnable",
+      "GetFogEnable",
+      "SetFogColor",
+      "GetFogColor",
+      "SetFogRange",
+      "GetFogRange",
+      "SetPolygonMode",
+      "GetPolygonMode",
+      "SetExtraPassPolygonMode",
+      "GetExtraPassPolygonMode",
+      "Register",
+      "Unregister",
+      "ComputePointVisibility",
+      "Save",
+      "Load",
+      "Render",
+      "CustomizedRender",
+      "PreRenderProcessing",
+      "PostRenderProcessing"
+    ]
+  }
+}
