@@ -68,13 +68,12 @@ end
 
 function INSTANCE:Renegade_SimpleFileFactory()
     fileFactoryClass.Instance.Renegade_FileFactory( self )
-    -- fileFactoryClass.Instance.Renegade_FileFactory( self )
 
     self.IsStripPath = false
 end
 
 function INSTANCE:_Renegade_SimpleFileFactory()
-    -- Intentionally left empty in the original code
+    -- Empty in the original code
 end
 
 -- Simply horrible that this needs to be implemented manually like this  

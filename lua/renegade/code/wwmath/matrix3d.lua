@@ -600,22 +600,22 @@ end
 
             return Vector(
                 ( -- X
-                    selfValues[1][1] * other.x +
-                    selfValues[1][2] * other.y +
-                    selfValues[1][3] * other.z +
-                    selfValues[1][4]
+                    selfValues[1].x * other.x +
+                    selfValues[1].y * other.y +
+                    selfValues[1].z * other.z +
+                    selfValues[1].w
                 ),
                 ( -- Y
-                    selfValues[2][1] * other.x +
-                    selfValues[2][2] * other.y +
-                    selfValues[2][3] * other.z +
-                    selfValues[2][4]
+                    selfValues[2].x * other.x +
+                    selfValues[2].y * other.y +
+                    selfValues[2].z * other.z +
+                    selfValues[2].w
                 ),
                 ( -- Z
-                    selfValues[3][1] * other.x +
-                    selfValues[3][2] * other.y +
-                    selfValues[3][3] * other.z +
-                    selfValues[3][4]
+                    selfValues[3].x * other.x +
+                    selfValues[3].y * other.y +
+                    selfValues[3].z * other.z +
+                    selfValues[3].w
                 )
             )
         else
@@ -1626,6 +1626,7 @@ end
         center, extent vectors."
     --]]
 
+    --- "Compute transformed axis-aligned box"
     --- @param min Vector
     --- @param max Vector
     --- @return Vector min

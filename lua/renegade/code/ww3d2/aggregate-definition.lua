@@ -344,7 +344,6 @@ function INSTANCE:AttachSubObjects( baseModel )
 			-- "Now create this subobject and attach it to its bone."
 			local renderObject = INSTANCE.CreateRenderObject( self, subObjectInfo.SubObjectName )
 			if renderObject ~= nil then
-
 				-- "Attach this object to the requested bone"
 				if baseModel:AddSubObjectToBone( renderObject, subObjectInfo.BoneName ) == false then
 					section.Error( "Unable to attach '", subObjectInfo.SubObjectName, "' to '", subObjectInfo.BoneName, "'" )

@@ -768,7 +768,7 @@ function STATIC.UpdatePixelCenter()
 end
 
 function STATIC.AllocateDebugResources()
-	-- Empty in original code
+	-- empty in the original code
 end
 
 function STATIC.ReleaseDebugResources()

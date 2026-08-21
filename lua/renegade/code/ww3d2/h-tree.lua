@@ -150,7 +150,7 @@ function INSTANCE:Renegade_HTree( src )
 
 		self._NumPivots = src._NumPivots
 		if self._NumPivots > 0 then
-			self.Pivot = classUtils.InitializeArray( "Renegade_Pivot", self._NumPivots )
+			self.Pivot = classUtils.InitializeTypeArray( "Renegade_Pivot", self._NumPivots )
 		end
 
 		for pivotIndex = 1, self._NumPivots do
@@ -208,7 +208,7 @@ function INSTANCE:LoadW3d( cload )
 	self.Name = header.Name
 	self._NumPivots = header.NumPivots
 	if self._NumPivots > 0 then
-		self.Pivot = classUtils.InitializeArray( "Renegade_Pivot", self._NumPivots )
+		self.Pivot = classUtils.InitializeTypeArray( "Renegade_Pivot", self._NumPivots )
 	end
 
 	-- "Now, read in all of the other chunks for this hierarchy."
@@ -234,7 +234,7 @@ function INSTANCE:InitDefault()
 
 	self._NumPivots = 1
 
-	self.Pivot = classUtils.InitializeArray( "Renegade_Pivot", self._NumPivots )
+	self.Pivot = classUtils.InitializeTypeArray( "Renegade_Pivot", self._NumPivots )
 
 	local rootPivot = self.Pivot[1]
 	rootPivot.Index = 1

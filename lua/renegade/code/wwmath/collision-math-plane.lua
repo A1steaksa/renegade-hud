@@ -1,4 +1,4 @@
--- Based on CollisionMath within Code/WWMath/colmathfrustum.cpp/h
+-- Based on CollisionMath within Code/WWMath/colmathplane.cpp/h
 
 --- @class Renegade
 local CNC = CNC_RENEGADE
@@ -9,7 +9,7 @@ STATIC.Class = "CollisionMathClass"
 local isHotload = not table.IsEmpty( STATIC )
 
 
---#region Enums
+--#region Exported Enums
 
     local overlapType = STATIC.OVERLAP_TYPE
 --#endregion
@@ -19,8 +19,7 @@ local isHotload = not table.IsEmpty( STATIC )
 
     --- @class CollisionMath
 
-    local COLLISION_EPSILON = 0.001
-
+    --- "Gets extents of a box projected onto an axis"
     --- @param normal Vector
     --- @param extent Vector
     --- @return Vector

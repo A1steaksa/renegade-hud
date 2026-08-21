@@ -114,7 +114,9 @@ function INSTANCE:GetNumPivots()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:IsNodeMotionPresent()
+--- @param index integer
+--- @return boolean
+function INSTANCE:IsNodeMotionPresent( index )
 	typecheck.NotImplementedError()
 end
 

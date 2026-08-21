@@ -51,11 +51,11 @@ end
 
 
 --- @class TimeCodedBitChannelInstance
---- @field PivotIdx any
+--- @field PivotIndex integer
 --- @field Type any
---- @field DefaultVal any
+--- @field DefaultValue any
 --- @field NumTimeCodes any
---- @field CachedIdx any
+--- @field CachedIndex any
 --- @field Bits any
 
 function INSTANCE:Renegade_TimeCodedBitChannel()
@@ -66,7 +66,9 @@ function INSTANCE:_Renegade_TimeCodedBitChannel()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:LoadW3d()
+--- @param cload ChunkLoadInstance
+--- @return boolean
+function INSTANCE:LoadW3d( cload )
 	typecheck.NotImplementedError()
 end
 

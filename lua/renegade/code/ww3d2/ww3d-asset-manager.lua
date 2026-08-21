@@ -533,7 +533,6 @@ end
 --- @param name string
 --- @return PrototypeInstance
 function INSTANCE:FindPrototype( name )
-
 	-- "Special case Null render object.  So we always have it..."
 	if name == nil then
 		return STATIC.NullPrototype
@@ -624,7 +623,6 @@ end
 --- @param cload ChunkLoadInstance
 --- @return boolean
 function INSTANCE:LoadPrototype( cload )
-
 	-- "Get the chunk id"
 	local chunkId = cload:CurChunkId()
 	local chunkIdName = table.KeyFromValue( w3dFileIds.W3D_CHUNK_TYPE, chunkId )

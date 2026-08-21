@@ -98,8 +98,8 @@ end
 --- @field WeaponTurnMin number
 --- @field WeaponTurnMax number
 --- @field WeaponError number
---- @field WeaponDefId integer
---- @field SecondaryWeaponDefId integer
+--- @field WeaponDefinitionId integer
+--- @field SecondaryWeaponDefinitionId integer
 --- @field WeaponRounds integer
 
 --- Constructs a new ArmedGameObjectDefinitionInstance
@@ -113,8 +113,8 @@ function INSTANCE:Renegade_ArmedGameObjectDefinition()
     self.WeaponTurnMin = -10000.0
     self.WeaponTurnMax =  10000.0
     self.WeaponError = 0
-    self.WeaponDefId = 0
-    self.SecondaryWeaponDefId = 0
+    self.WeaponDefinitionId = 0
+    self.SecondaryWeaponDefinitionId = 0
     self.WeaponRounds = -1
 end
 

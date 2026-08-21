@@ -29,7 +29,10 @@ INSTANCE.IsPhysics = true
 	local textUtils = CNC.Import( "sh_text-utils.lua" )
 
 	--- @type Ww3dAssetManagerClass
-	local wW3DAssetManagerClass = CNC.Import( "code/ww3d2/ww3d-asset-manager.lua" )
+	local ww3dAssetManagerClass = CNC.Import( "code/ww3d2/ww3d-asset-manager.lua" )
+
+	--- @type Matrix3dClass
+	local matrix3dClass = CNC.Import( "code/wwmath/matrix3d.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -239,7 +242,7 @@ end
 
     --- @return Matrix3dInstance
     function INSTANCE:GetTransform()
-        typecheck.NotImplementedError()
+        CNC.VirtualFunction()
     end
 
     --- @param transformationMatrix Matrix3dInstance
@@ -404,17 +407,12 @@ end
         typecheck.NotImplementedError()
     end
 
-    --- @return string?
+    --- @return RenderObjectInstance?
     function INSTANCE:GetModel()
-        local connectedEntity = self:GetConnectedEntity()
-        if not IsValid( connectedEntity ) then
-            return nil
-        end
-
-        return connectedEntity:GetModel()
+        return self.Model
     end
 
-    --- @return RenderObjectInstance?
+    --- @return RenderObjectInstance
     function INSTANCE:PeekModel()
         return self.Model
     end

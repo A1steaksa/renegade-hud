@@ -68,7 +68,9 @@ function INSTANCE:_Renegade_TimeCodedMotionChannel()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:LoadW3d()
+--- @param cload ChunkLoadInstance
+--- @return boolean
+function INSTANCE:LoadW3d( cload )
 	typecheck.NotImplementedError()
 end
 

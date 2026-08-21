@@ -303,6 +303,7 @@ function INSTANCE:GetRange()
 	typecheck.NotImplementedError()
 end
 
+--- @return boolean
 function INSTANCE:IsModelUpdateNeeded()
 	typecheck.NotImplementedError()
 end

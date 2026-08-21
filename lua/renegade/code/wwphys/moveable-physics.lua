@@ -83,8 +83,6 @@ end
 --- @param definition MoveablePhysicsDefinitionInstance
 --- @param connectedEntity Entity
 function INSTANCE:Init( definition, connectedEntity )
-
-	
 	self.Mass = definition.Mass
 	self.MassInverted = 1.0 / self.Mass
 	self.GravityScale = definition.GravityScale

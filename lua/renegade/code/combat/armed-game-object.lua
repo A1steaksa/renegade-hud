@@ -75,7 +75,7 @@ end
 function INSTANCE:Renegade_ArmedGameObject()
 	physicalGameObjectClass.Instance.Renegade_PhysicalGameObject( self )
 
-	self.MuzzleRecoilController = classUtils.InitializeArray( "Renegade_MuzzleRecoil", STATIC.MAX_MUZZLES )
+	self.MuzzleRecoilController = classUtils.InitializeTypeArray( "Renegade_MuzzleRecoil", STATIC.MAX_MUZZLES )
 
 	self.MuzzleA0Bone = 0
 	self.MuzzleA1Bone = 0

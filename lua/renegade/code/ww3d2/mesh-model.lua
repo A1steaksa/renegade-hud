@@ -108,7 +108,7 @@ end
 --- Its purpose is to allow separate instances of a mesh to share as much data as possible.  
 --- "  
 --- @class MeshModelInstance
---- @field DefinitionMataterialDescription MeshMaterialDescriptionInstance "The default material description, allocated in constructor, always present."
+--- @field DefinitionMaterialDescription MeshMaterialDescriptionInstance "The default material description, allocated in constructor, always present."
 --- @field AlternateMaterialDescription MeshMaterialDescriptionInstance "An optional alternate material description, allocated at load time if needed"
 --- @field CurrentMaterialDescription MeshMaterialDescriptionInstance "...the currently active material description"
 --- @field MaterialInfo MaterialInfoInstance "Collection of the unique materials in the mesh"
@@ -126,16 +126,16 @@ function INSTANCE:Renegade_MeshModel( that )
 	else
 		meshGeometryClass.Instance.Renegade_MeshGeometry( self )
 
-		self.DefinitionMataterialDescription = meshMaterialDescriptionClass.New()
+		self.DefinitionMaterialDescription = meshMaterialDescriptionClass.New()
 		self.AlternateMaterialDescription = meshMaterialDescriptionClass.New()
-		self.CurrentMaterialDescription = self.DefinitionMataterialDescription
+		self.CurrentMaterialDescription = self.DefinitionMaterialDescription
 		self.MaterialInfo = materialInfoClass.New()
 		self.GapFiller = nil
 
 		self:SetFlag( meshGeometryFlagsTypeEnum.DIRTY_BOUNDS, true )
 
-		self.DefinitionMataterialDescription = meshMaterialDescriptionClass.New()
-		self.CurrentMaterialDescription = self.DefinitionMataterialDescription
+		self.DefinitionMaterialDescription = meshMaterialDescriptionClass.New()
+		self.CurrentMaterialDescription = self.DefinitionMaterialDescription
 
 		self.MaterialInfo = materialInfoClass.New()
 	end
@@ -153,11 +153,11 @@ function INSTANCE:Reset( polyCount, vertCount, passCount )
 
 	-- "Release everything we have and reset to initial state"
 	self.MaterialInfo:Reset()
-	self.DefinitionMataterialDescription:Reset( polyCount, vertCount, passCount )
+	self.DefinitionMaterialDescription:Reset( polyCount, vertCount, passCount )
 	if self.AlternateMaterialDescription ~= nil then
 		self.AlternateMaterialDescription = nil
 	end
-	self.CurrentMaterialDescription = self.DefinitionMataterialDescription
+	self.CurrentMaterialDescription = self.DefinitionMaterialDescription
 
 	self.GapFiller = nil
 end
@@ -618,7 +618,7 @@ function INSTANCE:ReadTexCoords( cload, context )
 		uvArray[i] = Vector( texCoord.U, 1.0 - texCoord.V )
 	end
 
-	self.DefinitionMataterialDescription:InstallUvArray( context.CurrentPass, context.CurrentTextureStage, uvArray, elementCount )
+	self.DefinitionMaterialDescription:InstallUvArray( context.CurrentPass, context.CurrentTextureStage, uvArray, elementCount )
 
 	return wW3dErrorTypeEnum.WW3D_ERROR_OK
 end
@@ -763,8 +763,8 @@ end
 --- @return WW3dErrorType
 function INSTANCE:ReadVertexMaterialIds( cload, context )
 	-- "Determine whether this chunk should be read into the default or alternate material description"
-	local materialDescription = self.DefinitionMataterialDescription
-	if self.DefinitionMataterialDescription:HasMaterialData( context.CurrentPass ) then
+	local materialDescription = self.DefinitionMaterialDescription
+	if self.DefinitionMaterialDescription:HasMaterialData( context.CurrentPass ) then
 		materialDescription = context.AlternateMaterialDescription
 	end
 
@@ -777,8 +777,8 @@ end
 --- @return WW3dErrorType
 function INSTANCE:ReadShaderIds( cload, context )
 	-- "Determine whether this chunk should be read into the default or alternate material description"
-	local materialDescription = self.DefinitionMataterialDescription
-	if self.DefinitionMataterialDescription:HasShaderData( context.CurrentPass ) then
+	local materialDescription = self.DefinitionMaterialDescription
+	if self.DefinitionMaterialDescription:HasShaderData( context.CurrentPass ) then
 		materialDescription = context.AlternateMaterialDescription
 	end
 
@@ -853,8 +853,8 @@ end
 --- @return WW3dErrorType
 function INSTANCE:ReadDcg( cload, context )
 	-- "Determine whether the chunk should be read into the default or alternate material description"
-	local materialDescription = self.DefinitionMataterialDescription
-	if self.DefinitionMataterialDescription:GetDcgSource( context.CurrentPass ) ~= colorSourceTypeEnum.MATERIAL then
+	local materialDescription = self.DefinitionMaterialDescription
+	if self.DefinitionMaterialDescription:GetDcgSource( context.CurrentPass ) ~= colorSourceTypeEnum.MATERIAL then
 		materialDescription = context.AlternateMaterialDescription
 	end
 
@@ -930,8 +930,8 @@ function INSTANCE:ReadTextureIds( cload, context )
 	local stage = context.CurrentTextureStage
 
 	-- "Determine whether this chunk should be read into the default or alternate material description"
-	local materialDscription = self.DefinitionMataterialDescription
-	if self.DefinitionMataterialDescription:HasTextureData( pass, stage ) then
+	local materialDscription = self.DefinitionMaterialDescription
+	if self.DefinitionMaterialDescription:HasTextureData( pass, stage ) then
 		materialDscription = context.AlternateMaterialDescription
 	end
 
@@ -957,8 +957,8 @@ end
 --- @return WW3dErrorType
 function INSTANCE:ReadStageTextureCoordinates(cload, context)
 	-- "Determine whether this chunk should be read into the default or alternate material description"
-	local materialDescription = self.DefinitionMataterialDescription
-	if self.DefinitionMataterialDescription:HasUv( context.CurrentPass, context.CurrentTextureStage ) then
+	local materialDescription = self.DefinitionMaterialDescription
+	if self.DefinitionMaterialDescription:HasUv( context.CurrentPass, context.CurrentTextureStage ) then
 		materialDescription = context.AlternateMaterialDescription
 	end
 
@@ -1041,7 +1041,7 @@ end
 function INSTANCE:PostProcess()
 	-- "Turn off backface culling if the mesh is supposed to be two-sided"
 	if self:GetFlag( meshGeometryFlagsTypeEnum.TWO_SIDED ) then
-		self.DefinitionMataterialDescription:DisableBackfaceCulling()
+		self.DefinitionMaterialDescription:DisableBackfaceCulling()
 		if self.AlternateMaterialDescription ~= nil then
 			self.AlternateMaterialDescription:DisableBackfaceCulling()
 		end
@@ -1082,7 +1082,7 @@ function INSTANCE:InstallMaterials( context )
 	if self:GetFlag( meshGeometryFlagsTypeEnum.PRELIT_VERTEX ) then
 		lightingEnabled = false
 	end
-	self.DefinitionMataterialDescription:PostLoadProcess( lightingEnabled, self )
+	self.DefinitionMaterialDescription:PostLoadProcess( lightingEnabled, self )
 	if self.AlternateMaterialDescription ~= nil then
 		self.AlternateMaterialDescription:PostLoadProcess( lightingEnabled, self )
 	end
@@ -1106,6 +1106,6 @@ end
 function INSTANCE:InstallAlternateMaterialDesc( context )
 	if context.AlternateMaterialDescription:IsEmpty() == false then
 		self.AlternateMaterialDescription = meshMaterialDescriptionClass.New()
-		self.AlternateMaterialDescription:InitAlternate( self.DefinitionMataterialDescription, context.AlternateMaterialDescription )
+		self.AlternateMaterialDescription:InitAlternate( self.DefinitionMaterialDescription, context.AlternateMaterialDescription )
 	end
 end

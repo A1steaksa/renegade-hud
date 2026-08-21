@@ -75,10 +75,13 @@ function INSTANCE:Load()
 	typecheck.NotImplementedError()
 end
 
---- @param animation string|HAnimationInstance
---- @param blendTime number
---- @param startFrame number
+--- @param animation string|HAnimationInstance?
+--- @param blendTime number? [Default: `0.0`]
+--- @param startFrame number? [Default: `0.0`]
 function INSTANCE:SetAnimation( animation, blendTime, startFrame )
+	if blendTime == nil then blendTime = 0.0 end
+	if startFrame == nil then startFrame = 0.0 end
+
 	-- "If setting to our current anim, bail"
 	if self.NewChannel:PeekAnimation() == nil and animation == nil then
 		return
@@ -151,14 +154,17 @@ function INSTANCE:GetAnimationName()
 	return self.NewChannel:GetAnimationName()
 end
 
-function INSTANCE:SetTargetFrame()
+--- @param frame number
+function INSTANCE:SetTargetFrame( frame )
 	typecheck.NotImplementedError()
 end
 
+--- @return number
 function INSTANCE:GetTargetFrame()
 	typecheck.NotImplementedError()
 end
 
+--- @return HAnimationInstance
 function INSTANCE:PeekAnimation()
 	typecheck.NotImplementedError()
 end
@@ -227,10 +233,12 @@ function INSTANCE:UpdateModel( animationModel )
 	end
 end
 
+--- @return number
 function INSTANCE:GetFrame()
 	typecheck.NotImplementedError()
 end
 
+--- @return number
 function INSTANCE:GetProgress()
 	typecheck.NotImplementedError()
 end

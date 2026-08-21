@@ -24,8 +24,8 @@ INSTANCE.IsOBBox = true
 
 --#region Imports
 
-    --- @type Matrix3dClass
-    local matrix3dClass = CNC.Import( "code/wwmath/matrix3d.lua" )
+	--- @type Matrix3Class
+	local matrix3Class = CNC.Import( "code/wwmath/matrix3.lua" )
 --#endregion
 
 
@@ -69,7 +69,7 @@ INSTANCE.IsOBBox = true
 
     typecheck.RegisterType( "OBBoxInstance", STATIC.IsOBBox )
 
-    --- @param transformationMatrix Matrix3dInstance
+    --- @param transformationMatrix Matrix3Instance
     --- @param input OBBoxInstance
     --- @param output OBBoxInstance
     function STATIC.Transform( transformationMatrix, input, output )
@@ -78,7 +78,7 @@ INSTANCE.IsOBBox = true
 end
 
 --- @class OBBoxInstance
---- @field Basis Matrix3dInstance
+--- @field Basis Matrix3Instance
 --- @field Center Vector
 --- @field Extent Vector
 
@@ -88,7 +88,7 @@ function INSTANCE:Renegade_OBBox( ... )
     local args = { ... }
     local argCount = select( "#", ... )
 
-    self.Basis = matrix3dClass.New( true )
+    self.Basis = matrix3Class.New( true )
     self.Center = Vector()
     self.Extent = Vector()
 end

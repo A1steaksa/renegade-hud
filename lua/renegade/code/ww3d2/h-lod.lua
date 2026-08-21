@@ -169,13 +169,13 @@ function INSTANCE:Renegade_HLod( ... )
 			assert( self.LodCount >= 1 )
 
 			-- We need to initialize these arrays manually
-			self.Lod = classUtils.InitializeArray( "Renegade_ModelArray", self.LodCount )
-			self.Cost = classUtils.InitializeArray( fundamentalDataTypeEnum.Float, self.LodCount )
+			self.Lod = classUtils.InitializeTypeArray( "Renegade_ModelArray", self.LodCount )
+			self.Cost = classUtils.InitializeTypeArray( fundamentalDataTypeEnum.Float, self.LodCount )
 			-- "
 			-- Value has LodCount + 1 entries so PostIncrementValue can always use
 			-- Value[CurLod + 1] (the last entry will be AT_MAX_LOD).
 			-- "
-			self.Value = classUtils.InitializeArray( fundamentalDataTypeEnum.Float, self.LodCount + 1 )
+			self.Value = classUtils.InitializeTypeArray( fundamentalDataTypeEnum.Float, self.LodCount + 1 )
 
 			-- "Add Models to the ModelArrays"
 			for iLod = 1, definition.LodCount do

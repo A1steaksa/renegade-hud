@@ -53,10 +53,13 @@ end
 
 
 --- @class RayCollisionTestInstance
---- @field Ray LineSegInstance
+--- @field Ray LineSegmentInstance
 --- @field IgnoreTranslucentMeshes boolean
 
-function INSTANCE:Renegade_RayCollisionTest()
+--- @param ray LineSegmentInstance
+--- @param result CastResultStruct
+--- @param collisionType 
+function INSTANCE:Renegade_RayCollisionTest( ray, result, collisionType, ignoreTranslucentMeshes )
 	typecheck.NotImplementedError()
 end
 

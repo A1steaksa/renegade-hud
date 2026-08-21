@@ -72,7 +72,7 @@ end
 --- @field PassCount integer
 --- @field VertexCount integer
 --- @field PolygonCount integer
---- @field Uv UvBufferInstance[]
+--- @field Uv Vector[][]
 --- @field UvSource integer[][]
 --- @field ColorArray any
 --- @field DcgSource ColorSourceType[]
@@ -354,7 +354,10 @@ function INSTANCE:SetUvSource( pass, stage, sourceIndex )
 	self.UvSource[pass][stage] = sourceIndex
 end
 
-function INSTANCE:GetUvSource()
+--- @param pass integer
+--- @param stage integer
+--- @return integer
+function INSTANCE:GetUvSource( pass, stage )
 	typecheck.NotImplementedError()
 end
 

@@ -115,7 +115,7 @@ function INSTANCE:Renegade_TextureMapper( stage )
 end
 
 function INSTANCE:Reset()
-    -- Empty in original code
+    -- empty in the original code
 end
 
 --- @return TextureMapperInstance
