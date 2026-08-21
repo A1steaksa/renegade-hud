@@ -55,6 +55,12 @@ INSTANCE.IsPhysics3 = true
 
 	--- @type InfoEntityLib
 	local infoEntityLib = CNC.Import( "sh_info-entity.lua" )
+
+	--- @type WWMathClass
+	local wWMathClass = CNC.Import( "code/wwmath/wwmath.lua" )
+
+	--- @type CollisionMathClass
+	local collisionMathClass = CNC.Import( "code/wwmath/collision-math.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -123,31 +129,40 @@ INSTANCE.IsPhysics3 = true
 
     typecheck.RegisterType( "Physics3Instance", STATIC.IsPhysics3 )
 
-	function STATIC.SetCorrectionTime()
-		typecheck.NotImplementedError()
+	--- @param time number
+	function STATIC.SetCorrectionTime( time )
+		STATIC.CorrectionTime = time
 	end
 
-	function STATIC.SetAllowableError()
-		typecheck.NotImplementedError()
+	--- @param err number
+	function STATIC.SetAllowableError( err )
+		STATIC.AllowableError = err
 	end
 
-	function STATIC.SetPopError()
-		typecheck.NotImplementedError()
+	--- @param err number
+	function STATIC.SetPopError( err )
+		STATIC.PopError = err
 	end
 
+	--- @return number
 	function STATIC.GetCorrectionTime()
-		typecheck.NotImplementedError()
+		return STATIC.CorrectionTime
 	end
 
+	--- @return number
 	function STATIC.GetAllowableError()
-		typecheck.NotImplementedError()
+		return STATIC.AllowableError
 	end
 
+	--- @return number
 	function STATIC.GetPopError()
-		typecheck.NotImplementedError()
+		return STATIC.PopError
 	end
 end
 
+--- @class StateStruct
+--- @field Position Vector
+--- @field Velocity Vector
 
 --- @class Physics3Instance
 --- @field CollisionBox AABoxInstance "Object space collision box"
@@ -173,6 +188,11 @@ end
 
 function INSTANCE:Renegade_Physics3()
 	moveablePhysicsClass.Instance.Renegade_MoveablePhysics( self )
+
+	self.State = {
+		Position = Vector( 0, 0, 0 ),
+		Velocity = Vector( 0, 0, 0 )
+	}
 
 	self.GroundState = groundStateStructClass.New()
 
@@ -200,11 +220,14 @@ function INSTANCE:Renegade_Physics3()
 end
 
 function INSTANCE:_Renegade_Physics3()
-	typecheck.NotImplementedError()
+	if self.History ~= nil then
+		self.History = nil
+	end
 end
 
+--- @return Physics3Instance?
 function INSTANCE:AsPhysics3class()
-	typecheck.NotImplementedError()
+	return self
 end
 
 --- @param definition Physics3DefinitionInstance
@@ -234,28 +257,72 @@ function INSTANCE:Init( definition, connectedEntity )
 	self:InvalidateGroundState()
 end
 
+--- "Returns bounding box of the model"
+--- @return AABoxInstance
 function INSTANCE:GetBoundingBox()
-	typecheck.NotImplementedError()
+	return self.Model:GetBoundingBox()
 end
 
+--- "Returns the current transform"
+--- @return Matrix3dInstance
 function INSTANCE:GetTransform()
-	typecheck.NotImplementedError()
+	assert( self.Model )
+	return ( self.Model:GetTransform() ) -- Only need the first result
 end
 
-function INSTANCE:SetTransform()
-	typecheck.NotImplementedError()
+--- "  
+--- Sets the current transform  
+--- Note that this 'warps' the object to the specified position.  The user is responsible
+--- for providing a valid position.  
+--- "  
+--- @param matrix Matrix3dInstance
+function INSTANCE:SetTransform( matrix )
+	-- "Copy the translation portion of the transform into our state"
+	self.State.Position = matrix:GetTranslation()
+
+	-- "Copy the Z rotation portion of the transform into our heading variable (ugh...)"
+	self.Heading = matrix:GetZRotation()
+	self:UpdateTransform()
+	self:UpdateCullBox()
+
+	-- "Wake the object up whenever it moves"
+	self:SetFlag( STATIC.ASLEEP, false )
+	self:InvalidateGroundState()
+
+	self:AssertStateValid()
 end
 
+--- @return AABoxInstance
 function INSTANCE:GetCollisionBox()
-	typecheck.NotImplementedError()
+	return self.CollisionBox
 end
 
-function INSTANCE:CastRay()
-	typecheck.NotImplementedError()
+--- "Check a ray for intersection with this object"
+--- @param rayTest PhysicsRayCollisionTestInstance
+--- @return boolean, PhysicsRayCollisionTestInstance?
+function INSTANCE:CastRay( rayTest )
+	if self.Model:CastRay( rayTest ) then
+		rayTest.CollidedPhysicsObject = self
+		return true, rayTest
+	end
+	return false, rayTest
 end
 
-function INSTANCE:CastAaBox()
-	typecheck.NotImplementedError()
+--- "Check a swept AABox for intersection with this obj"
+--- @param boxTest PhysicsAABoxCollisionTestInstance
+--- @return boolean, PhysicsAABoxCollisionTestInstance
+function INSTANCE:CastAaBox( boxTest )
+	local worldBox = aABoxClass.New(
+		self.State.Position + self.CollisionBox.Center,
+		self.CollisionBox.Extent
+	)
+
+	if collisionMathClass.Collide( boxTest.Box, boxTest.Move, worldBox, boxTest.Result ) then
+		boxTest.CollidedPhysicsObject = self
+		return true, boxTest
+	end
+
+	return false, boxTest
 end
 
 function INSTANCE:CastObBox()
@@ -270,6 +337,7 @@ function INSTANCE:IntersectionTest()
 	typecheck.NotImplementedError()
 end
 
+--- "Set the model being used"
 --- @param model RenderObjectInstance
 function INSTANCE:SetModel( model )
 	-- "Let the base class have the model"
@@ -279,48 +347,68 @@ function INSTANCE:SetModel( model )
 	self:UpdateCachedModelParameters()
 
 	-- "Update our culling box"
-	-- Omitted updating culling box
-	-- self:UpdateCullBox()
+	self:UpdateCullBox()
 end
 
+--- @return Vector
 function INSTANCE:GetVelocity()
+	return self.State.Velocity
+end
+
+--- @param newVelocity Vector
+function INSTANCE:SetVelocity( newVelocity )
+	self.State.Velocity = newVelocity
+end
+
+--- "  
+--- Apply an impulse to this object  
+--- 
+--- As the code comment says... since we changed [Physics3] to essentially have infinite friction,
+--- this function will only work if the object is in the air currently.  
+--- "  
+--- @param impulse Vector
+function INSTANCE:ApplyImpulse( impulse )
+	--- "
+	--- Impulse applied to center of mass simply adds to the linear momentum  
+	--- NOTE: The current algorithm does not maintain velocity [unless] undergoing
+	--- ballistic movement... this routine will often have no effect...
+	--- "
+	self.State.Velocity = self.State.Velocity + impulse * self.MassInverted
+end
+
+--- @param deltaTime number
+function INSTANCE:Timestep( deltaTime )
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetVelocity()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:ApplyImpulse()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:Timestep()
-	typecheck.NotImplementedError()
-end
-
+--- @return boolean
 function INSTANCE:IsInContact()
-	typecheck.NotImplementedError()
+	return self.OnGround
 end
 
-function INSTANCE:SetInContact()
-	typecheck.NotImplementedError()
+--- "[SetInContact] needed for network state updates so we don't have to wait for [CheckGround]"
+--- @param onOff boolean
+function INSTANCE:SetInContact( onOff )
+	self.OnGround = onOff
 end
 
+--- @return integer
 function INSTANCE:GetContactSurfaceType()
-	typecheck.NotImplementedError()
+	return self.GroundSurface
 end
 
+--- "Marks the ground state as dirty"
 function INSTANCE:InvalidateGroundState()
     self.GroundState.IsDirty = true
 end
 
+--- @return PhysicsInstance
 function INSTANCE:PeekGroundObject()
-	typecheck.NotImplementedError()
+	return self.GroundState.GroundObject
 end
 
 function INSTANCE:AssertStateValid()
-	typecheck.NotImplementedError()
+	-- Omitted function contents temporarily because I don't feel like dealing with the validation right now
 end
 
 function INSTANCE:CanTeleport()
@@ -339,52 +427,82 @@ function INSTANCE:CanMoveTo()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetPosition()
-	typecheck.NotImplementedError()
+--- "Sets the position"
+--- "This blindly warps the object to the given position.  The user is responsible for providing a valid position."
+function INSTANCE:SetPosition( position )
+	self.State.Position = position
+	self:UpdateTransform( true )
+	self:UpdateCullBox()
+	self:SetFlag( STATIC.ASLEEP, false )
+	self:InvalidateGroundState()
 end
 
+--- "Returns the current position"
+--- @return Vector
 function INSTANCE:GetPosition()
-	typecheck.NotImplementedError()
+	-- Omitted original function contents
+	return self:GetConnectedEntity():GetPos()
 end
 
-function INSTANCE:SetHeading()
-	typecheck.NotImplementedError()
+--- "Set the heading of this object"
+--- @param heading number
+function INSTANCE:SetHeading( heading )
+	if heading ~= self.Heading then
+		self.Heading = heading
+		self.HeadingChanged = true
+	end
+	self:UpdateTransform()
 end
 
+--- "Returns the heading of this object"
+--- @return number
 function INSTANCE:GetHeading()
-	typecheck.NotImplementedError()
+	return self.Heading
 end
 
-function INSTANCE:SetSlideAngle()
-	typecheck.NotImplementedError()
+--- "Sets the maximum angle this object can climb"
+--- "If a [Physics3] object is resting on a slope greater than this angle, it will slide down the slope."
+--- @param angle number
+function INSTANCE:SetSlideAngle( angle )
+	self.SlideAngle = angle
+	self.SlideNormalZ = math.cos( angle )
+	self.SlideAngleTan = math.tan( angle )
 end
 
+--- "Returns the slide angle"
+--- @return number
 function INSTANCE:GetSlideAngle()
-	typecheck.NotImplementedError()
+	return self.SlideAngle
 end
 
-function INSTANCE:SetNormalizedSpeed()
-	typecheck.NotImplementedError()
+--- @param val number
+function INSTANCE:SetNormalizedSpeed( val )
+	self.NormalizedSpeed = val
 end
 
+--- @return number
 function INSTANCE:GetNormalizedSpeed()
-	typecheck.NotImplementedError()
+	return self.NormalizedSpeed
 end
 
-function INSTANCE:AddAnimationMove()
-	typecheck.NotImplementedError()
+--- @param move Vector
+function INSTANCE:AddAnimationMove( move )
+	self.AnimationMove = self.AnimationMove + move
 end
 
+--- @return Vector
 function INSTANCE:GetAnimationMove()
-	typecheck.NotImplementedError()
+	return self.AnimationMove
 end
 
 function INSTANCE:ResetAnimationMove()
-	typecheck.NotImplementedError()
+	self.AnimationMove:SetUnpacked( 0, 0, 0 )
 end
 
+--- "Returns the bounding box to use for blob shadows"
+--- @return AABoxInstance
 function INSTANCE:GetShadowBlobBox()
-	typecheck.NotImplementedError()
+	return self.CollisionBox
 end
 
 function INSTANCE:Push()
@@ -395,8 +513,14 @@ function INSTANCE:Collide()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:NetworkStateUpdate()
-	typecheck.NotImplementedError()
+--- @param pos Vector
+--- @param velocity Vector
+function INSTANCE:NetworkStateUpdate( pos, velocity )
+	local delta = pos - self.State.Position
+	self:SetPosition( pos )
+	self:SetVelocity( velocity )
+	self:SnapToGround( delta, false )
+	self:UpdateTransform( true )
 end
 
 function INSTANCE:NetworkLatencyStateUpdate()
@@ -451,12 +575,56 @@ function INSTANCE:ApplyMove()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:SnapToGround()
+--- "Following a move, snap back down to the ground"
+--- @param actualMove Vector
+--- @param wasStepping boolean
+function INSTANCE:SnapToGround( actualMove, wasStepping )
+	if self:GetFlag( STATIC.ASLEEP ) then
+		return
+	end
+
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:ClipMove()
-	typecheck.NotImplementedError()
+--- "Clip a move vector by all of the active contact normals"
+--- @param contacts Vector[]
+--- @param move Vector
+--- @return Vector
+function INSTANCE:ClipMove( contacts, move )
+	-- "  
+	-- Loop over all of the contacts.  
+	-- On each one we modify our move vector to parallel that plane.
+	-- Immediately after each modification, we check if the other planes are a problem.
+	-- At the first time all planes are satisfied, we're done
+	-- "  
+	for i = 1, #contacts do
+		if not ( math.abs( contacts[i]:Length() - 1.0 ) < wWMathClass.EPSILON ) then
+			move = Vector( 0, 0, 0 )
+			return move
+		end
+
+		-- "Push the velocity a little bit away from the plane"
+		local dot = move:Dot( contacts[i] )
+		if dot < 0.0 then
+			local adjustment = 1.01 * dot * contacts[i]
+			move = move - adjustment
+		end
+
+		local outerJ = 0
+		for j = 1, #contacts do
+			outerJ = j
+			local check = move:Dot( contacts[j] )
+			if check < 0.0 then
+				break -- "This contact isn't happy yet... keep choppin"
+			end
+		end
+
+		if outerJ == #contacts then
+			break -- "All contacts are happy!"
+		end
+	end
+
+	return move
 end
 
 function INSTANCE:AttachToGroundObject()
@@ -482,12 +650,37 @@ function INSTANCE:UpdateCachedModelParameters()
 	end
 end
 
-function INSTANCE:UpdateTransform()
-	typecheck.NotImplementedError()
+--- "Recalculate the transform"
+--- @param positionOnly boolean? [Default:L false]
+function INSTANCE:UpdateTransform( positionOnly )
+	if positionOnly == nil then positionOnly = false end
+
+	local positionDifference = self.Model:GetPosition()
+	positionDifference = positionDifference - self.State.Position
+
+	if positionOnly and not self.HeadingChanged then
+		self.Model:SetPosition( self.State.Position )
+	else
+		local transformationMatrix = matrix3dClass.New( true )
+		transformationMatrix:SetTranslation( self.State.Position )
+		transformationMatrix:RotateZ( self.Heading )
+		self.Model:SetTransform( transformationMatrix )
+	end
+
+	if positionDifference:LengthSqr() > wWMathClass.EPSILON2 then
+		self:UpdateVisibilityStatus()
+	end
+
+	self.HeadingChanged = false
 end
 
-function INSTANCE:ComputeWsCollisionBox()
-	typecheck.NotImplementedError()
+--- @param state StateStruct
+--- @return AABoxInstance
+function INSTANCE:ComputeWsCollisionBox( state )
+	return aABoxClass.New(
+		self.CollisionBox.Center + state.Position,
+		self.CollisionBox.Extent
+	)
 end
 
 function INSTANCE:DebugVerifyPosition()

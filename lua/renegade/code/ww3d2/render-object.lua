@@ -194,7 +194,6 @@ end
 --- @field Container RenderObjectInstance
 --- @field UserData any
 --- @field ConnectedEntity Entity The Source engine Entity this Render Object is connected to
---- @field SourceModelPath string The Source engine `.mdl` file this Render Object is connected to 
 
 --- Constructs a new RenderObjectInstance
 --- @param src RenderObjectInstance? Another RenderObjectInstance to copy
@@ -303,22 +302,34 @@ end
     end
 end
 
+--[[ Render Object Interface - Rendering ]] do
 
-function INSTANCE:Render()
-    typecheck.NotImplementedError()
+    -- "This object should render its polygons.  Typically called from a SceneClass"
+    --- @param renderInfo RenderInfoInstance
+    function INSTANCE:Render( renderInfo )
+        CNC.VirtualFunction()
+    end
+
+    -- "All special-case rendering goes here to avoid polluting the main render pipe (e.g. VIS)"
+    function INSTANCE:SpecialRender()
+        -- empty in the original code
+    end
+
+    -- "Render objects can register for an [OnFrameUpdate] call; the scene will call this once per frame if they do so."
+    function INSTANCE:OnFrameUpdate()
+        -- empty in the original code
+    end
+
+    -- "  
+    -- This interface is used to facilitate model recycling.  If a render object is 'Restarted' it should
+    -- put itself back into a state as if it has never been rendered
+    -- (e.g. particle emitters should reset their 'emitted particle counts' so they can be re-used.)  
+    -- "  
+    function INSTANCE:Restart()
+        -- empty in the original code
+    end
 end
 
-function INSTANCE:SpecialRender()
-    typecheck.NotImplementedError()
-end
-
-function INSTANCE:OnFrameUpdate()
-    typecheck.NotImplementedError()
-end
-
-function INSTANCE:Restart()
-    typecheck.NotImplementedError()
-end
 
 function INSTANCE:Add()
     typecheck.NotImplementedError()
@@ -459,23 +470,25 @@ end
 
 --- @return integer
 function INSTANCE:GetNumSubObjects()
-    CNC.VirtualFunction()
     return 0
 end
 
 --- @param index integer
 --- @return RenderObjectInstance?
 function INSTANCE:GetSubObject( index )
-    CNC.VirtualFunction()
     return nil
 end
 
-function INSTANCE:AddSubObject()
-    typecheck.NotImplementedError()
+--- @param renderObject RenderObjectInstance
+--- @return integer
+function INSTANCE:AddSubObject( renderObject )
+    return 0
 end
 
-function INSTANCE:RemoveSubObject()
-    typecheck.NotImplementedError()
+--- @param renderObject RenderObjectInstance
+--- @return integer
+function INSTANCE:RemoveSubObject( renderObject )
+    return 0
 end
 
 --- @param name string
@@ -484,12 +497,17 @@ function INSTANCE:GetSubObjectByName( name )
     typecheck.NotImplementedError()
 end
 
-function INSTANCE:GetNumSubObjectsOnBone()
-    typecheck.NotImplementedError()
+--- @param boneIndex integer
+--- @return integer
+function INSTANCE:GetNumSubObjectsOnBone( boneIndex )
+    return 0
 end
 
-function INSTANCE:GetSubObjectOnBone()
-    typecheck.NotImplementedError()
+--- @param index integer
+--- @param boneIndex integer
+--- @return RenderObjectInstance?
+function INSTANCE:GetSubObjectOnBone( index, boneIndex )
+    return nil
 end
 
 function INSTANCE:GetSubObjectBoneIndex()
@@ -498,11 +516,27 @@ end
 
 --- "Add an object to a named bone"
 --- @param subObject RenderObjectInstance
---- @param boneName string
+--- @param bone string|integer
 --- @return boolean
-function INSTANCE:AddSubObjectToBone( subObject, boneName )
-    local boneIndex = INSTANCE.GetBoneIndex( self, boneName )
-    return INSTANCE.AddSubObjectToBone( self, subObject, boneIndex )
+function INSTANCE:AddSubObjectToBone( subObject, bone )
+
+    -- ( subObject: RenderObjectInstance, boneIndex: integer )
+    if typecheck.IsOfType( bone, "number" ) then
+        local boneIndex = bone --[[@as integer]]
+
+        section.Print( INSTANCE.Class, " - AddSubObjectToBone - Bone Index: ", boneIndex )
+
+        return false
+
+    -- ( subObject: RenderObjectInstance, boneName: string )
+    else
+        local boneName = bone --[[@as string]]
+
+        section.Print( INSTANCE.Class, " - AddSubObjectToBone - Bone Name: ", boneName )
+
+        local boneIndex = self:GetBoneIndex( boneName )
+        return self:AddSubObjectToBone( subObject, boneIndex )
+    end
 end
 
 function INSTANCE:RemoveSubObjectsFromBone()
@@ -524,34 +558,34 @@ end
 
 --- @return integer
 function INSTANCE:GetNumBones()
-    CNC.VirtualFunction()
+    return 0
 end
 
 --- @param boneIndex integer
 --- @return string
 function INSTANCE:GetBoneName( boneIndex )
-    CNC.VirtualFunction()
+    return ""
 end
 
 --- @param boneName string
 --- @return integer
 function INSTANCE:GetBoneIndex( boneName )
-    CNC.VirtualFunction()
+    return 1
 end
 
 --- @param bone string|integer
 --- @return Matrix3dInstance
 function INSTANCE:GetBoneTransform( bone )
-    CNC.VirtualFunction()
     return ( INSTANCE.GetTransform( self ) )
 end
 
 function INSTANCE:CaptureBone()
-    typecheck.NotImplementedError()
+    -- Empty in the original code
 end
 
-function INSTANCE:ReleaseBone()
-    typecheck.NotImplementedError()
+--- @param boneIndex integer
+function INSTANCE:ReleaseBone( boneIndex )
+    -- Empty in the original code
 end
 
 function INSTANCE:IsBoneCaptured()
@@ -567,8 +601,10 @@ function INSTANCE:GetHTree()
     typecheck.NotImplementedError()
 end
 
-function INSTANCE:CastRay()
-    typecheck.NotImplementedError()
+--- "Intersects a ray with the render object"
+--- @param rayTest RayCollisionTestInstance
+function INSTANCE:CastRay( rayTest )
+    return false
 end
 
 function INSTANCE:CastAaBox()
@@ -705,8 +741,9 @@ function INSTANCE:DeleteDecal()
     typecheck.NotImplementedError()
 end
 
+--- @return MaterialInfoInstance?
 function INSTANCE:GetMaterialInfo()
-    typecheck.NotImplementedError()
+    return nil
 end
 
 function INSTANCE:SetUserData()
@@ -848,8 +885,13 @@ function INSTANCE:SetNativeScreenSize()
     typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetSubObjectsMatchLod()
-    typecheck.NotImplementedError()
+--- @param onOff boolean
+function INSTANCE:SetSubObjectsMatchLod( onOff )
+    if onOff then
+        self.Bits = bit.bor( self.Bits, STATIC.SUBOBJS_MATCH_LOD )
+    else
+        self.Bits = bit.band( self.Bits, bit.bnot( STATIC.SUBOBJS_MATCH_LOD ) )
+    end
 end
 
 function INSTANCE:IsSubObjectsMatchLodEnabled()
@@ -896,6 +938,7 @@ end
 
 --- "default collision sphere."
 function INSTANCE:UpdateCachedBoundingVolumes()
+
     self.CachedBoundingBox = self:GetObjectSpaceBoundingBox()
     self.CachedBoundingSphere = self:GetObjectSpaceBoundingSphere()
 

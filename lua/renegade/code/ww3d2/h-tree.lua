@@ -257,16 +257,34 @@ function INSTANCE:NumPivots()
 	return self._NumPivots
 end
 
-function INSTANCE:GetBoneIndex()
-	typecheck.NotImplementedError()
+--- "Find a bone by name"
+--- @param name string
+--- @return integer
+function INSTANCE:GetBoneIndex( name )
+	for i = 1, self._NumPivots do
+		if self.Pivot[i].Name == name then
+			return i
+		end
+	end
+	return 0
 end
 
-function INSTANCE:GetBoneName()
-	typecheck.NotImplementedError()
+--- "Get the name of a bone from its index"
+--- @param boneIndex integer
+--- @return string
+function INSTANCE:GetBoneName( boneIndex )
+	return self.Pivot[boneIndex].Name
 end
 
-function INSTANCE:GetParentIndex()
-	typecheck.NotImplementedError()
+--- "Returns index of the parent of the given bone"
+--- @param boneIndex integer "The bone you are interested in"
+--- @return integer "The index of that bone's parent"
+function INSTANCE:GetParentIndex( boneIndex )
+	if self.Pivot[boneIndex].Parent ~= nil then
+		return self.Pivot[boneIndex].Parent.Index
+	else
+		return 1
+	end
 end
 
 --- "Computes the base pose transform for each pivot"
@@ -320,8 +338,9 @@ function INSTANCE:GetVisibility( pivot )
 	return self.Pivot[pivot].IsVisible
 end
 
+--- @return Matrix3dInstance
 function INSTANCE:GetRootTransform()
-	typecheck.NotImplementedError()
+	return self.Pivot[1].Transform
 end
 
 function INSTANCE:CaptureBone()

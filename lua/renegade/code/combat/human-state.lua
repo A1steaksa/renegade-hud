@@ -38,6 +38,7 @@ INSTANCE.IsHumanState = true
 	local humanStateTypeEnum = humanAnimationControlClass.HUMAN_STATE_TYPE
 	local weaponHoldStyleTypeEnum = weaponClass.WEAPON_HOLD_STYLE_TYPE
 	local humanStateFlagsTypeEnum = humanAnimationControlClass.HUMAN_STATE_FLAGS_TYPE
+	local humanSubStateTypeEnum = humanAnimationControlClass.HUMAN_SUB_STATE_TYPE
 --#endregion
 
 
@@ -78,6 +79,9 @@ end
     --- @class HumanStateClass
 
 	STATIC.CORPSE_PERSIST_TIME = 2.0
+
+	STATIC.MOVING_THRESHOLD = 0.2
+	STATIC.WALKING_THRESHOLD = 3.21
 
     --- Creates a new HumanStateInstance
     --- @return HumanStateInstance
@@ -180,7 +184,7 @@ end
 --- @param animationControl HumanAnimationControlInstance
 function INSTANCE:SetAnimationControl( animationControl )
 	self.AnimationControl = animationControl
-	self.AnimationControl:SetModel(self.HumanPhysics:PeekModel() )
+	self.AnimationControl:SetModel( self.HumanPhysics:PeekModel() )
 end
 
 --- @param definitionId integer
@@ -236,19 +240,26 @@ function INSTANCE:IsStateInterruptable()
 	)
 end
 
---- @param subState integer
+--- @param subState HumanSubStateType
 function INSTANCE:SetSubState( subState )
-	typecheck.NotImplementedError()
+	if self:IsSubStateAdjustable() then
+		if self.SubState ~= subState then
+			self.SubState = subState
+			self:UpdateAnimation()
+		end
+	else
+		section.Warn( "Cant adjust state: '", self:GetStateName(), "'" )
+	end
 end
 
---- @return integer
+--- @return HumanSubStateType
 function INSTANCE:GetSubState()
 	return self.SubState
 end
 
 --- @return boolean
 function INSTANCE:IsSubStateAdjustable()
-	typecheck.NotImplementedError()
+	return ( self.State == humanStateTypeEnum.UPRIGHT ) or ( self.State == humanStateTypeEnum.LADDER )
 end
 
 --- @return number
@@ -314,9 +325,133 @@ function INSTANCE:UpdateState()
 end
 
 function INSTANCE:PostThink()
-	typecheck.NotImplementedError()
+	-- "  
+	-- Update [SubState] per movement
+	-- do it for upright, land, ladder, airborne,
+	-- "  
+	if self:IsSubStateAdjustable() or self:IsStateInterruptable() then
+		local frameTime = FrameTime()
+
+		-- "Update the SubState"
+		local newSubState = 0
+
+		-- "Get our current move vector"
+		local moveVector = self.HumanPhysics:GetAnimationMove()
+		if frameTime > 0 then
+			moveVector = moveVector / frameTime
+		end
+
+		moveVector = self.HumanPhysics:GetTransform():InverseRotateVector( moveVector )
+
+		-- "When walking running diagonally, use forward/backward legs."
+		-- "Unless you are crouched, then use straffe legs"
+		local directionRatio = 0.75
+		if self:GetStateFlag( humanStateFlagsTypeEnum.CROUCHED_FLAG ) then
+			directionRatio = 2
+		end
+
+		-- "Convert to SubMode"
+		if math.abs( moveVector[1] ) > directionRatio * math.abs( moveVector[2] ) then
+			if moveVector[1] > STATIC.MOVING_THRESHOLD then
+				newSubState = bit.bor( newSubState, humanSubStateTypeEnum.SUB_STATE_FORWARD )
+			elseif moveVector[1] < -STATIC.MOVING_THRESHOLD then
+				newSubState = bit.bor( newSubState, humanSubStateTypeEnum.SUB_STATE_BACKWARD )
+			end
+		else
+			if moveVector[2] > STATIC.MOVING_THRESHOLD then
+				newSubState = bit.bor( newSubState, humanSubStateTypeEnum.SUB_STATE_LEFT )
+			elseif moveVector[2] <- STATIC.MOVING_THRESHOLD then
+				newSubState = bit.bor( newSubState, humanSubStateTypeEnum.SUB_STATE_RIGHT )
+			end
+		end
+
+		if newSubState == 0 then
+			if moveVector[3] > STATIC.MOVING_THRESHOLD then
+				newSubState = bit.bor( newSubState, humanSubStateTypeEnum.SUB_STATE_UP )
+			elseif moveVector[3] < -STATIC.MOVING_THRESHOLD then
+				newSubState = bit.bor( newSubState, humanSubStateTypeEnum.SUB_STATE_DOWN )
+			end
+		end
+
+		if newSubState ~= 0 then
+			if moveVector:Length() < STATIC.WALKING_THRESHOLD then
+				newSubState = bit.bor( newSubState, humanSubStateTypeEnum.SUB_STATE_SLOW )
+			end
+		end
+
+		-- "Get him out of WOUNDED, LAND, LOITER states if moving or shooting"
+		if self:IsStateInterruptable() and self:GetState() ~= humanStateTypeEnum.UPRIGHT then
+			if newSubState ~= 0 or self.WeaponFired then
+				if self:GetState() == humanStateTypeEnum.LAND and self:GetSubState() == newSubState then
+					-- "Don't interrupt lands for the same direction"
+				else
+					self:SetState( humanStateTypeEnum.UPRIGHT )
+				end
+			end
+		end
+
+		if self:IsSubStateAdjustable() then
+			if newSubState ~= self:GetSubState() then
+				self:SetSubState( newSubState --[[@as HumanSubStateType]] )
+			end
+		end
+
+		-- "Scale animation speed"
+		local idealSpeed = 0
+		if not tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_SLOW     ) ) then
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_FORWARD  ) ) then idealSpeed = 5.5 end
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_BACKWARD ) ) then idealSpeed = 4.5 end
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_LEFT     ) ) then idealSpeed = 4.5 end
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_RIGHT    ) ) then idealSpeed = 5.5 end
+		else
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_FORWARD  ) ) then idealSpeed = 1.6 end
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_BACKWARD ) ) then idealSpeed = 1.5 end
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_LEFT     ) ) then idealSpeed = 1.5 end
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_RIGHT    ) ) then idealSpeed = 1.6 end
+		end
+
+		if self.State == humanStateTypeEnum.LADDER then
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_UP   ) ) then idealSpeed = 0.15 end
+			if tobool( bit.band( newSubState, humanSubStateTypeEnum.SUB_STATE_DOWN ) ) then idealSpeed = 0.15 end
+		end
+
+		-- "Turning is at speed 1"
+		local turning = (
+			tobool(
+				bit.band(
+					newSubState,
+					bit.bor(
+						humanSubStateTypeEnum.SUB_STATE_TURN_LEFT,
+						humanSubStateTypeEnum.SUB_STATE_TURN_RIGHT
+					)
+				)
+			) and not tobool(
+				bit.band(
+					newSubState,
+					bit.bor(
+						humanSubStateTypeEnum.SUB_STATE_FORWARD,
+						humanSubStateTypeEnum.SUB_STATE_BACKWARD
+					)
+				)
+			)
+		)
+
+		if not turning and idealSpeed ~= 0 then
+			-- "Get [AnimationSpeedScale]"
+			local velocity = self.HumanPhysics:GetAnimationMove()
+			if frameTime > 0 then
+				velocity = velocity / frameTime
+			end
+			local speed = math.Clamp( velocity:Length() / idealSpeed, 0.33, 3 )
+			self.AnimationControl:SetAnimationSpeedScale( speed )
+		else
+			self.AnimationControl:SetAnimationSpeedScale( 1 )
+		end
+		self.HumanPhysics:ResetAnimationMove()
+	end
 end
 
+--- "Weapons style, weapon action, recoil, blend, vehicle, mix/math, aiming tilt"
 function INSTANCE:UpdateAnimation()
 	typecheck.NotImplementedError()
 end
@@ -326,8 +461,9 @@ function INSTANCE:IsLocked()
 	return self.StateLocked
 end
 
+--- @return boolean
 function INSTANCE:GetLegMode()
-	typecheck.NotImplementedError()
+	return self.AnimationControl:GetProgress() > 0.5
 end
 
 function INSTANCE:GetOuchType()

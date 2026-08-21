@@ -125,8 +125,8 @@ local DAZZLE_INI_FILENAME = "DAZZLE.INI"
 --- @field _IsTexturingEnabled boolean
 --- @field Lite boolean
 --- @field DefaultNativeScreenSize number
---- @field DefaultStaticSortLists RenderObjectInstance[]
---- @field CurrentStaticSortLists RenderObjectInstance[]
+--- @field DefaultStaticSortLists RenderObjectInstance[][]
+--- @field CurrentStaticSortLists RenderObjectInstance[][]
 --- @field MinStaticSortLevel integer
 --- @field MaxStaticSortLevel integer
 --- @field LastFrameMemoryAllocations integer
@@ -724,7 +724,13 @@ end
 	--- @param renderObject RenderObjectInstance
 	--- @param sortLevel integer
 	function STATIC.AddToStaticSortList( renderObject, sortLevel )
-		typecheck.NotImplementedError()
+		if sortLevel < 1 or sortLevel > w3dFileIds.MAX_SORT_LEVEL then
+			assert( false )
+			return
+		end
+
+		local sortList = STATIC.CurrentStaticSortLists[sortLevel]
+		sortList[#sortList + 1] = renderObject
 	end
 
 	--- @param renderInfo RenderInfoInstance

@@ -61,9 +61,9 @@ end
 
 --- @class CompositeRenderObjectInstance
 --- @field Name string "Name of the render object"
---- @field BaseModelName string "Name of the original render obj (before aggregation)"
+--- @field BaseModelName? string "Name of the original render obj (before aggregation)"
 --- @field ObjectSphere SphereInstance "Object-space bounding sphere"
---- @field ObjectBox AABoxInstance|MinMaxAABoxInstance "Object-space bounding box"
+--- @field ObjectBox AABoxInstance "Object-space bounding box"
 
 --- @param other CompositeRenderObjectInstance?
 function INSTANCE:Renegade_CompositeRenderObject( other )
@@ -104,12 +104,14 @@ function INSTANCE:SetName( name )
 	self.Name = name
 end
 
+--- @return string?
 function INSTANCE:GetBaseModelName()
-	typecheck.NotImplementedError()
+	return nil
 end
 
-function INSTANCE:SetBaseModelName()
-	typecheck.NotImplementedError()
+--- @param name string?
+function INSTANCE:SetBaseModelName( name )
+	self.BaseModelName = name
 end
 
 function INSTANCE:GetNumPolys()
@@ -159,7 +161,7 @@ end
 
 --- @return AABoxInstance
 function INSTANCE:GetObjectSpaceBoundingBox()
-	return self.ObjectBox --[[@as AABoxInstance]]
+	return self.ObjectBox
 end
 
 function INSTANCE:UpdateObjectSpaceBoundingVolumes()

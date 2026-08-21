@@ -182,8 +182,22 @@ function INSTANCE:Update( deltaTime )
 	self.OldChannel:Update( deltaTime )
 end
 
-function INSTANCE:GetAnimationData()
-	typecheck.NotImplementedError()
+--- @param weight number? [Default: `1.0`]
+--- @return AnimationDataRecordStruct[]
+function INSTANCE:GetAnimationData( weight )
+	if weight == nil then weight = 1.0 end
+
+	local blendRatio = 1.0 --"Assume no blending"
+	if self.BlendTotal ~= 0.0 then -- "If blending between two animations"
+		-- "Calculate the blend percentage between the two animations."
+		-- "This starts at 0,0 (all OldAnimation) and proceeds to 1.0o (all Animation)"
+		blendRatio = math.Clamp( self.BlendTimer / self.BlendTotal, 0, 1 )
+	end
+
+	local list = {} --[[@as AnimationDataRecordStruct[] ]]
+	table.Add( list, self.NewChannel:GetAnimationData( weight * blendRatio ) )
+	table.Add( list, self.OldChannel:GetAnimationData( weight * ( 1 - blendRatio ) ) )
+	return list
 end
 
 --- @param animationModel RenderObjectInstance

@@ -33,6 +33,18 @@ INSTANCE.IsSmartGameObject = true
 
 	--- @type GameObjectManagerClass
 	local gameObjectManagerClass = CNC.Import( "code/combat/game-object-manager.lua" )
+
+	--- @type BaseGameObjectClass
+	local baseGameObjectClass = CNC.Import( "code/combat/base-game-object.lua" )
+
+	--- @type Matrix3dClass
+	local matrix3dClass = CNC.Import( "code/wwmath/matrix3d.lua" )
+
+	--- @type CombatManagerClass
+	local combatManagerClass = CNC.Import( "code/combat/combat-manager.lua" )
+
+	--- @type ControlClass
+	local controlClass = CNC.Import( "code/combat/control.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -130,6 +142,8 @@ end
 function INSTANCE:Renegade_SmartGameObject()
     armedGameObjectClass.Instance.Renegade_ArmedGameObject( self )
 
+    self.Control = controlClass.New()
+
     self.Action = actionClass.New( self )
     self.ControlOwner = STATIC.SERVER_CONTROL_OWNER
     self.ControlEnabled = true
@@ -180,8 +194,9 @@ end
         typecheck.NotImplementedError()
     end
 
+    --- @return SmartGameObjectDefinitionInstance
     function INSTANCE:GetDefinition()
-        typecheck.NotImplementedError()
+        return baseGameObjectClass.Instance.GetDefinition( self ) --[[@as SmartGameObjectDefinitionInstance]]
     end
 end
 
@@ -298,7 +313,22 @@ function INSTANCE:IsHumanControlled()
 end
 
 function INSTANCE:IsControlledByMe()
-	typecheck.NotImplementedError()
+    if not combatManagerClass.IAmClient() then
+        return false
+    end
+
+    local gameObject = self
+
+    -- "If this is a vehicle, then passthru to the driver"
+    local vehicle = self:AsVehicleGameObject()
+    if vehicle ~= nil then
+        local driver = vehicle:GetDriver()
+        if driver ~= nil then
+            gameObject = driver
+        end
+    end
+
+    return gameObject:IsHumanControlled() and ( gameObject.ControlOwner == combatManagerClass.GetMyId() )
 end
 
 function INSTANCE:ApplyControl()
@@ -309,11 +339,36 @@ end
 --[[ Thinking ]] do
 
     function INSTANCE:Think()
-        typecheck.NotImplementedError()
+
+        -- For testing purposes, move to my owning source entity if one exists
+        if IsValid( self.ConnectedEntity ) then
+            -- local matrix = self:GetTransform()
+            -- matrix:SetTranslation( Vector( 0, 0, 0 ) )
+            -- self:SetTransform( matrix )
+
+            self:SetPosition( Vector( 0, 0, 0 ) )
+
+            -- section.Print( self:GetPosition() )
+            -- self:SetPosition( Vector( 0, 0, 0 ) )
+        end
+
+        -- Omitted almost all original function contents
+
+        --[[ Embedded Armed think in smart think ]] do
+            armedGameObjectClass.Instance.Think( self )
+        end
     end
 
     function INSTANCE:PostThink()
-        typecheck.NotImplementedError()
+        armedGameObjectClass.Instance.PostThink( self )
+
+        -- "Don't update if destroying... (so we don't create a new laser!)"
+        if self:IsDeletePending() then
+            return
+        end
+
+        -- "Reset the one time booleans"
+        self.Control:ClearOneTimeBoolean()
     end
 end
 
@@ -478,5 +533,8 @@ function INSTANCE:AllocateStealthEffect()
 end
 
 function INSTANCE:RegisterListener()
-	typecheck.NotImplementedError()
+	if self.Listener ~= nil then
+        local definition = INSTANCE.GetDefinition( self )
+
+    end
 end

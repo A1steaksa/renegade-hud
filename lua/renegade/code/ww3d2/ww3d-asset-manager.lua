@@ -63,6 +63,18 @@ INSTANCE.IsWw3dAssetManager = true
 
 	--- @type HLodLoaderClass
 	local hLodLoaderClass = CNC.Import( "code/ww3d2/h-lod-loader.lua" )
+
+	--- @type HTreeManagerClass
+	local hTreeManagerClass = CNC.Import( "code/ww3d2/h-tree-manager.lua" )
+
+	--- @type HAnimationManagerClass
+	local hAnimationManagerClass = CNC.Import( "code/ww3d2/h-animation-manager.lua" )
+
+	--- @type AggregateLoaderClass
+	local aggregateLoaderClass = CNC.Import( "code/ww3d2/aggregate-loader.lua" )
+
+	--- @type HModelLoaderClass
+	local hModelLoaderClass = CNC.Import( "code/ww3d2/h-model-loader.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -81,8 +93,6 @@ Porting Notes:
     --- @class Ww3dAssetManagerClass
 	--- @field TheInstance WW3dAssetManagerInstance
 	--- @field NullPrototype NullPrototypeInstance
-	--- @field HTreeManager HTreeManagerInstance
-	--- @field HAnimManager HAnimManagerInstance
 
 	STATIC.PROTOLOADERS_VECTOR_SIZE = 32
 	STATIC.PROTOLOADERS_GROWTH_RATE = 16
@@ -135,8 +145,8 @@ end
 --- @class WW3dAssetManagerInstance
 --- @field PrototypeLoaders PrototypeLoaderInstance[] "These objects are responsible for importing certain W3D chunk types and turning them into prototypes"
 --- @field PrototypeHashTable table<string,PrototypeInstance>
---- @field HTreeManager any
---- @field HAnimationManager any
+--- @field HTreeManager HTreeManagerInstance
+--- @field HAnimationManager HAnimationManagerInstance
 --- @field TextureCache any
 --- @field Font3ddatas any
 --- @field FontCharsList any
@@ -150,6 +160,9 @@ function INSTANCE:Renegade_Ww3dAssetManager()
 	self.PrototypeLoaders = {}
 	self._TextureHash = {}
 
+	self.HTreeManager = hTreeManagerClass.New()
+	self.HAnimationManager = hAnimationManagerClass.New()
+
 	self.Ww3dLoadOnDemand = false
 	self.ActivateFogOnLoad = false
 	self.MetalManager = nil
@@ -161,12 +174,12 @@ function INSTANCE:Renegade_Ww3dAssetManager()
 
 	-- "Install the default loaders"
 	self:RegisterPrototypeLoader( prototypeClass.MeshLoader )
-	-- self:RegisterPrototypeLoader( prototypeClass.HModelLoader )
+	self:RegisterPrototypeLoader( prototypeClass.HModelLoader )
 	-- self:RegisterPrototypeLoader( collectionLoaderClass.CollectionLoader )
 	self:RegisterPrototypeLoader( boxRenderObjectClass.BoxLoader )
 	self:RegisterPrototypeLoader( hLodLoaderClass.HLodLoader )
 	-- self:RegisterPrototypeLoader( distantLodPrototypeClass.DistantLodLoader )
-	-- self:RegisterPrototypeLoader( aggregateDefinitionClass.AggregateLoader )
+	self:RegisterPrototypeLoader( aggregateLoaderClass.AggregateLoader )
 	self:RegisterPrototypeLoader( null3dObjectClass.NullLoader )
 	-- self:RegisterPrototypeLoader( dazzleRenderObjectClass.DazzleLoader )
 

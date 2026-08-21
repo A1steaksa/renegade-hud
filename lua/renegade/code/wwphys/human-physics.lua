@@ -89,8 +89,9 @@ function INSTANCE:_Renegade_HumanPhysics()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:AsHumanPhysicsClass()
-	typecheck.NotImplementedError()
+--- @return HumanPhysicsInstance?
+function INSTANCE:AsHumanPhysics()
+	return self
 end
 
 --- "initializes from a Definition"

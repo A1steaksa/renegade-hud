@@ -24,9 +24,32 @@ INSTANCE.IsHCompressedAnimation = true
 --#endregion
 
 --#region Imports
+
+	--- @type W3dFileIds
+	local w3dFileIds = CNC.Import( "code/ww3d2/w3d-file.lua" )
+
+	--- @type Ww3dAssetManagerClass
+	local ww3dAssetManagerClass = CNC.Import( "code/ww3d2/ww3d-asset-manager.lua" )
+
+	--- @type ClassUtils
+	local classUtils = CNC.Import( "sh_class-utils.lua" )
+
+	--- @type TimeCodedMotionChannelClass
+	local timeCodedMotionChannelClass = CNC.Import( "code/ww3d2/time-coded-motion-channel.lua" )
+
+	--- @type AdaptiveDeltaMotionChannelClass
+	local adaptiveDeltaMotionChannelClass = CNC.Import( "code/ww3d2/adaptive-delta-motion-channel.lua" )
+
+	--- @type TimeCodedBitChannelClass
+	local timeCodedBitChannelClass = CNC.Import( "code/ww3d2/time-coded-bit-channel.lua" )
 --#endregion
 
 --#region Imported Enums
+
+	local w3dChunkTypeEnum = w3dFileIds.W3D_CHUNK_TYPE
+	local animationFlavorEnum = w3dFileIds.ANIMATION_FLAVOR
+	local animationChannelEnum = w3dFileIds.ANIMATION_CHANNEL
+	local bitChannelEnum = w3dFileIds.BIT_CHANNEL
 --#endregion
 
 --[[ Static Functions and Variables ]] do
@@ -62,7 +85,7 @@ end
 --- @field NumNodes integer
 --- @field Flavor integer
 --- @field FrameRate number
---- @field NodeMotion NodeCompressedMotionStructInstance
+--- @field NodeMotion NodeCompressedMotionInstance[]
 
 function INSTANCE:Renegade_HCompressedAnimation()
 	typecheck.NotImplementedError()
@@ -72,8 +95,133 @@ function INSTANCE:_Renegade_HCompressedAnimation()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:LoadW3d()
-	typecheck.NotImplementedError()
+--- "Loads hierarchy animation from a file"
+--- @param cload ChunkLoadInstance
+function INSTANCE:LoadW3d( cload )
+	-- "First make sure we release any memory in use"
+	INSTANCE.Free( self )
+
+	-- "Open the first chunk, it should be the animation header"
+	if not cload:OpenChunk() then
+		return STATIC.LOAD_ERROR
+	end
+
+	if cload:CurChunkId() ~= w3dChunkTypeEnum.W3D_CHUNK_COMPRESSED_ANIMATION_HEADER then
+		-- "Error: Expected Animation Header!"
+		section.Warn( INSTANCE.Class, " - LoadW3d - Expected Animation Header!" )
+		return STATIC.LOAD_ERROR
+	end
+
+	-- I don't know if it was a typo or intentional, but the original code defines the header as being
+	-- a W3dCompressedAnimHeaderStruct but then loads a W3dAnimHeaderStruct into it
+	local header = cload:ReadStruct( "W3dAnimHeaderStruct" ) --[[@as W3dCompressedAnimHeaderStruct?]]
+	if header == nil then
+		return STATIC.LOAD_ERROR
+	end
+
+	cload:CloseChunk()
+
+	self.Name = header.HierarchyName .. "." .. header.Name
+
+	-- "TSS chasing crash bug 05/26/99"
+	assert( self.HierarchyName ~= nil )
+	assert( header.HierarchyName ~= nil )
+	self.HierarchyName = header.HierarchyName:sub( 0, w3dFileIds.W3D_NAME_LEN )
+
+	local basePose = ww3dAssetManagerClass.GetInstance():GetHTree( self.HierarchyName )
+	if basePose == nil then
+		INSTANCE.Free( self )
+		return STATIC.LOAD_ERROR
+	end
+	self.NumNodes = basePose:NumPivots()
+
+	self.NumFrames = header.NumFrames
+	self.FrameRate = header.FrameRate
+	self.Flavor    = header.Flavor
+
+	-- "Just for now"
+	-- (A classic lie)
+	assert( self.Flavor == animationFlavorEnum.ANIM_FLAVOR_TIMECODED or self.Flavor == animationFlavorEnum.ANIM_FLAVOR_ADAPTIVE_DELTA )
+
+	self.NodeMotion = classUtils.InitializeTypeArray( "NodeCompressedMotionStruct", self.NumNodes )
+
+	-- "Initialize Flavor"
+	for i = 1, self.NumNodes do
+		self.NodeMotion[i]:SetFlavor( self.Flavor )
+	end
+
+	-- "Now, read in all of the other chunks (motion channels)."
+	local timeCodedChannel 	   --- @type TimeCodedMotionChannelInstance
+	local adaptiveDeltaChannel --- @type AdaptiveDeltaMotionChannelInstance
+	local newBitChannel 	   --- @type TimeCodedBitChannelInstance
+
+	while cload:OpenChunk() do
+		local id = cload:CurChunkId()
+
+		if id == w3dChunkTypeEnum.W3D_CHUNK_COMPRESSED_ANIMATION_CHANNEL then
+			if self.Flavor == animationFlavorEnum.ANIM_FLAVOR_TIMECODED then
+				local didSucceed, readChannel = INSTANCE.ReadTimeCodedChannel( self, cload )
+				if not didSucceed or readChannel == nil then
+					INSTANCE.Free( self )
+					return STATIC.LOAD_ERROR
+				end
+				timeCodedChannel = readChannel --[[@as TimeCodedMotionChannelInstance]]
+
+				if timeCodedChannel:GetPivot() < self.NumNodes then
+					INSTANCE.AddChannel( self, timeCodedChannel )
+				else
+					-- "
+					-- PWG 12-14-98: we have only allocated space for NumNode pivots.  
+					-- If we have an index thats equal or higher than NumNode we are
+					-- gonna trash memory.  Boy will we trash memory.
+					-- GTH 09-25-2000: print a warning and survive this error
+					-- "  
+					section.Warn( "Animation '", self.Name, "' indexes a bone (", newBitChannel:GetPivot(), ") not present in the model.  Please re-export!" )
+				end
+			elseif self.Flavor == animationFlavorEnum.ANIM_FLAVOR_ADAPTIVE_DELTA then
+				local didSucceed, readChannel = INSTANCE.ReadAdaptiveDeltaChannel( self, cload )
+				if not didSucceed or readChannel == nil then
+					INSTANCE.Free( self )
+					return STATIC.LOAD_ERROR
+				end
+				adaptiveDeltaChannel = readChannel --[[@as AdaptiveDeltaMotionChannelInstance]]
+
+				if adaptiveDeltaChannel:GetPivot() < self.NumNodes then
+					INSTANCE.AddChannel( self, adaptiveDeltaChannel )
+				else
+					-- "
+					-- PWG 12-14-98: we have only allocated space for NumNode pivots.  
+					-- If we have an index thats equal or higher than NumNode we are
+					-- gonna trash memory.  Boy will we trash memory.
+					-- GTH 09-25-2000: print a warning and survive this error
+					-- "  
+					section.Warn( "Animation '", self.Name, "' indexes a bone (", newBitChannel:GetPivot(), ") not present in the model.  Please re-export!" )
+				end
+			end
+		elseif id == w3dChunkTypeEnum.W3D_CHUNK_COMPRESSED_BIT_CHANNEL then
+			local didSucceed, readChannel = INSTANCE.ReadBitChannel( self, cload )
+			if not didSucceed or readChannel == nil then
+				INSTANCE.Free( self )
+				return STATIC.LOAD_ERROR
+			end
+			newBitChannel = readChannel --[[@as TimeCodedBitChannelInstance]]
+
+			if newBitChannel:GetPivot() < self.NumNodes then
+				INSTANCE.AddBitChannel( self, newBitChannel )
+			else
+				-- "  
+				-- PWG 12-14-98: we have only allocated space for NumNode pivots.  
+				-- If we have an index thats equal or higher than NumNode we are
+				-- gonna trash memory.  Boy will we trash memory.
+				-- GTH 09-25-2000: print a warning and survive this error
+				-- "  
+				section.Warn( "Animation '", self.Name, "' indexes a bone (", newBitChannel:GetPivot(), ") not present in the model.  Please re-export!" )
+			end
+		end
+		cload:CloseChunk()
+	end
+
+	return STATIC.OK
 end
 
 --- @return string
@@ -177,26 +325,75 @@ function INSTANCE:Free()
 	typecheck.NotImplementedError()
 end
 
+--- "Reads in a single channel of motion"
 --- @param cload ChunkLoadInstance
---- @param newChannel TimeCodedMotionChannelInstance[][]|AdaptiveDeltaMotionChannelClass[][]
---- @return boolean
-function INSTANCE:ReadChannel( cload, newChannel )
-	typecheck.NotImplementedError()
+--- @return boolean, TimeCodedMotionChannelInstance?
+function INSTANCE:ReadTimeCodedChannel( cload )
+	local newChannel = timeCodedMotionChannelClass.New()
+	local result = newChannel:LoadW3d( cload )
+	return result, newChannel
 end
 
---- @param newChannel TimeCodedMotionChannelInstance[][]|AdaptiveDeltaMotionChannelClass[][]
+--- "Reads in a single channel of motion"
+--- @param cload ChunkLoadInstance
+--- @return boolean, AdaptiveDeltaMotionChannelInstance?
+function INSTANCE:ReadAdaptiveDeltaChannel( cload )
+	local newChannel = adaptiveDeltaMotionChannelClass.New()
+	local result = newChannel:LoadW3d( cload )
+	return result, newChannel
+end
+
+--- "Adds a motion channel to the animation"
+--- @param newChannel TimeCodedMotionChannelInstance|AdaptiveDeltaMotionChannelInstance
 function INSTANCE:AddChannel( newChannel )
-	typecheck.NotImplementedError()
+	typecheck.AssertArgType( INSTANCE.Class, 1, newChannel, { "TimeCodedMotionChannelInstance", "AdaptiveDeltaMotionChannelInstance" } )
+
+	local index = newChannel:GetPivot()
+	local type = newChannel:GetType()
+
+	if typecheck.IsOfType( newChannel, "TimeCodedMotionChannelInstance" ) then
+		--- @cast newChannel TimeCodedMotionChannelInstance
+
+		if type == animationChannelEnum.ANIM_CHANNEL_X then
+			self.NodeMotion[index].TimeCoded.X = newChannel
+		elseif type == animationChannelEnum.ANIM_CHANNEL_Y then
+			self.NodeMotion[index].TimeCoded.Y = newChannel
+		elseif type == animationChannelEnum.ANIM_CHANNEL_Z then
+			self.NodeMotion[index].TimeCoded.Z = newChannel
+		elseif type == animationChannelEnum.ANIM_CHANNEL_Q then
+			self.NodeMotion[index].TimeCoded.Q = newChannel
+		end
+	else
+		--- @cast newChannel AdaptiveDeltaMotionChannelInstance
+
+		if type == animationChannelEnum.ANIM_CHANNEL_X then
+			self.NodeMotion[index].AdaptiveDelta.X = newChannel
+		elseif type == animationChannelEnum.ANIM_CHANNEL_Y then
+			self.NodeMotion[index].AdaptiveDelta.Y = newChannel
+		elseif type == animationChannelEnum.ANIM_CHANNEL_Z then
+			self.NodeMotion[index].AdaptiveDelta.Z = newChannel
+		elseif type == animationChannelEnum.ANIM_CHANNEL_Q then
+			self.NodeMotion[index].AdaptiveDelta.Q = newChannel
+		end
+	end
 end
 
+--- "Read a bit channel from the file"
 --- @param cload ChunkLoadInstance
---- @param newChannel TimeCodedBitChannelInstance[][]
---- @return boolean
-function INSTANCE:ReadBitChannel( cload, newChannel )
-	typecheck.NotImplementedError()
+--- @return boolean, TimeCodedBitChannelInstance
+function INSTANCE:ReadBitChannel( cload )
+	local newChannel = timeCodedBitChannelClass.New()
+	local result = newChannel:LoadW3d( cload )
+	return result, newChannel
 end
 
---- @param newChannel TimeCodedBitChannelInstance[][]
+--- "Install a bit channel into the animation"
+--- @param newChannel TimeCodedBitChannelInstance
 function INSTANCE:AddBitChannel( newChannel )
-	typecheck.NotImplementedError()
+	local index = newChannel:GetPivot()
+	local type = newChannel:GetType()
+
+	if type == bitChannelEnum.BIT_CHANNEL_VIS then
+		self.NodeMotion[index].Visibility = newChannel
+	end
 end

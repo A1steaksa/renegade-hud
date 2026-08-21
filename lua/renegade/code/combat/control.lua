@@ -19,9 +19,28 @@ INSTANCE.Static = STATIC
 INSTANCE.IsControl = true
 
 --#region Exported Enums
+
+    --- @type EnumBuilderClass
+	local enumBuilderClass = CNC.Import( "sh_enum-builder.lua" )
+
+    local enumBuilder = enumBuilderClass.New()
+
+	--- @enum AnalogControl
+	STATIC.ANALOG_CONTROL = {
+		ANALOG_MOVE_FORWARD  = enumBuilder:Set( 0 ),
+		ANALOG_MOVE_LEFT     = enumBuilder:Next(),
+		ANALOG_MOVE_UP       = enumBuilder:Next(),
+		ANALOG_TURN_LEFT     = enumBuilder:Next(),
+		ANALOG_CONTROL_COUNT = enumBuilder:Next(),
+	}
+    local analogControlEnum = STATIC.ANALOG_CONTROL
+
 --#endregion
 
 --#region Imports
+
+	--- @type ClassUtils
+	local classUtils = CNC.Import( "sh_class-utils.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -55,14 +74,15 @@ end
 
 
 --- @class ControlInstance
---- @field OneTimeBooleanBits any
---- @field PendingOneTimeBooleanBits any
---- @field ContinuousBooleanBits any
---- @field PendingContinuousBooleanBits any
---- @field ] any
+--- @field OneTimeBooleanBits integer
+--- @field PendingOneTimeBooleanBits integer
+--- @field ContinuousBooleanBits integer
+--- @field PendingContinuousBooleanBits integer
+--- @field AnalogValues number[]
 
 function INSTANCE:Renegade_Control()
-	typecheck.NotImplementedError()
+	self.PendingOneTimeBooleanBits = 0
+	self:ClearControl()
 end
 
 function INSTANCE:_Renegade_Control()
@@ -78,7 +98,9 @@ function INSTANCE:Load()
 end
 
 function INSTANCE:ClearControl()
-	typecheck.NotImplementedError()
+	self.OneTimeBooleanBits = 0
+	self.ContinuousBooleanBits = 0
+	self.AnalogValues = classUtils.InitializeValueArray( 0, analogControlEnum.ANALOG_CONTROL_COUNT )
 end
 
 function INSTANCE:ClearBoolean()
@@ -94,7 +116,7 @@ function INSTANCE:GetBoolean()
 end
 
 function INSTANCE:ClearOneTimeBoolean()
-	typecheck.NotImplementedError()
+    self.OneTimeBooleanBits = 0
 end
 
 function INSTANCE:GetOneTimeBooleanBits()

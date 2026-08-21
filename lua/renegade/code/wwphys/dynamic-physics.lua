@@ -103,7 +103,11 @@ function INSTANCE:SetModel( model )
 end
 
 function INSTANCE:UpdateVisibilityStatus()
-	typecheck.NotImplementedError()
+	-- "Invalidate our cached vis object ID"
+	self.DirtyVisibilityObjectId = true
+
+	-- "Invalidate the lighting cache.  Next time this object is rendered the cache will be updated."
+	self:InvalidateStaticLightingCache()
 end
 
 --- @return integer

@@ -513,8 +513,9 @@ end
         self.Flags = bit.bor( self.Flags, group )
     end
 
+    --- @return integer
     function INSTANCE:GetCollisionGroup()
-        typecheck.NotImplementedError()
+        return bit.band( self.Flags, STATIC.COLLISION_MASK )
     end
 end
 
@@ -745,94 +746,94 @@ end
 
     --- @return MoveablePhysicsInstance?
     function INSTANCE:AsMoveablePhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     --- @return Physics3Instance?
     function INSTANCE:AsPhysics3()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     --- @return HumanPhysicsInstance?
     function INSTANCE:AsHumanPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     --- @return RigidBodyInstance?
     function INSTANCE:AsRigidBody()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsVehiclePhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsMotorVehicle()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsWheeledVehicle()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsMotorcycle()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsTrackedVehicle()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsVtolVehicle()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsStaticPhyicss()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsStaticAnimationPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsElevatorPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsDamageableStaticPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsDoorPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsDecorationPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsTimedDecorationPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsDynamicAnimationPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsLightPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsRenderObjectPhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsProjectile()
-        typecheck.NotImplementedError()
+        return nil
     end
 
     function INSTANCE:AsAccessiblePhysics()
-        typecheck.NotImplementedError()
+        return nil
     end
 end
 

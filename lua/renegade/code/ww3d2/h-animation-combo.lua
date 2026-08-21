@@ -55,7 +55,7 @@ end
 
 
 --- @class HAnimationComboInstance
---- @field HAnimationComboData any
+--- @field HAnimationComboData HAnimationComboDataInstance[]
 
 --- @param animationCount integer?
 function INSTANCE:Renegade_HAnimationCombo( animationCount )
@@ -74,15 +74,21 @@ function INSTANCE:Renegade_HAnimationCombo( animationCount )
 end
 
 function INSTANCE:_Renegade_HAnimationCombo()
-	typecheck.NotImplementedError()
+	self:Reset()
 end
 
 function INSTANCE:Clear()
-	typecheck.NotImplementedError()
+	local numAnimations = #self.HAnimationComboData
+	for i = numAnimations, 1, -1  do
+		local data = self.HAnimationComboData[i]
+		if data and not data:IsShared() then
+			data:Clear()
+		end
+	end
 end
 
 function INSTANCE:Reset()
-	typecheck.NotImplementedError()
+	self.HAnimationComboData = {}
 end
 
 function INSTANCE:NormalizeWeights()
@@ -93,60 +99,119 @@ function INSTANCE:GetNumAnims()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetMotion()
-	typecheck.NotImplementedError()
+--- @param index integer
+--- @param motion HAnimationInstance
+function INSTANCE:SetMotion( index, motion )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+	data:SetHAnimation( motion )
 end
 
-function INSTANCE:GetMotion()
-	typecheck.NotImplementedError()
+--- @param index integer
+--- @return HAnimationInstance?
+function INSTANCE:GetMotion( index )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	local anim = data:PeekHAnimation()
+	return anim
 end
 
-function INSTANCE:PeekMotion()
-	typecheck.NotImplementedError()
+--- @param index integer
+--- @return HAnimationInstance?
+function INSTANCE:PeekMotion( index )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	local anim = data:PeekHAnimation()
+	return anim
 end
 
-function INSTANCE:SetFrame()
-	typecheck.NotImplementedError()
+--- @param index integer
+--- @param frame number 
+function INSTANCE:SetFrame( index, frame )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	data:SetFrame( frame )
 end
 
-function INSTANCE:SetPrevFrame()
-	typecheck.NotImplementedError()
+--- @param index integer
+--- @param frame number 
+function INSTANCE:SetPreviousFrame( index, frame )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	data:SetPreviousFrame( frame )
 end
 
-function INSTANCE:GetFrame()
-	typecheck.NotImplementedError()
+--- @param index integer
+--- @return number
+function INSTANCE:GetFrame( index )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	return data:GetFrame()
 end
 
-function INSTANCE:GetPrevFrame()
-	typecheck.NotImplementedError()
+--- @return number
+function INSTANCE:GetPreviousFrame( index )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	return data:GetPreviousFrame()
 end
 
-function INSTANCE:SetWeight()
-	typecheck.NotImplementedError()
+--- @param index integer
+--- @param weight number
+function INSTANCE:SetWeight( index, weight )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	data:SetWeight( weight )
 end
 
-function INSTANCE:GetWeight()
-	typecheck.NotImplementedError()
+--- @param index integer
+function INSTANCE:GetWeight( index )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	return data:GetWeight()
 end
 
-function INSTANCE:SetPivotWeightMap()
-	typecheck.NotImplementedError()
+--- @param index integer
+--- @param map number[]
+function INSTANCE:SetPivotWeightMap( index, map )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	data:SetPivotMap( map )
 end
 
-function INSTANCE:GetPivotWeightMap()
-	typecheck.NotImplementedError()
+--- @param index integer
+function INSTANCE:GetPivotWeightMap( index )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	return data:GetPivotMap()
 end
 
-function INSTANCE:PeekPivotWeightMap()
-	typecheck.NotImplementedError()
+--- @param index integer
+function INSTANCE:PeekPivotWeightMap( index )
+	local data = self.HAnimationComboData[index]
+	assert( data )
+
+	return data:PeekPivotMap()
 end
 
-function INSTANCE:AppendAnimationComboData()
-	typecheck.NotImplementedError()
+--- @param data HAnimationComboDataInstance
+function INSTANCE:AppendAnimationComboData( data )
+	self.HAnimationComboData[#self.HAnimationComboData + 1] = data
 end
 
-function INSTANCE:RemoveAnimationComboData()
-	typecheck.NotImplementedError()
+--- @param data HAnimationComboDataInstance
+function INSTANCE:RemoveAnimationComboData( data )
+	table.RemoveByValue( self.HAnimationComboData, data )
 end
 
 function INSTANCE:PeekAnimationComboData()

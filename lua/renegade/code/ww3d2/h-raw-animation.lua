@@ -85,11 +85,16 @@ end
 --- @field NodeMotion NodeMotionStruct[]
 
 function INSTANCE:Renegade_HRawAnimation()
-	typecheck.NotImplementedError()
+	self.NumFrames = 0
+	self.NumNodes = 0
+	self.FrameRate = 0
+	self.NodeMotion = nil
+	self.Name = ""
+	self.HierarchyName = ""
 end
 
 function INSTANCE:_Renegade_HRawAnimation()
-	typecheck.NotImplementedError()
+	self:Free()
 end
 
 --- "Loads hierarchy animation from a file"
@@ -242,8 +247,11 @@ function INSTANCE:HasVisibility()
 	typecheck.NotImplementedError()
 end
 
+--- "De-allocates all memory in use"
 function INSTANCE:Free()
-	typecheck.NotImplementedError()
+	if self.NodeMotion ~= nil then
+		self.NodeMotion = nil
+	end
 end
 
 --- @param cload ChunkLoadInstance

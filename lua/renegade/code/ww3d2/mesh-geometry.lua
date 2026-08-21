@@ -120,7 +120,7 @@ end
 --- @field Polygons Vector[]
 --- @field Vertex Vector[]
 --- @field VertexNorm Vector[]
---- @field PlaneEq Vector4[]
+--- @field PlaneEq Vector4Instance[]
 --- @field VertexShadeIdx integer[]
 --- @field VertexBoneLink integer[]
 --- @field PolygonSurfaceType integer[]
@@ -291,17 +291,24 @@ end
 		return self.Vertex
 	end
 
+	--- "Validates and returns the vertex normal array"
 	--- @return Vector[]
 	function INSTANCE:GetVertexNormalArray()
-		typecheck.NotImplementedError()
+		if self:GetFlag( meshGeometryFlagsTypeEnum.DIRTY_VNORMALS ) then
+			self:ComputeVertexNormals( self:GetVertexNormals() )
+		end
+
+		return self:GetVertexNormals()
 	end
 
+	--- "Validates and returns the array of plane equations"
 	--- @param create boolean? [Default: true]
 	--- @return Vector4Instance[]
 	function INSTANCE:GetPlaneArray( create )
 		create = ( ( create == nil ) and true or create )
-
-		typecheck.NotImplementedError()
+		local planes = self:GetPlanes( create )
+		self:ComputePlaneEquations( planes )
+		return planes
 	end
 
 	--- @param create boolean? [Default: true]
@@ -586,16 +593,126 @@ end
 
 --[[ Recompute Dirty Normals and Volumes ]] do
 
+	--- "Recalculates the plane equations"
+	--- Note: This is an in-place update of the input table
 	--- @protected
-	--- @param array Vector4[]
+	--- @param array Vector4Instance[]
 	function INSTANCE:ComputePlaneEquations( array )
-		typecheck.NotImplementedError()
+		local polygons = self.Polygons
+		local vertices = self.Vertex
+
+		for polygonIndex = 1, self.PolygonCount do
+			local polygonVertexIndices = polygons[polygonIndex]
+
+			local p0 = vertices[polygonVertexIndices[1] + 1]
+			local a  = vertices[polygonVertexIndices[2] + 1] - p0
+			local b  = vertices[polygonVertexIndices[3] + 1] - p0
+			local normal = a:Cross( b )
+			normal:Normalize()
+
+			array[polygonIndex]:Set(
+				normal.x,
+				normal.y,
+				normal.z,
+				-( p0:Dot( normal ) )
+			)
+		end
+
+		self:SetFlag( meshGeometryFlagsTypeEnum.DIRTY_PLANES, false )
 	end
 
+	--- "Recompute the vertex normals"  
+	--- Note: This is an in-place update of the input table
 	--- @protected
-	--- @param array Vector[]
-	function INSTANCE:ComputeVertexNormals( array )
-		typecheck.NotImplementedError()
+	--- @param vertexNormals Vector[]
+	function INSTANCE:ComputeVertexNormals( vertexNormals )
+		if self.PolygonCount == 0 or self.VertexCount == 0 then
+			return
+		end
+
+		local planes = self:GetPlaneArray()
+		local polygonVertexIndices = self.Polygons
+		local shadeIndex = self:GetVertexShadeIndexArray()
+
+		-- "  
+		-- Two cases, with or without vertex shade indices.  The vertex shade indices
+		-- implicitly contain the smoothing groups information from the original mesh.
+		-- In their absence, the entire mesh is smoothed.
+		-- "  
+		if not shadeIndex then
+			for vertexIndex = 1, self.VertexCount do
+				if vertexNormals[vertexIndex] == nil then
+					vertexNormals[vertexIndex] = Vector( 0, 0, 0 )
+				else
+					vertexNormals[vertexIndex]:SetUnpacked( 0, 0, 0 )
+				end
+			end
+
+			for polygonIndex = 1, self.PolygonCount do
+				local xPoly = polygonVertexIndices[polygonIndex].x
+				vertexNormals[xPoly].x = vertexNormals[xPoly].x + planes[polygonIndex].x
+				vertexNormals[xPoly].y = vertexNormals[xPoly].y + planes[polygonIndex].y
+				vertexNormals[xPoly].z = vertexNormals[xPoly].z + planes[polygonIndex].z
+
+				local yPoly = polygonVertexIndices[polygonIndex].y
+				vertexNormals[yPoly].x = vertexNormals[yPoly].x + planes[polygonIndex].x
+				vertexNormals[yPoly].y = vertexNormals[yPoly].y + planes[polygonIndex].y
+				vertexNormals[yPoly].z = vertexNormals[yPoly].z + planes[polygonIndex].z
+
+				local zPoly = polygonVertexIndices[polygonIndex].z
+				vertexNormals[zPoly].x = vertexNormals[zPoly].x + planes[polygonIndex].x
+				vertexNormals[zPoly].y = vertexNormals[zPoly].y + planes[polygonIndex].y
+				vertexNormals[zPoly].z = vertexNormals[zPoly].z + planes[polygonIndex].z
+			end
+		else
+			for vertexIndex = 1, self.VertexCount do
+				if vertexNormals[vertexIndex] == nil then
+					vertexNormals[vertexIndex] = Vector( 0, 0, 0 )
+				else
+					vertexNormals[vertexIndex]:SetUnpacked( 0, 0, 0 )
+				end
+			end
+
+			for polygonIndex = 1, self.PolygonCount do
+				local polygonIndices = polygonVertexIndices[polygonIndex]
+
+				local vertex1ShadeIndex = shadeIndex[polygonIndices.x + 1] + 1
+				local vertex1 = vertexNormals[ vertex1ShadeIndex ]
+				vertex1.x = vertex1.x + planes[polygonIndex].x
+				vertex1.y = vertex1.y + planes[polygonIndex].y
+				vertex1.z = vertex1.z + planes[polygonIndex].z
+
+				local vertex2ShadeIndex = shadeIndex[polygonIndices.y + 1] + 1
+				local vertex2 = vertexNormals[vertex2ShadeIndex]
+				vertex2.x = vertex2.x + planes[polygonIndex].x
+				vertex2.y = vertex2.y + planes[polygonIndex].y
+				vertex2.z = vertex2.z + planes[polygonIndex].z
+
+				local vertex3ShadeIndex = shadeIndex[polygonIndices.z + 1] + 1
+				local vertex3 = vertexNormals[vertex3ShadeIndex]
+				vertex3.x = vertex3.x + planes[polygonIndex].x
+				vertex3.y = vertex3.y + planes[polygonIndex].y
+				vertex3.z = vertex3.z + planes[polygonIndex].z
+			end
+
+			-- "  
+			-- Normalize the 'master' vertex normals and copy the smoothed ones  
+			-- (Note: we always encounter the 'master' ones first)  
+			-- "  
+			for vertexIndex = 1, self.VertexCount do
+				if shadeIndex[vertexIndex] == vertexIndex then
+					vertexNormals[vertexIndex]:Normalize()
+				else
+					vertexNormals[vertexIndex] = vertexNormals[shadeIndex[vertexIndex] + 1]
+				end
+			end
+		end
+
+		for _, vertex in pairs( vertexNormals ) do
+			vertex:Normalize()
+		end
+
+		self:SetFlag( meshGeometryFlagsTypeEnum.DIRTY_VNORMALS, false )
 	end
 
 	--- @protected

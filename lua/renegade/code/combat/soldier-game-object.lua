@@ -51,12 +51,29 @@ INSTANCE.IsSoldierGameObject = true
 
 	--- @type HumanStateClass
 	local humanStateClass = CNC.Import( "code/combat/human-state.lua" )
+
+	--- @type CombatManagerClass
+	local combatManagerClass = CNC.Import( "code/combat/combat-manager.lua" )
+
+	--- @type UnitCoordinationZoneManagerClass
+	local unitCoordinationZoneManagerClass = CNC.Import( "code/combat/unit-coordination-zone-manager.lua" )
+
+	--- @type PhysicalGameObjectClass
+	local physicalGameObjectClass = CNC.Import( "code/combat/physical-game-object.lua" )
+
+	--- @type SoldierObserverClass
+	local soldierObserverClass = CNC.Import( "code/combat/soldier-observer.lua" )
+
+	--- @type UnitConversionLib
+	local unitConversionLib = CNC.Import( "sh_unit-conversion.lua" )
 --#endregion
 
 --#region Imported Enums
 
 	local specialDamageTypeEnum = armorWarheadManagerClass.SPECIAL_DAMAGE_TYPE
 	local soldierAiStateEnum = actionParamsStructClass.SOLDIER_AI_STATE
+	local collisionGroupTypeEnum = physicalGameObjectClass.COLLISION_GROUP_TYPE
+	local humanStateTypeEnum = humanAnimationControlClass.HUMAN_STATE_TYPE
 --#endregion
 
 
@@ -65,8 +82,18 @@ INSTANCE.IsSoldierGameObject = true
     --- @class SoldierGameObjectClass
 	--- @field DisplayDebugBoxForGhostCollision boolean
 	--- @field SoldierGameObjectPersistFactory SimplePersistFactoryInstance
+	--- @field ShakeDelay number
+	--- @field CryDelay number
+	--- @field HeadBone integer
+	--- @field NeckBone integer
 
 	STATIC.DisplayDebugBoxForGhostCollision = false
+
+	STATIC.ShakeDelay = 0
+	STATIC.CryDelay = 0
+
+	STATIC.HeadBone = -1
+	STATIC.NeckBone = -1
 
     --- Creates a new SoldierGameObjectInstance
     --- @return SoldierGameObjectInstance
@@ -86,9 +113,6 @@ INSTANCE.IsSoldierGameObject = true
     typecheck.RegisterType( "SoldierGameObjectInstance", STATIC.IsSoldierGameObject )
 
 	function STATIC.StaticConstructor()
-
-		section.Warn( "Soldier Static Constructor Ran!" )
-
 		STATIC.SoldierGameObjectPersistFactory = simplePersistFactoryClass.New( STATIC, combatChunkIdClass.CHUNKID_GAME_OBJECT_SOLDIER )
 	end
 
@@ -133,7 +157,7 @@ end
 --- @field SpecialDamageDamager GameObjectInstance
 --- @field SpecialDamageEffect TransitionEffectInstance
 --- @field HealingEffect TransitionEffectInstance
---- @field FacingObject GameObjectInstance
+--- @field FacingObject GameObjectInstance?
 --- @field FacingAllowBodyTurn boolean
 --- @field InnateEnableBits integer
 --- @field InnateObserver SoldierObserverInstance
@@ -160,7 +184,7 @@ function INSTANCE:Renegade_SoldierGameObject()
 	self.WeaponRenderModel = nil
 	self.BackWeaponRenderModel = nil
 	self.BackFlagRenderModel = nil
-	self.WeaponAnimControl = nil
+	self.WeaponAnimationControl = nil
 	self.TransitionCompletionData = nil
 	self.Vehicle = nil
 	self.LegFacing = 0
@@ -222,7 +246,7 @@ end
 
 --- @param definition SoldierGameObjectDefinitionInstance
 function INSTANCE:CopySettings( definition )
-	self.HumanState:Init( INSTANCE.PeekHumanPhysics( self ) )
+	self.HumanState:Init( self:PeekHumanPhysics() )
 	-- "Must set the anim control after the phys object"
 	self.HumanState:SetAnimationControl( INSTANCE.GetAnimationControl( self ) --[[@as HumanAnimationControlInstance]] )
 
@@ -236,6 +260,20 @@ function INSTANCE:CopySettings( definition )
 
 	INSTANCE.AdjustSkeleton( self, definition.SkeletonHeight, definition.SkeletonWidth )
 
+	-- "All characters force their heads and hands to use the same LOD level as their body."
+	local model = self:PeekHumanPhysics():PeekModel()
+	if model ~= nil then
+		model:SetSubObjectsMatchLod( true )
+	end
+
+	if (
+		self.InnateObserver == nil
+		and INSTANCE.GetDefinition( self ).UseInnateBehavior
+		and INSTANCE.IsControlledByMe( self ) == false
+	) then
+		self.InnateObserver = soldierObserverClass.New()
+		INSTANCE.InsertObserver( self, self.InnateObserver )
+	end
 end
 
 --- @param definition SoldierGameObjectDefinitionInstance
@@ -267,17 +305,110 @@ end
 
 --- @return HumanPhysicsInstance?
 function INSTANCE:PeekHumanPhysics()
-	section.Print( "Spaghetto: '", INSTANCE.PeekPhysicalObject( self ), "'" )
-
-	return INSTANCE.PeekPhysicalObject( self ):AsHumanPhysics()
+	return self:PeekPhysicalObject():AsHumanPhysics()
 end
 
 function INSTANCE:Think()
-	typecheck.NotImplementedError()
+	do
+		if self == combatManagerClass.GetTheStar() then
+			local frameSeconds = FrameTime()
+			STATIC.ShakeDelay = STATIC.ShakeDelay - frameSeconds
+			STATIC.CryDelay = STATIC.CryDelay - frameSeconds
+		end
+
+		-- "  
+		-- Simply check to see if this soldier has entered a coordination zone (which bound
+		-- the entrances/exits of ladders and elevators).  If so, then disable collision
+		-- between them and all other soldiers.
+		-- "  
+		local position
+		--[[ Coordination Zone ]] do
+			position = INSTANCE.GetPosition( self )
+			if unitCoordinationZoneManagerClass.IsUnitInZone( position ) then
+				INSTANCE.EnableGhostCollision( self, true )
+			elseif INSTANCE.IsSafeToDisableGhostCollision( self, position ) then
+				INSTANCE.EnableGhostCollision( self, false )
+			end
+		end
+
+		-- "Display a debug box to show the ghosted collision as necessary"
+		-- Omitted code here
+
+		-- "Stats"
+		-- Omitted code here
+
+		-- "Update the soldier's facing"
+		do
+			INSTANCE.UpdateLockedFacing( self )
+		end
+
+		-- "[HandleLegs] moved form [ApplyControl] because clients don't run it for server objects"
+		do
+			-- Omitted handling legs
+			-- INSTANCE.HandleLegs( self )
+		end
+	end
+
+	do
+		-- "Perform smart object thinking (apply controls)"
+		smartGameObjectClass.Instance.Think( self )
+	end
+
+	do
+		if combatManagerClass.IAmServer() then
+			-- "Handle C4 in a special way.  When C4 is fired, the human plays a crouching animation, and starts a c4 placement timer."
+			-- Omitted C4 handling
+		end
+
+		-- Omitted a bunch of code here
+	end
 end
 
 function INSTANCE:PostThink()
-	typecheck.NotImplementedError()
+	if self:GetState() == humanStateTypeEnum.IN_VEHICLE then
+		smartGameObjectClass.Instance.PostThink( self )
+		return
+	end
+
+	-- --[[ Soldier PostThink ]] do
+
+	-- 	self.HumanState:PostThink()
+
+	-- 	local updateWeapon = false
+	-- 	if self.WeaponChanged then
+	-- 		self.WeaponChanged = false
+	-- 		self:UpdateBackGun()
+	-- 		updateWeapon = true
+	-- 	end
+
+	-- 	if ( self:GetWeapon() ~= nil ) and ( self:GetWeapon():IsModelUpdateNeeded() ) then
+	-- 		updateWeapon = true
+	-- 		self:GetWeapon():ResetModelUpdate() -- "Reset model updated needed"
+	-- 	end
+
+	-- 	if updateWeapon then
+	-- 		if self:GetWeapon() ~= nil then
+	-- 			self:SetWeaponModel( self:GetWeapon():GetModelName() )
+	-- 		else
+	-- 			self:SetWeaponModel( nil )
+	-- 		end
+	-- 	end
+
+	-- 	if self.WeaponAnimationControl then
+	-- 		self.WeaponAnimationControl:Update( FrameTime() ) -- "Update the animation control"
+	-- 	end
+
+	-- 	self:HandleHeadLook()
+
+	-- 	if self:GetWeapon() ~= nil and self:GetState() == humanStateTypeEnum.ON_FIRE then
+	-- 		self:GetWeapon():SetPrimaryTriggered( false )
+	-- 		self:GetWeapon():SetSecondaryTriggered( false )
+	-- 	end
+	-- end
+
+	smartGameObjectClass.Instance.PostThink( self )
+
+	-- self:UpdateHealingEffect()
 end
 
 --- @param controlOwner integer
@@ -327,12 +458,18 @@ function INSTANCE:SetTargeting()
 	typecheck.NotImplementedError()
 end
 
+--- @return number
 function INSTANCE:GetWeaponHeight()
-	typecheck.NotImplementedError()
+	local height = 1.62 -- "Set to be at about eye level"
+	if self:IsCrouched() then
+		height = height - 0.56
+	end
+	return height -- "Verticle offset, move to weapon"
 end
 
+--- @return number
 function INSTANCE:GetWeaponLength()
-	typecheck.NotImplementedError()
+	return 0.8 -- "Forward offset, move to weapon"
 end
 
 function INSTANCE:GetMuzzle()
@@ -343,7 +480,15 @@ function INSTANCE:DetonateC4()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetWeaponModel()
+--- @param modelName string
+function INSTANCE:SetWeaponModel( modelName )
+	if self.WeaponRenderModel ~= nil then -- "Remove old gun model"
+		if self:PeekModel() ~= nil then
+			self:PeekModel():RemoveSubObject( self.WeaponRenderModel ) -- "Clean the bone"
+		end
+	end
+		
+	
 	typecheck.NotImplementedError()
 end
 
@@ -601,45 +746,81 @@ function INSTANCE:AdjustSkeleton( height, width )
 	end
 end
 
-function INSTANCE:LookAt()
-	typecheck.NotImplementedError()
+
+--[[ Head Looking ]] do
+
+	--- @param pos Vector
+	--- @param time number
+	function INSTANCE:LookAt( pos, time )
+		self.HeadLookTarget = pos
+		self.HeadLookDuration = time
+		self.HeadLookAngle = Vector( 0, 0, 0 )
+	end
+
+	--- @param pos Vector
+	function INSTANCE:UpdateLookAt( pos )
+		self.HeadLookTarget = pos
+	end
+
+	function INSTANCE:CancelLookAt()
+		self.HeadLookDuration = 0.001
+	end
+
+	function INSTANCE:LookRandom()
+		typecheck.NotImplementedError()
+	end
+
+	--- @return boolean
+	function INSTANCE:IsLooking()
+		return ( self.HeadLookDuration > 0 )
+	end
+
+	function INSTANCE:GetLookTransform()
+		typecheck.NotImplementedError()
+	end
 end
 
-function INSTANCE:UpdateLookAt()
-	typecheck.NotImplementedError()
+
+--[[ Head and Facing ]] do
+
+	--- @param gameObject PhysicalGameObjectInstance?
+	--- @param turnBody boolean
+	function INSTANCE:LockFacing( gameObject, turnBody )
+		self.FacingObject = gameObject
+		self.FacingAllowBodyTurn = turnBody
+
+		-- "Stop facing if there's nothing to look at"
+		if gameObject == nil then
+			INSTANCE.CancelLookAt( self )
+		end
+	end
 end
 
-function INSTANCE:CancelLookAt()
-	typecheck.NotImplementedError()
+
+--[[ Innate Disabling ]] do
+
+	--- @param bits integer? [Default: 0xFFFFFFFF]
+	function INSTANCE:InnateEnable( bits )
+		if bits == nil then bits = 0xFFFFFFFF end
+
+		self.InnateEnableBits = bit.bor( self.InnateEnableBits, bits )
+	end
+
+	--- @param bits integer? [Default: 0xFFFFFFFF]
+	function INSTANCE:InnateDisable( bits )
+		if bits == nil then bits = 0xFFFFFFFF end
+
+		self.InnateEnableBits = bit.band( self.InnateEnableBits, bits )
+	end
+
+	--- @param bits integer? [Default: 0xFFFFFFFF]
+	function INSTANCE:IsInnateEnabled( bits )
+		if bits == nil then bits = 0xFFFFFFFF end
+
+		return bit.band( self.InnateEnableBits, bits ) ~= 0
+	end
 end
 
-function INSTANCE:LookRandom()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:IsLooking()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:GetLookTransform()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:LockFacing()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:InnateEnable()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:InnateDisable()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:IsInnateEnabled()
-	typecheck.NotImplementedError()
-end
 
 function INSTANCE:SayDialogue()
 	typecheck.NotImplementedError()
@@ -657,17 +838,53 @@ function INSTANCE:PrepareSpeechFramework()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:EnableGhostCollision()
-	typecheck.NotImplementedError()
+--[[ "Ghost" Support ]] do
+	-- "  
+	-- 'Ghosts' are soldier's who have their collision turned off so they can walk through other soldiers
+	-- "  
+
+	--- @param onOff boolean
+	function INSTANCE:EnableGhostCollision( onOff )
+		local isUsingGhostCollision = INSTANCE.PeekPhysicalObject( self ):GetCollisionGroup() == collisionGroupTypeEnum.SOLDIER_GHOST_COLLISION_GROUP
+		if onOff == isUsingGhostCollision then
+			return
+		end
+
+		-- "Change the collision group as necessary"
+		if onOff then
+			INSTANCE.PeekPhysicalObject( self ):SetCollisionGroup( collisionGroupTypeEnum.SOLDIER_GHOST_COLLISION_GROUP )
+		else
+			INSTANCE.PeekPhysicalObject( self ):SetCollisionGroup( collisionGroupTypeEnum.SOLDIER_COLLISION_GROUP )
+		end
+	end
+
+	function INSTANCE:IsSoldierBlocked()
+		typecheck.NotImplementedError()
+	end
+
+	--- @param currentPos Vector
+	function INSTANCE:IsSafeToDisableGhostCollision( currentPos )
+		local personalSpaceBoxSize = Vector( 1.5, 1.5, 1 ) * unitConversionLib.MetersToSource
+		local humanHalfHeight = 1.0 * unitConversionLib.MetersToSource
+
+		-- "Build a box that represents the 'personal' space around the soldier"
+		local boxPos = currentPos + Vector( 0, 0, humanHalfHeight )
+		-- local box = aABoxClass.New( boxPos, personalSpaceBoxSize )
+
+		-- Omitting most of this function as it relies on the physics scene system and
+		-- I don't currently know if I want to implement that or work around it.
+		-- For now, I'm going to try to do a hacky little replacement
+		local traceResult = util.TraceHull( {
+			start  = boxPos,
+			endpos = boxPos,
+			mins   = -personalSpaceBoxSize / 2,
+			maxs   =  personalSpaceBoxSize / 2,
+			filter = self:GetConnectedEntity()
+		} )
+		return traceResult.Hit
+	end
 end
 
-function INSTANCE:IsSoldierBlocked()
-	typecheck.NotImplementedError()
-end
-
-function INSTANCE:IsSafeToDisableGhostCollision()
-	typecheck.NotImplementedError()
-end
 
 function INSTANCE:GetFacialAnimation()
 	typecheck.NotImplementedError()
@@ -749,8 +966,9 @@ function INSTANCE:GetStealthFadeDistance()
 	typecheck.NotImplementedError()
 end
 
+--- @return HumanStateType
 function INSTANCE:GetState()
-	typecheck.NotImplementedError()
+	return self.HumanState:GetState()
 end
 
 function INSTANCE:GetSubState()
@@ -758,7 +976,24 @@ function INSTANCE:GetSubState()
 end
 
 function INSTANCE:UpdateLockedFacing()
-	typecheck.NotImplementedError()
+	if self.FacingObject ~= nil then
+		-- "Get the position of the object we're 'looking' at."
+		local pos = self.FacingObject:GetPosition()
+
+		-- "If the object is a soldier, then look at his head"
+		if self.FacingObject:AsPhysicalGameObject():AsSoldierGameObject() ~= nil then
+			local SOLDIER_HEIGHT = 1.7
+			pos.z = pos.z + SOLDIER_HEIGHT
+		end
+
+		-- "Look at the object"
+		self:LookAt( pos, 100.0 )
+
+		-- "If we can turn to face the object, do so..."
+		if self.FacingAllowBodyTurn then
+			self:InternalSetTargeting( pos, false )
+		end
+	end
 end
 
 function INSTANCE:UpdateBackGun()
@@ -777,8 +1012,33 @@ function INSTANCE:GetOuchType()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:InternalSetTargeting()
-	typecheck.NotImplementedError()
+--- @param targetPos Vector
+--- @param doTilt boolean
+--- @return boolean
+function INSTANCE:InternalSetTargeting( targetPos, doTilt )
+	-- Omitted skeleton slider demo
+
+	smartGameObjectClass.Instance.SetTargeting( self, targetPos, doTilt )
+
+	if (   self:GetState() == humanStateTypeEnum.DEATH
+		or self:GetState() == humanStateTypeEnum.DESTROY
+		or self:GetState() == humanStateTypeEnum.TRANSITION
+		or self:GetState() == humanStateTypeEnum.LADDER
+	) then
+		return false
+	end
+
+	if self:GetState() == humanStateTypeEnum.IN_VEHICLE then
+		if self.Vehicle ~= nil then
+			if self.Vehicle:GetDriverIsGunner() then
+
+			else
+
+			end
+		end
+		return false
+	end
+
 end
 
 function INSTANCE:SetSpecialDamageMode()

@@ -45,12 +45,25 @@ INSTANCE.IsMesh = true
 
 	--- @type AABoxClass
 	local aABoxClass = CNC.Import( "code/wwmath/aabox.lua" )
+
+	--- @type WW3dClass
+	local wW3dClass = CNC.Import( "code/ww3d2/ww3d.lua" )
+
+	--- @type W3dFileIds
+	local w3dFileIds = CNC.Import( "code/ww3d2/w3d-file.lua" )
+
+	--- @type CollisionMathClass
+	local collisionMathClass = CNC.Import( "code/wwmath/collision-math.lua" )
+
+	--- @type UnitConversionLib
+	local unitConversionLib = CNC.Import( "sh_unit-conversion.lua" )
 --#endregion
 
 --#region Imported Enums
 
-	local flagsTypeEnum = vertexMaterialClass.FLAGS_TYPE
 	local wW3dErrorTypeEnum = wW3dErrorTypes.WW3D_ERROR_TYPE
+	local meshGeometryFlagsTypeEnum = meshGeometryClass.MESH_GEOMETRY_FLAGS_TYPE
+	local overlapTypeEnum = collisionMathClass.OVERLAP_TYPE
 --#endregion
 
 --[[ Static Functions and Variables ]] do
@@ -131,7 +144,7 @@ function INSTANCE:ClassId()
     typecheck.NotImplementedError()
 end
 
---- @return string
+--- @return string?
 function INSTANCE:GetName()
     return self.Model:GetName()
 end
@@ -153,8 +166,38 @@ function INSTANCE:GetNumPolys()
     end
 end
 
-function INSTANCE:Render()
-    typecheck.NotImplementedError()
+--- "Renders this mesh"
+--- @param renderInfo RenderInfoInstance
+function INSTANCE:Render( renderInfo )
+    if self:IsNotHiddenAtAll() == false then
+        return
+    end
+
+    -- "If static sort lists are enabled and this mesh has a sort level, put it on the list instead of rendering it."
+    local sortLevel = self.Model:GetSortLevel()
+
+    if wW3dClass.AreStaticSortListsEnabled() and sortLevel ~= w3dFileIds.SORT_LEVEL_NONE then
+        wW3dClass.AddToStaticSortList( self, sortLevel )
+
+        -- "Plug in lighting so that when this mesh gets later"
+        self:SetLightingEnvironment( renderInfo.LightEnvironment )
+    else
+
+        -- "Plug in the lighting environment unless we arrived here as part of the static sorting system being flushed"
+        if wW3dClass.AreStaticSortListsEnabled() then
+            self:SetLightingEnvironment( renderInfo.LightEnvironment )
+        end
+
+        local frustum = renderInfo.Camera:GetFrustum()
+
+        if(
+            tobool( self.Model:GetFlag( meshGeometryFlagsTypeEnum.SKIN ) )
+            or collisionMathClass.OverlapTest( frustum, self:GetBoundingBox() ) ~= overlapTypeEnum.OUTSIDE
+        ) then
+            -- "If this mesh model has never been rendered, we need to generate the DX8 datastructures"
+            typecheck.NotImplementedError()
+        end
+    end
 end
 
 function INSTANCE:RenderMaterialPass()
@@ -294,8 +337,9 @@ function INSTANCE:GetDeformedVertices()
     typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetLightingEnvironment()
-    typecheck.NotImplementedError()
+--- @param lightEnvironment LightEnvironmentInstance
+function INSTANCE:SetLightingEnvironment( lightEnvironment )
+    self.LightEnvironment = lightEnvironment
 end
 
 function INSTANCE:GetLightingEnvironment()

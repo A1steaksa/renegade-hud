@@ -356,8 +356,11 @@ function INSTANCE:SetTransform( matrix )
 	self:SetSubObjectTransformsDirty( true )
 end
 
-function INSTANCE:SetPosition()
-	typecheck.NotImplementedError()
+--- "Sets the position"
+--- @param pos Vector
+function INSTANCE:SetPosition( pos )
+	animatable3dObjectClass.Instance.SetPosition( self, pos )
+	self:SetSubObjectTransformsDirty( true )
 end
 
 function INSTANCE:NotifyAdded()
@@ -402,12 +405,53 @@ function INSTANCE:RemoveSubObject()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:GetNumSubObjectsOnBone()
-	typecheck.NotImplementedError()
+--- "Returns the number of objects on the given bone"
+--- @param boneIndex integer
+--- @return integer
+function INSTANCE:GetNumSubObjectsOnBone( boneIndex )
+	local count = 0
+	for lod = 1, self.LodCount do
+		for model = 1, #self.Lod[lod] do
+			if self.Lod[lod][model].BoneIndex == boneIndex then
+				count = count + 1
+			end
+		end
+	end
+
+	for model = 1, #self.AdditionalModels do
+		if self.AdditionalModels[model].BoneIndex == boneIndex then
+			count = count + 1
+		end
+	end
+
+	return count
 end
 
-function INSTANCE:GetSubObjectOnBone()
-	typecheck.NotImplementedError()
+--- "Returns obj on the given bone"
+--- @param index integer
+--- @param boneIndex integer
+--- @return RenderObjectInstance?
+function INSTANCE:GetSubObjectOnBone( index, boneIndex )
+	local count = 0
+	for lod = 1, self.LodCount do
+		for model = 1, #self.Lod[lod] do
+			if self.Lod[lod][model].BoneIndex == boneIndex then
+				if count == index then
+					return self.Lod[lod][model].Model
+				end
+				count = count + 1
+			end
+		end
+	end
+	for model = 1, #self.AdditionalModels do
+		if self.AdditionalModels[model].BoneIndex == boneIndex then
+			if count == index then
+				return self.AdditionalModels[model].Model
+			end
+			count = count + 1
+		end
+	end
+	return nil
 end
 
 --- "Returns bone index of given object"
@@ -721,8 +765,34 @@ function INSTANCE:Free()
 	typecheck.NotImplementedError()
 end
 
+--- "Updates transforms of all sub-objects"
 function INSTANCE:UpdateSubObjectTransforms()
-	typecheck.NotImplementedError()
+
+	-- "Update the animation transforms, recurse up to the top of the tree..."
+	animatable3dObjectClass.Instance.UpdateSubObjectTransforms( self )
+
+	-- "Put the computed transforms into our sub objects."
+	for lod = 1, self.LodCount do
+		for model = 1, #self.Lod[lod] do
+			local renderObject = self.Lod[lod][model].Model
+			local bone = self.Lod[lod][model].BoneIndex
+
+			renderObject:SetTransform( self.HTree:GetTransform( bone ) )
+			renderObject:SetAnimationHidden( not self.HTree:GetVisibility( bone ) )
+			renderObject:UpdateSubObjectTransforms()
+		end
+	end
+
+	for model = 1, #self.AdditionalModels do
+		local renderObject = self.AdditionalModels[model].Model
+		local bone = self.AdditionalModels[model].BoneIndex
+
+		renderObject:SetTransform( self.HTree:GetTransform( bone ) )
+		renderObject:SetAnimationHidden( not self.HTree:GetVisibility( bone ) )
+		renderObject:UpdateSubObjectTransforms()
+	end
+
+	self:SetSubObjectTransformsDirty( false )
 end
 
 function INSTANCE:UpdateObjectSpaceBoundingVolumes()

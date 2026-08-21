@@ -58,6 +58,11 @@ end
 --- @field CheckStaticObjects boolean
 --- @field CheckDynamicObjects boolean
 
-function INSTANCE:Renegade_PhysicsRayCollisionTest()
-	typecheck.NotImplementedError()
+function INSTANCE:Renegade_PhysicsRayCollisionTest( ray, results, group, type )
+    rayCollisionTestClass.Instance.Renegade_RayCollisionTest( ray, results, type )
+
+    self.CollidedPhysicsObject = nil
+    self.CollisionGroup = group
+    self.CheckStaticObjects = true
+    self.CheckDynamicObjects = true
 end
