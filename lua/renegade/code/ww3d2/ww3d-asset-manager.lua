@@ -502,7 +502,7 @@ function INSTANCE:AddPrototype( newPrototype )
 	assert( newPrototype ~= nil )
 
 	-- Omitted the majority of the code as it is not needed in Lua
-	local key = newPrototype:GetName():TrimRight( "\0" ):lower()
+	local key = newPrototype:GetName():lower()
 	self.PrototypeHashTable[key] = newPrototype
 end
 
@@ -525,7 +525,7 @@ function INSTANCE:RemovePrototype( prototype )
 		key = prototype --[[@as string]]
 	end
 
-	key = key:TrimRight( "\0" ):lower()
+	key = key:lower()
 	self.PrototypeHashTable[key] = nil
 end
 
@@ -540,7 +540,7 @@ function INSTANCE:FindPrototype( name )
 
 	-- "Find the prototype"
 	-- Omitted a while loop looking at CRC hashes
-	name = name:TrimRight( "\0" ):lower()
+	name = name:lower()
 	local result = self.PrototypeHashTable[name]
 	return result
 end
