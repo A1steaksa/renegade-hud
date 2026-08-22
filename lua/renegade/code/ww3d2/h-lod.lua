@@ -342,7 +342,31 @@ function INSTANCE:GetProxy()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:Render()
+--- "Render this HLod"
+--- @param renderInfo RenderInfoInstance
+function INSTANCE:Render( renderInfo )
+	if self:IsNotHiddenAtAll() == false then
+		return
+	end
+
+	animatable3dObjectClass.Instance:Render( renderInfo )
+
+	-- Render each object within the current LOD model
+	for i = 1, #self.Lod[self.CurrentLod] do
+		self.Lod[self.CurrentLod][i].Model:Render( renderInfo )
+	end
+
+	if self:IsSubObjectsMatchLodEnabled() then
+		for i = 1, #self.AdditionalModels do
+			self.AdditionalModels[i].Model:SetLodLevel( self:GetLodLevel() )
+			self.AdditionalModels[i].Model:Render( renderInfo )
+		end
+	else
+		for i = 1, #self.AdditionalModels do
+			self.AdditionalModels[i].Model:Render( renderInfo )
+		end
+	end
+	
 	typecheck.NotImplementedError()
 end
 
@@ -590,16 +614,23 @@ function INSTANCE:DecrementLod()
 	typecheck.NotImplementedError()
 end
 
+--- "Returns the cost of this LOD"
+--- @return number
 function INSTANCE:GetCost()
-	typecheck.NotImplementedError()
+	return self.Cost[self.CurrentLod]
 end
 
+--- "Returns the value of this LOD"
+--- @return number
 function INSTANCE:GetValue()
-	typecheck.NotImplementedError()
+	return self.Value[self.CurrentLod]
 end
 
+--- "Returns the post increment value"
+--- @return number
 function INSTANCE:GetPostIncrementValue()
-	typecheck.NotImplementedError()
+	return self.Value[self.CurrentLod + 1]
+
 end
 
 --- "Set the current lod level"
@@ -630,12 +661,16 @@ function INSTANCE:SetLodLevel( lod )
 	end
 end
 
+--- "Returns the current LOD level"
+--- @return integer
 function INSTANCE:GetLodLevel()
-	typecheck.NotImplementedError()
+	return self.CurrentLod
 end
 
+--- "Returns the number of levels of detail"
+--- @return integer
 function INSTANCE:GetLodCount()
-	typecheck.NotImplementedError()
+	return self.LodCount
 end
 
 --- @param bias number
