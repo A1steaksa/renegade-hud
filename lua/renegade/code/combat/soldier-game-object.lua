@@ -74,6 +74,8 @@ INSTANCE.IsSoldierGameObject = true
 	local soldierAiStateEnum = actionParamsStructClass.SOLDIER_AI_STATE
 	local collisionGroupTypeEnum = physicalGameObjectClass.COLLISION_GROUP_TYPE
 	local humanStateTypeEnum = humanAnimationControlClass.HUMAN_STATE_TYPE
+	local humanStateFlagsTypeEnum = humanAnimationControlClass.HUMAN_STATE_FLAGS_TYPE
+	local humanSubStateTypeEnum = humanAnimationControlClass.HUMAN_SUB_STATE_TYPE
 --#endregion
 
 
@@ -576,60 +578,73 @@ function INSTANCE:ImportFrequent()
 	typecheck.NotImplementedError()
 end
 
+--- @return boolean
 function INSTANCE:IsDead()
-	typecheck.NotImplementedError()
+	return self:GetState() == humanStateTypeEnum.DEATH
 end
 
+--- @return boolean
 function INSTANCE:IsDestroyed()
-	typecheck.NotImplementedError()
+	return self:GetState() == humanStateTypeEnum.DESTROY
 end
 
+--- @return boolean
 function INSTANCE:IsUpright()
-	typecheck.NotImplementedError()
+	return self:GetState() == humanStateTypeEnum.UPRIGHT
 end
 
+--- @return boolean
 function INSTANCE:IsWounded()
-	typecheck.NotImplementedError()
+	return self:GetState() == humanStateTypeEnum.WOUNDED
 end
 
+--- @return boolean
 function INSTANCE:InTransition()
-	typecheck.NotImplementedError()
+	return self:GetState() == humanStateTypeEnum.TRANSITION
 end
 
+--- @return boolean
 function INSTANCE:IsAirborne()
-	typecheck.NotImplementedError()
+	return self:GetState() == humanStateTypeEnum.AIRBORNE
 end
 
+--- @return boolean
 function INSTANCE:IsCrouched()
-	typecheck.NotImplementedError()
+	return self.HumanState:GetStateFlag( humanStateFlagsTypeEnum.CROUCHED_FLAG )
 end
 
+--- @return boolean
 function INSTANCE:IsSniping()
-	typecheck.NotImplementedError()
+	return self.HumanState:GetStateFlag( humanStateFlagsTypeEnum.SNIPING_FLAG )
 end
 
+--- @return boolean
 function INSTANCE:IsSlow()
-	typecheck.NotImplementedError()
+	return bit.band( self:GetSubState(), humanSubStateTypeEnum.SUB_STATE_SLOW  ) ~= 0
 end
 
+--- @return boolean
 function INSTANCE:IsOnLadder()
-	typecheck.NotImplementedError()
+	return self:GetState() == humanStateTypeEnum.LADDER
 end
 
+--- @return boolean
 function INSTANCE:IsStateLocked()
-	typecheck.NotImplementedError()
+	return self.HumanState:IsLocked()
 end
 
+--- @return boolean
 function INSTANCE:IsInVehicle()
-	typecheck.NotImplementedError()
+	return self:GetState() == humanStateTypeEnum.IN_VEHICLE
 end
 
 function INSTANCE:ResetLoiterDelay()
-	typecheck.NotImplementedError()
+	self.HumanState:ResetLoiterDelay()
 end
 
-function INSTANCE:SetLoitersAllowed()
-	typecheck.NotImplementedError()
+--- @param allowed boolean
+function INSTANCE:SetLoitersAllowed( allowed )
+	self.HumanState:SetLoitersAllowed( allowed )
 end
 
 function INSTANCE:GetInformation()
@@ -971,8 +986,9 @@ function INSTANCE:GetState()
 	return self.HumanState:GetState()
 end
 
+--- @return integer
 function INSTANCE:GetSubState()
-	typecheck.NotImplementedError()
+	return self.HumanState:GetSubState()
 end
 
 function INSTANCE:UpdateLockedFacing()
