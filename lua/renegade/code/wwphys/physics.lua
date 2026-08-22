@@ -3,18 +3,21 @@
 --- @class Renegade
 local CNC = CNC_RENEGADE
 
+--- @type CullableClass
+local cullableClass = CNC.Import( "code/wwmath/cullable.lua" )
+
 --- @type PersistClass
 local persistClass = CNC.Import( "code/wwsaveload/persist.lua" )
 
---- @class PhysicsClass : PersistClass
+--- @class PhysicsClass : CullableClass, PersistClass
 --- @field Instance PhysicsInstance The metatable used by PhysicsInstance
 local STATIC = CNC.CreateExport( persistClass )
 local isHotload = not table.IsEmpty( STATIC )
 STATIC.Class = "PhysicsClass"
 
---- @class PhysicsInstance : PersistInstance
+--- @class PhysicsInstance : CullableInstance, PersistInstance
 --- @field Static PhysicsClass The static table for this instance's class
-local INSTANCE = robustclass.Register( "Renegade_Physics" )
+local INSTANCE = robustclass.Register( "Renegade_Physics : Renegade_Cullable Renegade_Persist" )
 INSTANCE.Class = "PhysicsInstance"
 STATIC.Instance = INSTANCE
 INSTANCE.Static = STATIC
@@ -66,13 +69,13 @@ INSTANCE.IsPhysics = true
         -- Extract the file name without extension from the path
         local lastSlashIndex = textUtils.LastIndexOf( filePath, "\\" )
         local lastDotIndex = textUtils.LastIndexOf( filePath, "." )
-        local renderObjectName = filePath:sub( lastSlashIndex + 1, lastDotIndex - 1 ):lower():TrimRight( "\0" )
+        local renderObjectName = filePath:sub( lastSlashIndex + 1, lastDotIndex - 1 ):lower()
 
         local sourceModelPath = "models/cnc_renegade/" .. filePath
         sourceModelPath = sourceModelPath:Replace( "\\", "/" )
         sourceModelPath = sourceModelPath:Replace( ".w3d", ".mdl" )
 
-        local renderObject = wW3DAssetManagerClass.GetInstance():CreateRenderObject( renderObjectName )
+        local renderObject = ww3dAssetManagerClass.GetInstance():CreateRenderObject( renderObjectName )
         if renderObject == nil then
             section.Error( "Failed to create '", renderObjectName, "' from '", filePath, "'" )
             error() -- To make LuaLS happy
@@ -357,7 +360,8 @@ end
     --- "  
     function INSTANCE:UpdateCullBox()
         if self.Model then
-            self:SetCullBox( self.Model:GetBoundingBox() )
+            local boundingBox = self.Model:GetBoundingBox()
+            self:SetCullBox( boundingBox )
         end
     end
 end
