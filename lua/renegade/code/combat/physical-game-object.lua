@@ -261,28 +261,17 @@ end
         end
 
         -- "Set the Physical Object"
+        assert( self.PhysicsObject == nil )
         local physicsObjectDefinition = definitionManagerClass.FindDefinition( definition.PhysicsDefinitionId )
-        if not physicsObjectDefinition then
-            section.Error( "Could not find definition for " .. definition.PhysicsDefinitionId )
-            return
-        end
-
-        section.Print( self.Class, " - CopySettings - ", INSTANCE.GetConnectedEntity( self ) )
-        if INSTANCE.GetConnectedEntity( self ) == nil then error() end
-
-        self.PhysicsObject = physicsObjectDefinition:Create( INSTANCE.GetConnectedEntity( self ) ) --[[@as PhysicsInstance]]
-        if not self.PhysicsObject then
-            section.Error( "Could not create definition instance for " .. definition.PhysicsDefinitionId )
-            return
-        end
+        assert( physicsObjectDefinition ~= nil, "Could not find definition for '" .. definition.PhysicsDefinitionId .. "'" )
+        self.PhysicsObject = physicsObjectDefinition:Create( self:GetConnectedEntity() ) --[[@as PhysicsInstance]]
+        assert( self.PhysicsObject ~= nil, "Could not create definition instance for '" .. definition.PhysicsDefinitionId .. "'" )
 
         self.PhysicsObject:SetConnectedEntity( INSTANCE.GetConnectedEntity( self ) )
 
         self.PhysicsObject:SetCollisionGroup( collisionGroupTypeEnum.DEFAULT_COLLISION_GROUP )
         self.PhysicsObject:SetObserver( self )
         -- Omitted adding the physics object to the physics scene
-
-        section.Print( "I'm pretty sure the physics object exists here ", self.PhysicsObject )
 
         --- "Do we still use this?????"
         -- Omitted setting animation from definition
@@ -466,7 +455,7 @@ end
 
 --[[ Display ]] do
 
-    --- @return RenderObjectInstance?
+    --- @return RenderObjectInstance
     function INSTANCE:PeekModel()
         return INSTANCE.PeekPhysicalObject( self ):PeekModel()
     end
@@ -780,7 +769,10 @@ end
 
     --- @return boolean
     function INSTANCE:IsHibernating()
-        return self.HibernationTimer <= 0
+
+        -- Turning hibernation off until I have a way to enable it correctly
+
+        -- return self.HibernationTimer <= 0
     end
 
     --- @param isHibernationEnabled boolean
