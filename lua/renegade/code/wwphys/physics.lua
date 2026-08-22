@@ -369,8 +369,9 @@ end
     function INSTANCE:SetModel( model )
         local connectedEntity = self:GetConnectedEntity()
         local sourceModel = model:GetSourceModelPath()
-        section.Warn( self.Class, ": '", connectedEntity, "': Setting model '", model, "' using debug code" )
-        connectedEntity:SetModel( sourceModel )
+        if util.IsValidModel( sourceModel ) then
+            connectedEntity:SetModel( sourceModel )
+        end
 
         -- Omitted the majority of the function
 
