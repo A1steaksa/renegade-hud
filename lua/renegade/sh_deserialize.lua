@@ -296,6 +296,22 @@ end
 
     --- @param bytes string
     --- @return integer
+    function STATIC.DeserializePointer( bytes )
+        local b1, b2, b3, b4, b5, b6, b7, b8 = bytes:byte( 1, 8 )
+        return (
+            b8 * 0x100000000000000 +
+            b7 * 0x1000000000000 +
+            b6 * 0x10000000000 +
+            b5 * 0x100000000 +
+            b4 * 0x1000000 +
+			b3 * 0x10000 +
+			b2 * 0x100 +
+			b1
+        )
+    end
+
+    --- @param bytes string
+    --- @return integer
     function STATIC.DeserializeUInt32( bytes )
         local b1, b2, b3, b4 = bytes:byte( 1, 4 )
         return (
@@ -311,22 +327,6 @@ end
     function STATIC.DeserializeUInt16( bytes )
         local b1, b2 = bytes:byte( 1, 2 )
         return (
-			b2 * 0x100 +
-			b1
-        )
-    end
-
-    --- @param bytes string
-    --- @return integer
-    function STATIC.DeserializePointer( bytes )
-        local b1, b2, b3, b4, b5, b6, b7, b8 = bytes:byte( 1, 8 )
-        return (
-            b8 * 0x100000000000000 +
-            b7 * 0x1000000000000 +
-            b6 * 0x10000000000 +
-            b5 * 0x100000000 +
-            b4 * 0x1000000 +
-			b3 * 0x10000 +
 			b2 * 0x100 +
 			b1
         )
