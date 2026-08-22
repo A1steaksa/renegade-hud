@@ -69,6 +69,9 @@ INSTANCE.IsMeshModel = true
 
 	--- @type TextUtils
 	local textUtils = CNC.Import( "sh_text-utils.lua" )
+
+	--- @type ChunkIOClass
+	local chunkIOClass = CNC.Import( "code/wwlib/chunk-io.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -324,15 +327,12 @@ function INSTANCE:LoadW3d( cload )
 	local context = meshLoadContextClass.New()
 
 	-- Load the header
-	local expectedHeaderByteCount = deserializeLib.GetComplexDataTypeSize( "W3dMeshHeader3Struct" )
-	local readByteCount, headerBytes = cload:Read( expectedHeaderByteCount )
-	if readByteCount ~= expectedHeaderByteCount then
-		section.Warn( self.Class, " - LoadW3d failed to read a header.  Expected ", expectedHeaderByteCount, " bytes but got ", readByteCount, " bytes" )
+	local header = cload:ReadStruct( "W3dMeshHeader3Struct" )
+	if header == nil then
+		section.Warn( INSTANCE.Class, " - LoadW3d failed to read a header." )
 		return wW3dErrorTypeEnum.WW3D_ERROR_LOAD_FAILED
 	end
 	cload:CloseChunk()
-	--- @cast headerBytes string
-	local header = deserializeLib.DeserializeComplexDataType( "W3dMeshHeader3Struct", headerBytes ) --[[@as W3dMeshHeader3Struct]]
 
 	-- "Process the header"
 	context.Header = header
@@ -353,17 +353,17 @@ function INSTANCE:LoadW3d( cload )
 	context.AlternateMaterialDescription:SetPolygonCount( self.PolygonCount )
 
 	-- "Set Bounding Info"
-	self.BoundBoxMax = header.Max
-	self.BoundBoxMin = header.Min
+	self.BoundBoxMax = Vector( header.Max.X, header.Max.Y, header.Max.Z )
+	self.BoundBoxMin = Vector( header.Min.X, header.Min.Y, header.Min.Z )
 
-	self.BoundSphereCenter = header.SphCenter
+	self.BoundSphereCenter = Vector( header.SphCenter.X, header.SphCenter.Y, header.SphCenter.Z )
 	self.BoundSphereRadius = header.SphRadius
 
 	-- "Flags"
-	section.Warn( self.Class, "LoadW3d - Skipping setting flags" )
+	-- section.Warn( INSTANCE.Class, ":LoadW3d - Skipping setting flags" )
 
 	--"Configure the load sequence for prelighting."
-	section.Warn( self.Class, "LoadW3d - Skipping prelighting" )
+	-- section.Warn( INSTANCE.Class, ":LoadW3d - Skipping prelighting" )
 
 	self:ReadChunks( cload, context )
 
@@ -371,10 +371,10 @@ function INSTANCE:LoadW3d( cload )
 	-- If this is a pre-3.0 mesh and it has vertex influences,
 	-- fixup the bone indices to account for the new root node
 	-- "
-	section.Warn( self.Class, "LoadW3d - Skipping pre-3.0 mesh checks" )
+	-- section.Warn( INSTANCE.Class, ":LoadW3d - Skipping pre-3.0 mesh checks" )
 
 	-- "If this mesh is collideable and no AABTree was in the file, generate one now"
-	section.Warn( self.Class, "LoadW3d - Skipping generating culling tree" )
+	-- section.Warn( INSTANCE.Class, ":LoadW3d - Skipping generating culling tree" )
 
 	--- "Transfer the materials into the MatInfo"
 	self:InstallMaterials( context )
@@ -465,23 +465,17 @@ function INSTANCE:ReadChunks( cload, context )
 
 		if chunkId == ids.W3D_CHUNK_VERTICES then
 			-- "Call up to [MeshGeometryInstance]"
-			section.Start( "Reading Vertices" )
 			error = self:ReadVertices( cload )
-			section.End( "Read ", #self.Vertex, " Vertices" )
 
 		elseif (
 			   chunkId == oldIds.W3D_CHUNK_SURRENDER_NORMALS
 			or chunkId == ids.W3D_CHUNK_VERTEX_NORMALS
 		) then
 			-- "Call up to [MeshGeometryInstance]"
-			section.Start( "Reading Vertex Normals" )
 			error = self:ReadVertexNormals( cload )
-			section.End( "Read ", #self.VertexNorm, " Vertex Normals" )
 
 		elseif chunkId == oldIds.W3D_CHUNK_TEXCOORDS then
-			section.Start( "Reading Texture Coordinates" )
 			error = self:ReadTexCoords( cload, context )
-			section.End()
 
 		elseif (
 			   chunkId == oldIds.O_W3D_CHUNK_MATERIALS
@@ -491,71 +485,47 @@ function INSTANCE:ReadChunks( cload, context )
 
 		elseif chunkId == oldIds.W3D_CHUNK_MATERIALS3 then
 			section.Warn( "Obsolete material chunk encountered in mesh: ", context.Header.ContainerName, ".", context.Header.MeshName )
-			section.Start( "Reading V3 Materials" )
 			error = self:ReadV3Materials( cload, context )
-			section.End()
 
 		elseif chunkId == oldIds.O_W3D_CHUNK_SURRENDER_TRIANGLES then
 			section.Error( "Obsolete Triangle Chunk Encountered!" )
 
 		elseif chunkId == ids.W3D_CHUNK_TRIANGLES then
 			-- "Call up to [MeshGeometryInstance]"
-			section.Start( "Reading Triangles" )
 			error = self:ReadTriangles( cload )
-			section.End( "Read ", #self.Polygons, " Triangles" )
 
 		elseif chunkId == oldIds.W3D_CHUNK_PER_TRI_MATERIALS then
-			section.Start( "Reading Per-Triangle Materials" )
 			error = self:ReadPerTriMaterials( cload, context )
-			section.End()
 
 		elseif chunkId == ids.W3D_CHUNK_MESH_USER_TEXT then
 			-- "Call up to [MeshGeometryInstance]"
-			section.Start( "Reading User Text" )
 			error = self:ReadUserText( cload )
-			section.End()
 
 		elseif chunkId == oldIds.W3D_CHUNK_VERTEX_COLORS then
-			section.Start( "Reading Vertex Colors" )
 			error = self:ReadVertexColors( cload, context )
-			section.End()
 
 		elseif chunkId == ids.W3D_CHUNK_VERTEX_INFLUENCES then
 			-- "Call up to [MeshGeometryInstance]"
-			section.Start( "Reading Vertex Influences" )
 			error = self:ReadVertexInfluences( cload )
-			section.End()
 
 		elseif chunkId == ids.W3D_CHUNK_VERTEX_SHADE_INDICES then
 			-- "Call up to [MeshGeometryInstance]"
-			section.Start( "Reading Vertex Shade Indices" )
 			error = self:ReadVertexShadeIndices( cload )
-			section.End( "Read ", #self.VertexShadeIdx, " Vertex shade Indices" )
 
 		elseif chunkId == ids.W3D_CHUNK_MATERIAL_INFO then
-			section.Start( "Reading Material Info" )
 			error = self:ReadMaterialInfo( cload, context )
-			section.End()
 
 		elseif chunkId == ids.W3D_CHUNK_SHADERS then
-			section.Start( "Reading Shaders" )
 			error = self:ReadShaders( cload, context )
-			section.End( "Read ", #context.Shaders, " Shaders" )
 
 		elseif chunkId == ids.W3D_CHUNK_VERTEX_MATERIALS then
-			section.Start( "Reading Vertex Materials" )
 			error = self:ReadVertexMaterials( cload, context )
-			section.End( "Read ", #context.VertexMaterials, " Vertex Materials" )
 
 		elseif chunkId == ids.W3D_CHUNK_TEXTURES then
-			section.Start( "Reading Textures" )
 			error = self:ReadTextures( cload, context )
-			section.End()
 
 		elseif chunkId == ids.W3D_CHUNK_MATERIAL_PASS then
-			section.Start( "Reading Material Passes" )
 			error = self:ReadMaterialPass( cload, context )
-			section.End()
 
 		elseif chunkId == ids.W3D_CHUNK_DEFORM then
 			section.Error( "Obsolete deform chunk encountered in mesh: ", context.Header.ContainerName, ".", context.Header.MeshName )
@@ -569,16 +539,12 @@ function INSTANCE:ReadChunks( cload, context )
 			or chunkId == ids.W3D_CHUNK_PRELIT_LIGHTMAP_MULTI_PASS
 			or chunkId == ids.W3D_CHUNK_PRELIT_LIGHTMAP_MULTI_TEXTURE
 		) then
-			section.Start( "Reading Pre-Lit Material" )
 			self:ReadPrelitMaterial( cload, context )
-			section.End()
 
 		elseif chunkId == ids.W3D_CHUNK_AABTREE then
-			section.Start( "Reading AAB Tree" )
-			section.Warn( "Skipping Reading AAB Tree" )
+			-- section.Warn( INSTANCE.Class, ":ReadChunks - Skipping Reading AAB Tree" )
 			-- Omitted reading AAB tree
 			-- self:ReadAABTree( cload )
-			section.End()
 		end
 
 		cload:CloseChunk()
