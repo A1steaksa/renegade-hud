@@ -99,7 +99,7 @@ end
 --- @field Cost number[] "Cost array (recalculated every frame)"
 --- @field Value number[] "Value array (recalculated every frame)"
 --- @field AdditionalModels ModelArrayInstance "Additional models, these models have been linked to one of the bones in this model.  They are all always rendered.  They can be HLODs themselves in order to implement switching on sub models.  Note:  This uses [ModelArrayInstance] for convenience, but MaxScreenSize, NonPixelCost, PixelCostPerArea, BenefitFactor are not used here."
---- @field SnapPoints SnapPointsInstance[] "Possible array of snap points."
+--- @field SnapPoints Vector[] "Possible array of snap points."
 --- @field ProxyArray ProxyArrayInstance[] "Possible array of proxy objects (names and bone indexes for application defined usage)"
 --- @field LodBias number "Current LOD Bias (affects recalculation of the Value array)"
 
@@ -778,15 +778,30 @@ function INSTANCE:Scale()
 	typecheck.NotImplementedError()
 end
 
+--- "Returns the number of snap points in this model"
+--- @return integer
 function INSTANCE:GetNumSnapPoints()
-	typecheck.NotImplementedError()
+	if self.SnapPoints then
+		return #self.SnapPoints
+	else
+		return 0
+	end
 end
 
-function INSTANCE:GetSnapPoint()
-	typecheck.NotImplementedError()
+--- "Returns specified snap-point"
+--- @param index integer
+--- @return Vector
+function INSTANCE:GetSnapPoint( index )
+	if self.SnapPoints then
+		return self.SnapPoints[index]
+	else
+		return Vector( 0, 0, 0 )
+	end
 end
 
-function INSTANCE:SetHidden()
+--- "Propogates the hidden bit to particle emitters"
+--- @param onOff boolean
+function INSTANCE:SetHidden( onOff )
 	typecheck.NotImplementedError()
 end
 
@@ -830,6 +845,7 @@ function INSTANCE:UpdateSubObjectTransforms()
 	self:SetSubObjectTransformsDirty( false )
 end
 
+--- "Update object-space bounding volumes"
 function INSTANCE:UpdateObjectSpaceBoundingVolumes()
 	-- "Do we still have a valid bounding box index?"
 	local highLod = self.Lod[self.LodCount]
