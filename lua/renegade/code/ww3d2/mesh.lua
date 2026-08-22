@@ -421,7 +421,7 @@ function INSTANCE:UpdateCachedBoundingVolumes()
     -- If we are camera-aligned or -oriented, we don't know which way we are facing at this point,
     -- so the box we return needs to contain the sphere.  Otherwise do the normal computation.
     -- "
-    if self.Model:GetFlag( flagsTypeEnum.ALIGNED ) or self.Model:GetFlag( flagsTypeEnum.ORIENTED ) then
+    if self.Model:GetFlag( meshGeometryFlagsTypeEnum.ALIGNED ) or self.Model:GetFlag( meshGeometryFlagsTypeEnum.ORIENTED ) then
         self.CachedBoundingBox.Center = self.CachedBoundingSphere.Center
         self.CachedBoundingBox.Extent:SetUnpacked( self.CachedBoundingSphere.Radius, self.CachedBoundingSphere.Radius, self.CachedBoundingSphere.Radius )
     else
