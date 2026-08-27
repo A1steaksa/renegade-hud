@@ -19,8 +19,6 @@ local isHotload = not table.IsEmpty( STATIC )
 
     --- @class CollisionMath
 
-    local COLLISION_EPSILON = 0.001
-
     --- @param frustum FrustumInstance
     --- @param box AABoxInstance
     STATIC.AddOverlapTest( "FrustumInstance", "AABoxInstance", function( frustum, box )
