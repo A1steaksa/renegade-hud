@@ -66,7 +66,14 @@ INSTANCE.IsUnitCoordinationZoneManager = true
 	--- @param pos Vector
 	--- @return boolean
 	function STATIC.IsUnitInZone( pos )
-		typecheck.NotImplementedError()
+		local returnValue = false
+
+		-- "Simply check each zone to see if the point lies inside the box"
+		for index = 1, #STATIC.ZoneList do
+			returnValue = STATIC.ZoneList[index]:Contains( pos )
+		end
+
+		return returnValue
 	end
 
 	function STATIC.DisplayDebugBoxes()

@@ -33,9 +33,14 @@ INSTANCE.IsArmedGameObject = true
 
 	--- @type MuzzleRecoilClass
 	local muzzleRecoilClass = CNC.Import( "code/combat/muzzle-recoil.lua" )
+
+	--- @type WeaponClass
+	local weaponClass = CNC.Import( "code/combat/weapon.lua" )
 --#endregion
 
 --#region Imported Enums
+
+	local weaponHoldStyleTypeEnum = weaponClass.WEAPON_HOLD_STYLE_TYPE
 --#endregion
 
 --[[ Static Functions and Variables ]] do
@@ -117,8 +122,39 @@ function INSTANCE:CopySettings( definition )
 	self:InitMuzzleBones()
 end
 
-function INSTANCE:ReInit()
-	typecheck.NotImplementedError()
+--- @param definition ArmedGameObjectDefinitionInstance
+function INSTANCE:ReInit( definition )
+	physicalGameObjectClass.Instance.ReInit( self, definition )
+
+	-- "Remove all non-breacon entries from the wepaon bag..."
+	local oldBag = self.WeaponBag
+	if oldBag ~= nil then
+		-- "Loop over all the weapons in the bag"
+		local weaponIndex = self.WeaponBag:GetCount()
+		while weaponIndex > 0 do
+			local weapon = self.WeaponBag:PeekWeapon( weaponIndex )
+
+			-- "If this isn't a beacon, then remove it"
+			if weapon ~= nil and weapon:GetDefinition().Style ~= weaponHoldStyleTypeEnum.WEAPON_HOLD_STYLE_BEACON then
+				self.WeaponBag:RemoveWeapon( weaponIndex )
+			end
+
+			weaponIndex = weaponIndex - 1
+		end
+
+		self.WeaponBag = nil
+	end
+
+	-- "Re-initialize the weapon bag"
+	self.WeaponBag = weaponBagClass.New( self )
+
+	-- "Copy any internal settings from the definition"
+	self:CopySettings( definition )
+
+	-- "Now add any beacons back into the weapon bag"
+	if oldBag ~= nil then
+		-- self.WeaponBag:MoveContents( oldBag )
+	end
 end
 
 function INSTANCE:GetDefinition()

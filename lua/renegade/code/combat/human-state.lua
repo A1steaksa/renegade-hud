@@ -453,6 +453,60 @@ end
 
 --- "Weapons style, weapon action, recoil, blend, vehicle, mix/math, aiming tilt"
 function INSTANCE:UpdateAnimation()
+
+	-- "No updates for visceroids"
+	if self.AnimationControl:GetSkeleton() == "V" then
+		self.StateLocked = true
+		return
+	end
+
+	if self.StateLocked then
+		return
+		-- "If you change your anim when locked, death state may clear a scripted anim"
+	end
+
+	local holdStyle = self.WeaponHoldStyle
+
+	-- "Setup animation for state, substate, weapon, tilt, etc."
+	if self.State == humanStateTypeEnum.UPRIGHT or self.State == humanStateTypeEnum.AIRBORNE then
+
+	elseif self.State == humanStateTypeEnum.DIVE then
+
+	elseif self.State == humanStateTypeEnum.LAND then
+
+	elseif self.State == humanStateTypeEnum.WOUNDED then
+
+	elseif self.State == humanStateTypeEnum.DEATH then
+
+	elseif self.State == humanStateTypeEnum.LADDER then
+
+	elseif self.State == humanStateTypeEnum.ANIMATION then
+
+	elseif self.State == humanStateTypeEnum.LOITER then
+
+	elseif self.State == humanStateTypeEnum.DESTROY then
+
+	elseif self.State == humanStateTypeEnum.TRANSITION then
+
+	elseif self.State == humanStateTypeEnum.TRANSITION_COMPLETE then
+
+	elseif self.State == humanStateTypeEnum.ON_FIRE then
+
+	elseif self.State == humanStateTypeEnum.ON_CHEM then
+
+	elseif self.State == humanStateTypeEnum.ON_CNC_FIRE then
+
+	elseif self.State == humanStateTypeEnum.ON_CNC_CHEM then
+
+	elseif self.State == humanStateTypeEnum.ON_ELECTRIC then
+
+	elseif self.State == humanStateTypeEnum.DEBUG_FLY then
+
+	else
+		section.Warn( "Uncoded human state: '", self.State, "'" )
+		self.AnimationControl:SetAnimation( nil )
+	end
+
 	typecheck.NotImplementedError()
 end
 

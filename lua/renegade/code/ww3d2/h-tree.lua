@@ -55,12 +55,14 @@ INSTANCE.IsHTree = true
 
 	--- @type ClassUtils
 	local classUtils = CNC.Import( "sh_class-utils.lua" )
+
+	--- @type UnitConversionLib
+	local unitConversionLib = CNC.Import( "sh_unit-conversion.lua" )
 --#endregion
 
 --#region Imported Enums
 
 	local w3dChunkTypeEnum = w3dFileIds.W3D_CHUNK_TYPE
-	local fundamentalDataTypeEnum = deserializeLib.FUNDAMENTAL_DATA_TYPE
 --#endregion
 
 --[[ Static Functions and Variables ]] do
@@ -170,6 +172,41 @@ end
 function INSTANCE:_Renegade_HTree()
 	self:Free()
 end
+
+
+--[[ Source Engine Integration ]] do
+
+	--- @class HTreeInstance
+    --- @field SourceBones VMatrix[] The Source Engine matrices that represent this model's bones
+
+    --- Creates, stores, and updates an array with a `VMatrix` for each of the mesh's bones
+    function INSTANCE:CreateSourceBones()
+        local bones = {}
+        self.SourceBones = bones
+
+        for boneIndex = 1, self:NumPivots() do
+            bones[boneIndex] = Matrix()
+			bones[boneIndex]:Identity()
+        end
+    end
+
+    --- Updates the transformation of each Source bone's `VMatrix` to match its corresponding Renegade bone's position
+    function INSTANCE:UpdateSourceBones()
+        if self.SourceBones == nil then
+            self:CreateSourceBones()
+        end
+
+        for boneIndex = 1, self:NumPivots() do
+			local sourceBoneMatrix = self.SourceBones[boneIndex]
+			local renBone = self.Pivot[boneIndex]
+
+			sourceBoneMatrix:SetTranslation( renBone.Transform:GetTranslation() )
+			
+
+        end
+    end
+end
+
 
 --- "Loads a hierarchy tree from a file"
 --- @param cload ChunkLoadInstance
@@ -290,10 +327,15 @@ end
 --- "Computes the base pose transform for each pivot"
 --- @param root Matrix3dInstance
 function INSTANCE:BaseUpdate( root )
-	local pivot
+	if self.SourceBones == nil then
+		self:CreateSourceBones()
+	end
 
-	self.Pivot[1].Transform = root
-	self.Pivot[1].IsVisible = true
+	local pivot = self.Pivot[1]
+	pivot.Transform = root
+	pivot.IsVisible = true
+
+	self.SourceBones[1]:SetMatrix3d( pivot.Transform )
 
 	for pivotIndex = 2, self._NumPivots do
 		pivot = self.Pivot[pivotIndex]
@@ -301,6 +343,8 @@ function INSTANCE:BaseUpdate( root )
 		assert( pivot.Parent ~= nil )
 		pivot.Transform = pivot.Parent.Transform * pivot.BaseTransform
 		pivot.IsVisible = true
+
+		self.SourceBones[pivotIndex]:SetMatrix3d( pivot.Transform )
 
 		if pivot.IsCaptured then
 			pivot:CaptureUpdate()
@@ -343,24 +387,55 @@ function INSTANCE:GetRootTransform()
 	return self.Pivot[1].Transform
 end
 
-function INSTANCE:CaptureBone()
-	typecheck.NotImplementedError()
+--- @param boneIndex integer
+function INSTANCE:CaptureBone( boneIndex )
+	assert( boneIndex >= 1 )
+	assert( boneIndex <= self._NumPivots )
+
+	self.Pivot[boneIndex].IsCaptured = true
 end
 
-function INSTANCE:ReleaseBone()
-	typecheck.NotImplementedError()
+--- @param boneIndex integer
+function INSTANCE:ReleaseBone( boneIndex )
+	assert( boneIndex >= 1 )
+	assert( boneIndex <= self._NumPivots )
+
+	self.Pivot[boneIndex].IsCaptured = false
 end
 
-function INSTANCE:IsBoneCaptured()
-	typecheck.NotImplementedError()
+--- @param boneIndex integer
+--- @return boolean
+function INSTANCE:IsBoneCaptured( boneIndex )
+	assert( boneIndex >= 1 )
+	assert( boneIndex <= self._NumPivots )
+
+	return self.Pivot[boneIndex].IsCaptured
 end
 
-function INSTANCE:ControlBone()
-	typecheck.NotImplementedError()
+--- @param boneIndex integer
+--- @param relativeTranslationMatrix Matrix3dInstance
+--- @param worldSpaceTranslation boolean
+function INSTANCE:ControlBone( boneIndex, relativeTranslationMatrix, worldSpaceTranslation )
+	assert( boneIndex >= 1 )
+	assert( boneIndex <= self._NumPivots )
+	assert( self.Pivot[boneIndex].IsCaptured )
+
+	self.Pivot[boneIndex].WorldSpaceTranslation = worldSpaceTranslation
+	self.Pivot[boneIndex].CapTransform = relativeTranslationMatrix
 end
 
-function INSTANCE:GetBoneControl()
-	typecheck.NotImplementedError()
+--- @param boneIndex integer
+--- @return Matrix3dInstance
+function INSTANCE:GetBoneControl( boneIndex )
+	assert( boneIndex >= 1 )
+	assert( boneIndex < self._NumPivots )
+
+	-- "Return the bone's control transform to the caller"
+	if self.Pivot[boneIndex].IsCaptured then
+		return self.Pivot[boneIndex].CapTransform
+	else
+		return matrix3dClass.New( true )
+	end
 end
 
 --- "Returns the transform of a pivot at the given frame."
@@ -496,7 +571,14 @@ function INSTANCE:ReadPivots( cload, pre30 )
 		newPivot.Index = pivotIndex
 
 		newPivot.BaseTransform:MakeIdentity()
-		newPivot.BaseTransform:Translate( Vector( readPivot.Translation.X, readPivot.Translation.Y, readPivot.Translation.Z ) )
+		newPivot.BaseTransform:Translate(
+			Vector(
+				readPivot.Translation.X,
+				readPivot.Translation.Y,
+				readPivot.Translation.Z
+			)
+			* unitConversionLib.MetersToSource
+		)
 
 		newPivot.BaseTransform =
 			newPivot.BaseTransform *

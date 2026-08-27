@@ -328,9 +328,19 @@ end
 	end
 end
 
+--- @param pass integer
+--- @param stage integer
+--- @return Vector[]?
+function INSTANCE:GetUvArray( pass, stage )
+	local uvArrayIndex = self.UvSource[pass][stage]
 
-function INSTANCE:GetUvArray()
-	typecheck.NotImplementedError()
+	if uvArrayIndex == -1 then
+		return nil
+	end
+	if self.Uv[uvArrayIndex] ~= nil then
+		return self.Uv[uvArrayIndex]
+	end
+	return nil
 end
 
 --- @param pass integer
@@ -338,7 +348,6 @@ end
 --- @param uvs Vector[]?
 --- @param count integer
 function INSTANCE:InstallUvArray( pass, stage, uvs, count )
-
 	-- Omitting checking CRCs
 
 	local newIndex = #self.Uv+1

@@ -95,8 +95,11 @@ function INSTANCE:AddWeapon()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:RemoveWeapon()
-	typecheck.NotImplementedError()
+--- @param index integer
+function INSTANCE:RemoveWeapon( index )
+	if index >= 1 and index <= #self.WeaponList then
+		table.remove( self.WeaponList, index )
+	end
 end
 
 function INSTANCE:ClearWeapons()
@@ -188,7 +191,8 @@ function INSTANCE:HudResetChanged()
 	typecheck.NotImplementedError()
 end
 
-function INSTANCE:MoveContents()
+--- @param source WeaponBagInstance
+function INSTANCE:MoveContents( source )
 	typecheck.NotImplementedError()
 end
 

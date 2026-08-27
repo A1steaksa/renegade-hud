@@ -48,6 +48,9 @@ INSTANCE.IsSoldierObserver = true
 
 	--- @type CombatChunkIdClass
 	local combatChunkIdClass = CNC.Import( "code/combat/combat-chunk-id.lua" )
+
+	--- @type GameObjectObserverManagerClass
+	local gameObjectObserverManagerClass = CNC.Import( "code/combat/game-object-observer-manager.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -144,8 +147,20 @@ function INSTANCE:Attach( object )
 	-- "Warning, Attach may not be called on loaded scripts"
 end
 
-function INSTANCE:Detach()
-	typecheck.NotImplementedError()
+--- @param obj GameObjectInstance
+function INSTANCE:Detach( obj )
+	-- "Clear the soldier's innate observer pointer"
+	local smartGameObject = obj:AsSmartGameObject()
+	if smartGameObject ~= nil then
+		local soldier = smartGameObject:AsSoldierGameObject()
+		if soldier ~= nil then
+			if soldier:GetInnateObserver() == self then
+				soldier:ClearInnateObserver()
+			end
+		end
+	end
+
+	gameObjectObserverManagerClass.DeleteRegister( self )
 end
 
 function INSTANCE:Created()

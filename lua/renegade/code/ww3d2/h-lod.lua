@@ -349,7 +349,7 @@ function INSTANCE:Render( renderInfo )
 		return
 	end
 
-	animatable3dObjectClass.Instance:Render( renderInfo )
+	animatable3dObjectClass.Instance.Render( self, renderInfo )
 
 	-- Render each object within the current LOD model
 	for i = 1, #self.Lod[self.CurrentLod] do

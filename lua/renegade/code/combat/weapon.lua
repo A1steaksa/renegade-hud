@@ -179,6 +179,7 @@ function INSTANCE:NextC4DetonationMode()
 	typecheck.NotImplementedError()
 end
 
+--- @return WeaponDefinitionInstance
 function INSTANCE:GetDefinition()
 	typecheck.NotImplementedError()
 end

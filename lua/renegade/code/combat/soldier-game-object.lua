@@ -280,7 +280,50 @@ end
 
 --- @param definition SoldierGameObjectDefinitionInstance
 function INSTANCE:ReInit( definition )
-	typecheck.NotImplementedError()
+
+	if self == combatManagerClass.GetTheStar() then
+		hudClass.ForceWeaponChartUpdate()
+		-- weaponViewClass.Reset()
+	end
+
+	-- "Remove the object from the world (just to be safe)"
+	-- combatManagerClass.TheScene():RemoveObject( self:PeekPhysicalObject() )
+
+	-- "Reset the weapon model"
+	-- self:SetWeaponModel( nil )
+
+	if self.BackWeaponRenderModel ~= nil then
+		typecheck.NotImplementedError()
+	end
+
+	if self.BackFlagRenderModel ~= nil then
+		typecheck.NotImplementedError()
+	end
+
+	if self.WeaponAnimationControl ~= nil then
+		self.WeaponAnimationControl = nil
+	end
+
+	-- "Re-initialize the base class"
+	smartGameObjectClass.Instance.ReInit( self, definition )
+
+	-- "Free some of the data we will be re-initializing"
+	self.HeadModel = nil
+	self.SpeechAnim = nil
+	self.CurrentSpeech = nil
+
+	self.HumanState:Reset()
+
+	-- "Copy any internal settings from the definition"
+	self:CopySettings( definition )
+
+	-- "'Dirty' the object for networking"
+	self:SetObjectDirtyBit( dirtyBitEnum.BIT_RARE, true )
+
+	-- "When class changes, update for new weapon"
+	if self == combatManagerClass.GetTheStar() then
+		hudClass.Reset()
+	end
 end
 
 --- @return SoldierGameObjectDefinitionInstance
@@ -482,15 +525,14 @@ function INSTANCE:DetonateC4()
 	typecheck.NotImplementedError()
 end
 
---- @param modelName string
+--- @param modelName string?
 function INSTANCE:SetWeaponModel( modelName )
 	if self.WeaponRenderModel ~= nil then -- "Remove old gun model"
 		if self:PeekModel() ~= nil then
 			self:PeekModel():RemoveSubObject( self.WeaponRenderModel ) -- "Clean the bone"
 		end
 	end
-		
-	
+
 	typecheck.NotImplementedError()
 end
 
@@ -925,12 +967,13 @@ function INSTANCE:SetInnateObserver()
 	typecheck.NotImplementedError()
 end
 
+--- @return SoldierObserverInstance
 function INSTANCE:GetInnateObserver()
-	typecheck.NotImplementedError()
+	return self.InnateObserver
 end
 
 function INSTANCE:ClearInnateObserver()
-	typecheck.NotImplementedError()
+	self.InnateObserver = nil
 end
 
 function INSTANCE:GetFirstPersonHandsModelName()

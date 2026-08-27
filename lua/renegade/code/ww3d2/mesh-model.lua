@@ -183,8 +183,13 @@ function INSTANCE:GetPassCount()
 	return self.CurrentMaterialDescription:GetPassCount()
 end
 
-function INSTANCE:GetUvArray()
-	typecheck.NotImplementedError()
+--- @param pass integer? [Default: 1]
+--- @param stage integer? [Default: 1]
+function INSTANCE:GetUvArray( pass, stage )
+	pass = ( pass == nil and 1 or pass ) --[[@as integer]]
+	stage = ( stage == nil and 1 or stage ) --[[@as integer]]
+
+	return self.CurrentMaterialDescription:GetUvArray( pass, stage )
 end
 
 function INSTANCE:GetUvArrayCount()

@@ -700,7 +700,8 @@ function INSTANCE:GetPostIncrementValue()
     typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetLodLevel()
+--- @param level integer
+function INSTANCE:SetLodLevel( level )
     typecheck.NotImplementedError()
 end
 
@@ -881,8 +882,9 @@ function INSTANCE:GetNativeScreenSize()
     typecheck.NotImplementedError()
 end
 
-function INSTANCE:SetNativeScreenSize()
-    typecheck.NotImplementedError()
+--- @param screenSize number
+function INSTANCE:SetNativeScreenSize( screenSize )
+    self.NativeScreenSize = screenSize
 end
 
 --- @param onOff boolean
@@ -894,8 +896,9 @@ function INSTANCE:SetSubObjectsMatchLod( onOff )
     end
 end
 
+--- @return boolean
 function INSTANCE:IsSubObjectsMatchLodEnabled()
-    typecheck.NotImplementedError()
+    return tobool( bit.band( self.Bits, STATIC.SUBOBJS_MATCH_LOD ) )
 end
 
 --- @param onOff boolean

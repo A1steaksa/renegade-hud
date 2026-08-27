@@ -182,14 +182,13 @@ function INSTANCE:Init( definition, connectedEntity )
     self.Definition = definition
     self.Flags = STATIC.DEFAULT_FLAGS
     if definition.ModelName:len() ~= 0 then
-        --- @type RenderObjectInstance
+        --- @type RenderObjectInstance?
         local model
 
         if definition.ModelName:find( ".", nil, true ) then
             model = STATIC.CreateRenderObjectFromFileName( connectedEntity, definition.ModelName )
         else
-            typecheck.NotImplementedError()
-            -- model = wW3DAssetManagerClass.GetInstance():CreateRenderObject( connectedEntity, definition.ModelName )
+            model = ww3dAssetManagerClass.GetInstance():CreateRenderObject( definition.ModelName )
         end
 
         if model == nil then

@@ -253,8 +253,15 @@ function INSTANCE:Scale()
     typecheck.NotImplementedError()
 end
 
+--- "Returns a pointer to the material info"
+--- @return MaterialInfoInstance?
 function INSTANCE:GetMaterialInfo()
-    typecheck.NotImplementedError()
+    if self.Model then
+        if self.Model.MaterialInfo then
+            return self.Model.MaterialInfo
+        end
+    end
+    return nil
 end
 
 function INSTANCE:GetSortLevel()
@@ -309,8 +316,10 @@ function INSTANCE:GenerateCullingTree()
     typecheck.NotImplementedError()
 end
 
+--- "User access to the mesh model"
+--- @return MeshModelInstance
 function INSTANCE:GetModel()
-    typecheck.NotImplementedError()
+    return self.Model
 end
 
 function INSTANCE:PeekModel()

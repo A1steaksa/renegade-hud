@@ -428,36 +428,66 @@ end
 
     --- @param transformationMatrix Matrix3dInstance
     function INSTANCE:SetTransform( transformationMatrix )
-        INSTANCE.PeekPhysicalObject( self ):SetTransform( transformationMatrix )
+        local physicalObject = self:PeekPhysicalObject()
+        if physicalObject == nil then
+            return
+        end
+
+        physicalObject:SetTransform( transformationMatrix )
     end
 
     --- @return Matrix3dInstance
     function INSTANCE:GetTransform()
-        return INSTANCE.PeekPhysicalObject( self ):GetTransform()
+        local physicalObject = self:PeekPhysicalObject()
+        if physicalObject == nil then
+            return matrix3dClass.Identity
+        end
+
+        return physicalObject:GetTransform()
     end
 
     --- @return Vector
     function INSTANCE:GetPosition()
-        return INSTANCE.PeekPhysicalObject( self ):GetPosition()
+        local physicsObject = self:PeekPhysicalObject()
+        if physicsObject == nil then
+            return Vector( 0, 0, 0 )
+        end
+
+        return physicsObject:GetPosition()
     end
 
     --- @param pos Vector
     function INSTANCE:SetPosition( pos )
-        INSTANCE.PeekPhysicalObject( self ):SetPosition( pos )
+        local physicalObject = self:PeekPhysicalObject()
+        if physicalObject == nil then
+            return
+        end
+
+        physicalObject:SetPosition( pos )
     end
 
     --- @return number
     function INSTANCE:GetFacing()
-        return INSTANCE.PeekPhysicalObject( self ):GetFacing()
+        local physicalObject = self:PeekPhysicalObject()
+        if physicalObject == nil then
+            return 0
+        end
+
+        return physicalObject:GetFacing()
     end
 end
 
 
 --[[ Display ]] do
 
-    --- @return RenderObjectInstance
+    --- @return RenderObjectInstance?
     function INSTANCE:PeekModel()
-        return INSTANCE.PeekPhysicalObject( self ):PeekModel()
+        local physicalObject = self:PeekPhysicalObject()
+        if physicalObject == nil then
+            return
+        end
+
+        return physicalObject:PeekModel()
     end
 
     --- @return AnimationControlInstance

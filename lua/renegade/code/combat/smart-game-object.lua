@@ -190,8 +190,25 @@ end
         end
     end
 
-    function INSTANCE:ReInit()
-        typecheck.NotImplementedError()
+    --- @param definition SmartGameObjectDefinitionInstance
+    function INSTANCE:ReInit( definition )
+        armedGameObjectClass.Instance.ReInit( self, definition )
+
+        -- "Remove the listener from the scene"
+        if self.Listener ~= nil then
+            -- self.Listener:RemoveFromScene()
+        end
+
+        -- "Free the stealth effect as necessary"
+        if self.StealthEffect ~= nil then
+            self.StealthEffect = nil
+            self.StealthEnabled = false
+            self.StealthPowerupTimer = 0.0
+            self.StealthFiringTimer = 0.0
+        end
+
+        -- "Copy any internal settings from the definition"
+        self:CopySettings( definition )
     end
 
     --- @return SmartGameObjectDefinitionInstance
