@@ -235,7 +235,6 @@ function INSTANCE:Load3dAssets( fileName )
 			) then
 				self.HAnimationManager:LoadAnimation( cload )
 			else
-
 				INSTANCE.LoadPrototype( self, cload )
 			end
 
