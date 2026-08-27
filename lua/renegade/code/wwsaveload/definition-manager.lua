@@ -227,6 +227,7 @@ end
     function INSTANCE:Load( cload )
         local retVal = true
 
+        section.Start( "Definition Manager Load" )
         while cload:OpenChunk() do
             local chunkId = cload:CurChunkId()
 
@@ -238,6 +239,7 @@ end
 
             cload:CloseChunk()
         end
+        section.End()
 
         return retVal
     end
@@ -261,17 +263,29 @@ end
     --- @return boolean
     function INSTANCE:LoadObjects( cload )
         local retVal = true
+
+        local loadedDefinitionCount = 0
+        local chunkIdsWithoutFactories = {}
+
         section.Start( "Loading Definition Manager Objects" )
         while cload:OpenChunk() do
             -- "Load this definition from the chunk (if possible)"
             local factory = saveLoadSystemClass.FindPersistFactory( cload:CurChunkId() )
-            if factory then
+            -- section.Print( "Factory for Chunk ID ", cload:CurChunkId(), " is '", factory, "'" )
+
+            if factory ~= nil then
                 local definition = factory:Load( cload )
+                loadedDefinitionCount = loadedDefinitionCount + 1
                 if definition then
+
+                    -- section.Print( "Loaded definition ID ", definition.Id, " for '", definition.Name, "'" )
+
                     -- "Add this definition to our array"
                     STATIC.IdToDefinition[definition:GetId()] = definition
                     STATIC.NameToDefinition[definition:GetName()] = definition
                 end
+            else
+                chunkIdsWithoutFactories[cload:CurChunkId()] = true
             end
 
             cload:CloseChunk()
@@ -283,7 +297,13 @@ end
         -- "Assign a mgr link to each definition"
         -- Omitted manager link for now
 
-        section.End()
+        section.End( "Loaded ", loadedDefinitionCount, " definitions" )
+
+        section.Start( "Definition Chunk IDs without factories:" )
+        for chunkId, _ in pairs( chunkIdsWithoutFactories ) do
+            section.Print( chunkId )
+        end
+        section.End( table.Count( chunkIdsWithoutFactories ), " total missing factories" )
 
         return retVal
     end
@@ -301,12 +321,15 @@ end
 
         section.Start( "Loading Definition Manager Variables" )
 
+        local microChunksSkipped = 0
+
         -- "Loop through all the microchunks that define the variables"
         while cload:OpenMicroChunk() do
+            microChunksSkipped = microChunksSkipped + 1
             cload:CloseMicroChunk()
         end
 
-        section.End()
+        section.End( "(Fake) Loaded ", microChunksSkipped, " variable microchunks" )
 
         return retVal
     end

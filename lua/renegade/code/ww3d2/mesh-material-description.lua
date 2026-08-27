@@ -105,6 +105,8 @@ function INSTANCE:Renegade_MeshMaterialDescription( that )
 	self.DcgSource = {}
 	self.DigSource = {}
 
+	self.SourceMaterials = {}
+
 	-- ()
 	if that == nil then
 		for pass = 0, STATIC.MAX_PASSES do
@@ -272,6 +274,31 @@ function INSTANCE:InitAlternate( defaultMaterials, alternateMaterials )
 	end
 end
 
+
+--[[ Source Engine Integration ]] do
+
+	--- @class MeshMaterialDescriptionInstance
+	--- @field SourceMaterials IMaterial[][]
+
+	--- @param material VertexMaterialInstance
+	function INSTANCE:CreateSourceMaterial( pass, stage, material )
+		local sourceMaterial = material.Material
+
+		if self.SourceMaterials[pass] == nil then
+			self.SourceMaterials[pass] = {}
+		end
+
+		self.SourceMaterials[pass][stage] = sourceMaterial
+	end
+
+	--- @param pass integer
+	--- @param stage integer
+	--- @return IMaterial
+	function INSTANCE:GetSourceMaterial( pass, stage )
+		return self.SourceMaterials[pass][stage]
+	end
+end
+
 --- @return boolean
 function INSTANCE:IsEmpty()
 	for array = 1, STATIC.MAX_COLOR_ARRAYS do
@@ -294,6 +321,7 @@ function INSTANCE:IsEmpty()
 
 	return true
 end
+
 
 --[[ Counts ]] do
 

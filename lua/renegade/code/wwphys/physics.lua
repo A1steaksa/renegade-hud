@@ -68,10 +68,6 @@ INSTANCE.IsPhysics = true
         local lastDotIndex = textUtils.LastIndexOf( filePath, "." )
         local renderObjectName = filePath:sub( lastSlashIndex + 1, lastDotIndex - 1 ):lower()
 
-        local sourceModelPath = "models/cnc_renegade/" .. filePath
-        sourceModelPath = sourceModelPath:Replace( "\\", "/" )
-        sourceModelPath = sourceModelPath:Replace( ".w3d", ".mdl" )
-
         local renderObject = ww3dAssetManagerClass.GetInstance():CreateRenderObject( renderObjectName )
         if renderObject == nil then
             section.Error( "Failed to create '", renderObjectName, "' from '", filePath, "'" )
@@ -79,16 +75,13 @@ INSTANCE.IsPhysics = true
         end
 
         renderObject:SetConnectedEntity( connectedEntity )
-        renderObject:SetSourceModelPath( sourceModelPath )
 
         return renderObject
     end
 
 end
 
-
 --- @class PhysicsInstance
---- @field private ConnectedEntity Entity The Garry's Mod Entity that this object represents
 --- @field Flags integer "Flags for things like whether this object is currently being considered immovable"
 --- @field Model RenderObjectInstance "Render model"
 --- @field Name string? "Optional instance name"
@@ -367,11 +360,6 @@ end
 
     --- @param model RenderObjectInstance
     function INSTANCE:SetModel( model )
-        local connectedEntity = self:GetConnectedEntity()
-        local sourceModel = model:GetSourceModelPath()
-        if util.IsValidModel( sourceModel ) then
-            connectedEntity:SetModel( sourceModel )
-        end
 
         -- Omitted the majority of the function
 

@@ -181,7 +181,7 @@ end
 
 --- @return WeaponDefinitionInstance
 function INSTANCE:GetDefinition()
-	typecheck.NotImplementedError()
+	return self.Definition
 end
 
 function INSTANCE:GetName()

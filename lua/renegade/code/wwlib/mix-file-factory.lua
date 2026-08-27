@@ -25,13 +25,17 @@ INSTANCE.IsMixFileFactory = true
 
 --#region Imports
 
-    --- @type FileClass
-    local fileClass = CNC.Import( "code/wwlib/file.lua" )
+	--- @type FileClass
+	local fileClass = CNC.Import( "code/wwlib/file.lua" )
+
+	--- @type DeserializeLib
+	local deserializeLib = CNC.Import( "sh_deserialize.lua" )
 --#endregion
 
 --#region Imported Enums
 
-    local seekDirectionEnum = fileClass.SEEK_DIRECTION
+	local seekDirectionEnum = fileClass.SEEK_DIRECTION
+	local fundamentalDataTypeEnum = deserializeLib.FUNDAMENTAL_DATA_TYPE
 --#endregion
 
 --[[ Static Functions and Variables ]] do
@@ -56,124 +60,35 @@ INSTANCE.IsMixFileFactory = true
     end
 
     typecheck.RegisterType( "MixFileFactoryInstance", STATIC.IsMixFileFactory )
-end
 
---- @class MixFileHeaderStruct
---- @field Signature string
---- @field HeaderOffset integer
---- @field NamesOffset integer
 
-local mixFileHeaderStructSize = 12
-local mixFileHeaderSignatureSize = 4
-local mixFileHeaderHeaderOffsetSize = 4
-local mixFileHeaderNamesOffsetSize = 4
+    function STATIC.StaticConstructor()
 
---- @param rawMixFileHeaderStruct string
---- @return MixFileHeaderStruct
-local function DeserializeMixFileHeaderStruct( rawMixFileHeaderStruct )
-    local binaryConverter = BinaryConverter:Get()
+        --- @class FileInfoStruct
+        --- @field Crc integer "CRC code for embedded file."
+        --- @field Offset integer "Offset from start of data section."
+        --- @field Size integer "Size of data subfile."
+        deserializeLib.RegisterComplexDataType( "FileInfoStruct", {
+            { Name = "Crc",    Type = fundamentalDataTypeEnum.UInt32 },
+            { Name = "Offset", Type = fundamentalDataTypeEnum.UInt32 },
+            { Name = "Size",   Type = fundamentalDataTypeEnum.UInt32 },
+        } )
 
-    -- Signature
-    local startIndex = 1
-    local endIndex = mixFileHeaderSignatureSize
-    local rawSignature = rawMixFileHeaderStruct:sub( startIndex, endIndex )
-    local signature = binaryConverter:FromCharArray( rawSignature )
-
-    -- Header Offset
-    startIndex = endIndex + 1
-    endIndex = startIndex + mixFileHeaderHeaderOffsetSize - 1
-    local rawHeaderOffset = rawMixFileHeaderStruct:sub( startIndex, endIndex )
-    local headerOffset = binaryConverter:FromInt32( rawHeaderOffset )
-
-    -- Names Offset
-    startIndex = endIndex + 1
-    endIndex = startIndex + mixFileHeaderNamesOffsetSize - 1
-    local rawNamesOffset = rawMixFileHeaderStruct:sub( startIndex, endIndex )
-    local namesOffset = binaryConverter:FromInt32( rawNamesOffset )
-
-    return {
-        Signature = signature,
-        HeaderOffset = headerOffset,
-        NamesOffset = namesOffset
-    }
-end
-
---- @class MixFileDataHeader
---- @field fileCount integer
-
-local mixFileDataHeaderSize = 12
-
---- @class FileInfoStruct
---- @field Crc integer "CRC code for embedded file."
---- @field Offset integer "Offset from start of data section"
---- @field Size integer "Size of data subfile"
-
-local fileInfoStructSize = 12
-local fileInfoCrcSize = 4
-local fileInfoOffsetSize = 4
-local fileInfoSizeSize = 4
-
---- @param rawStruct string
---- @return FileInfoStruct
-local function DeserializeFileInfoStruct( rawStruct )
-    local binaryConverter = BinaryConverter:Get()
-
-    -- CRC
-    local startIndex = 1
-    local endIndex = fileInfoCrcSize
-    local rawCrc = rawStruct:sub( startIndex, endIndex )
-    local crc = binaryConverter:FromUInt32( rawCrc )
-
-    -- Offset
-    startIndex = endIndex + 1
-    endIndex = startIndex + fileInfoOffsetSize - 1
-    local rawOffset = rawStruct:sub( startIndex, endIndex )
-    local offset = binaryConverter:FromUInt32( rawOffset )
-
-    -- Size
-    startIndex = endIndex + 1
-    endIndex = startIndex + fileInfoSizeSize - 1
-    local rawSize = rawStruct:sub( startIndex, endIndex )
-    local size = binaryConverter:FromUInt32( rawSize )
-
-    return {
-        Crc = crc,
-        Offset = offset,
-        Size = size
-    }
-end
-
---- @param rawStructArray string
---- @return FileInfoStruct[]
-local function DeserializeFileInfoStructArray( rawStructArray )
-    --- @type FileInfoStruct[]
-    local fileInfoStructs = {}
-
-    local structCount = rawStructArray:len() / fileInfoStructSize
-    if structCount ~= math.floor( structCount ) then
-        section.Error( "Got incomplete FileInfoStruct during MixFileFactory deserializing" )
+        --- @class MixFileHeader
+        --- @field Signature string
+        --- @field HeaderOffset integer
+        --- @field NamesOffset integer
+        deserializeLib.RegisterComplexDataType( "MixFileHeader", {
+            { Name = "Signature",    Type = fundamentalDataTypeEnum.String, Size = 4 },
+            { Name = "HeaderOffset", Type = fundamentalDataTypeEnum.Int },
+            { Name = "NamesOffset",  Type = fundamentalDataTypeEnum.Int },
+        } )
     end
-
-    for structIndex = 1, structCount do
-        local startIndex = 1 + ( structIndex - 1 ) * fileInfoStructSize
-        local endIndex = startIndex + fileInfoStructSize - 1
-        local rawStruct = rawStructArray:sub( startIndex, endIndex )
-
-        fileInfoStructs[#fileInfoStructs+1] = DeserializeFileInfoStruct( rawStruct )
-
-        local fileInfoStruct = fileInfoStructs[#fileInfoStructs]
-    end
-
-    return fileInfoStructs
 end
-
---- @class AddInfoStruct
---- @field FullPath string
---- @field Filename string
 
 --- @class MixFileFactoryInstance
 --- @field Factory FileFactoryInstance
---- @field FileInfo FileInfoStruct[]
+--- @field FileInfo {[string]: FileInfoStruct} A map of file name CRC to its FileInfoStruct
 --- @field MixFilename string
 --- @field BaseOffset integer
 --- @field FileCount integer
@@ -202,17 +117,15 @@ function INSTANCE:Renegade_MixFileFactory( mixFileName, factory )
     local file = factory:GetFile( mixFileName )
 
     if file ~= nil and file:IsAvailable() then
-
-        local binaryConverter = BinaryConverter:Get()
-
         file:Open()
 
         self.IsValid = true
 
         -- "Read the file header"
-        local rawHeader = file:Read( mixFileHeaderStructSize )
-        local header = DeserializeMixFileHeaderStruct( rawHeader )
-        self.IsValid = ( rawHeader:len() == mixFileHeaderStructSize )
+        local mixFileHeaderByteCount = deserializeLib.GetComplexDataTypeSize( "MixFileHeader" )
+        local readBytes, readByteCount = file:Read( mixFileHeaderByteCount )
+        self.IsValid = ( readByteCount == mixFileHeaderByteCount )
+        local header = deserializeLib.Deserialize( "MixFileHeader", readBytes )
 
         -- "Validate the file header"
         if self.IsValid then
@@ -224,33 +137,37 @@ function INSTANCE:Renegade_MixFileFactory( mixFileName, factory )
         if self.IsValid then
             file:Seek( header.HeaderOffset, seekDirectionEnum.SEEK_SET )
 
-            local fileCountSize = 4
-            local rawFileCount = file:Read( fileCountSize )
-
-            self.FileCount = binaryConverter:FromInt32( rawFileCount ) --[[@as integer]]
-
-            self.IsValid = ( rawFileCount:len() == fileCountSize )
+            local fileCountSize = deserializeLib.GetFundamentalDataTypeSize( fundamentalDataTypeEnum.Int )
+            readBytes, readByteCount = file:Read( fileCountSize )
+            self.FileCount = deserializeLib.DeserializeInt32( readBytes )
+            self.IsValid = ( readByteCount == fileCountSize )
         end
 
         -- "Read the array of data headers"
         if self.IsValid then
-            self.FileInfo = self.FileInfo or {}
-            local size = self.FileCount * fileInfoStructSize
+            local size = self.FileCount * deserializeLib.GetDataTypeSize( "FileInfoStruct" )
 
-            local rawDataHeaders = file:Read( size )
+            readBytes, readByteCount = file:Read( size )
+            assert( readByteCount == size )
+            local readStructs = deserializeLib.DeserializeArray( "FileInfoStruct", readBytes )
 
-            self.FileInfo = DeserializeFileInfoStructArray( rawDataHeaders )
+            -- Convert the FileInfoStructs into a map for easier access
+            self.FileInfo = {}
+            for _, fileInfo in ipairs( readStructs ) do
+                self.FileInfo[fileInfo.Crc] = fileInfo
+            end
 
-            self.IsValid = #self.FileInfo == self.FileCount
+            self.IsValid = table.Count( self.FileInfo ) == self.FileCount
         end
 
         -- "Check for success"
         if self.IsValid then
             self.BaseOffset = 0
             self.NamesOffset = header.NamesOffset
-            section.Print( "MixFileFactory( ", self.MixFilename, " ) loaded successfully ", #self.FileInfo, " files" )
+            section.Print( "MixFileFactory( ", self.MixFilename, " ) loaded successfully ", table.Count( self.FileInfo ), " files" )
         else
             self.FileInfo = {}
+            section.Warn( "MixFileFactory( ", self.MixFilename, " ) only loaded ", table.Count( self.FileInfo ), "/", self.FileCount, " files" )
         end
 
         factory:ReturnFile( file )
@@ -266,37 +183,13 @@ end
 --- @param fileName string
 --- @return FileInstance?
 function INSTANCE:GetFile( fileName )
-    if #self.FileInfo == 0 then
-        return nil
-    end
+    -- Replaced binary search with map lookup
+
+    local crc = tonumber( util.CRC( fileName:upper() ) )
+    local info = self.FileInfo[crc]
 
     --- @type RawFileInstance
     local file
-
-    -- "Create the key block that will be used to binary search for the file"
-    local crc = tonumber( util.CRC( fileName:upper() ) )
-
-    -- "Binary search for the file in this mixfile.  If it is found, then create the file"
-    --- @type FileInfoStruct
-    local info
-    local base = 1
-    local stride = #self.FileInfo
-    while stride > 0 do
-        local pivotIndex = base + math.floor( stride / 2 )
-        local pivotFileInfoStruct = self.FileInfo[pivotIndex]
-
-        if crc < pivotFileInfoStruct.Crc then
-            stride = math.floor( stride / 2 )
-        else
-            if pivotFileInfoStruct.Crc == crc then
-                info = pivotFileInfoStruct
-                break
-            end
-            base = pivotIndex + 1
-            stride = stride - math.floor( stride / 2 ) - 1
-        end
-    end
-
     if info ~= nil then
         file = self.Factory:GetFile( self.MixFilename ) --[[@as RawFileInstance]]
         if file ~= nil then

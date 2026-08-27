@@ -351,7 +351,7 @@ function STATIC.GameInit()
 
 
 
-
+    CNC.HasPostGameInit = true
     hook.Run( "Renegade_PostGameInit" )
 
     return true

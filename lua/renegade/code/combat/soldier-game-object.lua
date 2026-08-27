@@ -82,6 +82,7 @@ INSTANCE.IsSoldierGameObject = true
 	local humanStateTypeEnum = humanAnimationControlClass.HUMAN_STATE_TYPE
 	local humanStateFlagsTypeEnum = humanAnimationControlClass.HUMAN_STATE_FLAGS_TYPE
 	local humanSubStateTypeEnum = humanAnimationControlClass.HUMAN_SUB_STATE_TYPE
+	local dirtyBitEnum = networkObjectClass.DIRTY_BIT
 --#endregion
 
 

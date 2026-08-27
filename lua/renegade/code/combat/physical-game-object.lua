@@ -705,7 +705,7 @@ end
 
     --- @param group CollisionGroupType
     function INSTANCE:SetCollisionGroup( group )
-        INSTANCE.PeekPhysicalObject( self ):SetCollisionGroup( group )
+        self:PeekPhysicalObject():SetCollisionGroup( group )
     end
 
     --- @param observedObject PhysicsInstance
@@ -924,7 +924,7 @@ end
 
     --- @return integer
     function INSTANCE:GetVisId()
-        local physicsObject = INSTANCE.PeekPhysicalObject( self )
+        local physicsObject = self:PeekPhysicalObject()
 
         -- "Do we have a physics object we can use?"
         if physicsObject then

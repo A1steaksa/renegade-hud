@@ -75,16 +75,33 @@ function STATIC.InitPlayerSoldier( ply )
 		return
 	end
 
+	
+
 	-- I think this definition's model is fucked up so swap it
 	physDefinition.ModelName = "characters\\nod rocket trooper sf\\c_ag_nod_rsold.w3d"
 
-	local soldier = soldierGameObjectClass.New()
-	soldier:Init( definition, ply )
+	section.Start( "Creating a soldier for ", ply:Nick() )
+
+	local soldier = definition:Create( ply ) --[[@as SoldierGameObjectInstance]]
 	soldier:SetControlOwner( ply:IsBot() and -1 or 1 )
 
 	STATIC.PlayerSoldiers[ply] = soldier
 
+	section.End()
+
 	return soldier
+end
+
+--- @param ply Player
+--- @return SoldierGameObjectInstance?
+function STATIC.GetPlayerSoldier( ply )
+	return STATIC.PlayerSoldiers[ ply ]
+end
+
+--- @param soldier SoldierGameObjectInstance
+--- @return Player?
+function STATIC.GetSoldierPlayer( soldier )
+	return table.KeyFromValue( STATIC.PlayerSoldiers, soldier )
 end
 
 --- @param ply Player
@@ -94,7 +111,6 @@ function STATIC.RemovePlayerSoldier( ply )
 	STATIC.PlayerSoldiers[ply] = nil
 end
 
-
 if SERVER then
 	-- Create SoldierGameObjects for players as they spawn for the first time
 	hook.Add( "PlayerInitialSpawn", "A1_Renegade_CreatePlayerSoldiers", STATIC.InitPlayerSoldier )
@@ -103,18 +119,15 @@ if SERVER then
 	hook.Add( "PlayerDisconnected", "A1_Renegade_RemovePlayerSoldiers", STATIC.RemovePlayerSoldier )
 end
 
+-- Create a SoldierGameObject for each player when the server starts or when the client finishes loading
+hook.Add( "Renegade_PostGameInit", "A1_Renegade_CreatePlayerSoldiers", function()
+	for _, ply in player.Iterator() do
+		STATIC.InitPlayerSoldier( ply )
+	end
+end )
+
+
 if CLIENT then
-
-	-- When we join in, create a SoldierGameObject for each player that's there when we arrive
-	hook.Add( "Renegade_PostGameInit", "A1_Renegade_CreatePlayerSoldiers", function()
-		for _, ply in player.Iterator() do
-			STATIC.InitPlayerSoldier( ply )
-		end
-	end )
-
-
-
-
 	concommand.Add( "ren_definition_explorer", function()
 
 		local frame = vgui.Create( "DFrame" )
@@ -175,9 +188,18 @@ if CLIENT then
 							local line = list:AddLine( definition.Id, definition.Class, definition.Name, path ) --[[@as DListView_Line]]
 
 							line.OnSelect = function( self )
-								if path then
-									SetClipboardText( path )
+								local soldier = STATIC.GetPlayerSoldier( LocalPlayer() )
+								if soldier == nil then return end
+
+								local definition = definitionManagerClass.FindDefinition( definition.Id )
+								if definition == nil then return end
+
+								if definition.Class ~= "SoldierGameObjectDefinitionInstance" then
+									return
 								end
+
+								--- @cast definition SoldierGameObjectDefinitionInstance
+								soldier:ReInit( definition )
 							end
 						end
 					end
@@ -185,114 +207,6 @@ if CLIENT then
 			end
 		end
 	end )
-
-
-	--- @param renMesh MeshInstance
-	function STATIC.CreateSourceMesh( renMesh )
-		if not renMesh.SourceMesh then
-			renMesh.SourceMesh = Mesh( nil, 2 )
-		end
-
-		local model = renMesh.Model
-
-		local vertices = model.Vertex
-		local triangles = model.Polygons
-		local vertexWeights = model.VertexBoneLink
-		local normals = model:GetVertexNormalArray()
-
-		local materialDescription = model.DefinitionMaterialDescription
-		if not materialDescription then
-			return
-		end
-
-		local uvArray = materialDescription.Uv
-		local uv = uvArray[1]
-
-		mesh.Begin( renMesh.SourceMesh, MATERIAL_TRIANGLES, #triangles )
-		for triangleIndex = 1, #triangles do
-
-			local triangleIndices = triangles[triangleIndex]
-
-			local vertex1Index = triangleIndices[1] + 1
-			local vertex2Index = triangleIndices[2] + 1
-			local vertex3Index = triangleIndices[3] + 1
-
-			local triangleVertex1 = vertices[vertex1Index] * unitConversionLib.MetersToSource
-			local triangleVertex2 = vertices[vertex2Index] * unitConversionLib.MetersToSource
-			local triangleVertex3 = vertices[vertex3Index] * unitConversionLib.MetersToSource
-
-			local vertex1Bone = vertexWeights[vertex1Index] + 1
-			local vertex2Bone = vertexWeights[vertex2Index] + 1
-			local vertex3Bone = vertexWeights[vertex3Index] + 1
-
-			local vertex1Uv = uv[vertex1Index]
-			local vertex2Uv = uv[vertex2Index]
-			local vertex3Uv = uv[vertex3Index]
-
-			local vertex1Normal = normals[vertex1Index]
-			local vertex2Normal = normals[vertex2Index]
-			local vertex3Normal = normals[vertex3Index]
-
-			mesh.Position( triangleVertex1 )
-			mesh.Color( 255, 255, 255, 255 )
-			mesh.BoneData( 0, vertex1Bone, 1 )
-			mesh.BoneData( 1, vertex1Bone, 0 )
-			mesh.TexCoord( 0, vertex1Uv.x, vertex1Uv.y )
-			mesh.Normal( vertex1Normal )
-			mesh.AdvanceVertex()
-
-			mesh.Position( triangleVertex2 )
-			mesh.Color( 255, 255, 255, 255 )
-			mesh.BoneData( 0, vertex2Bone, 1 )
-			mesh.BoneData( 1, vertex2Bone, 0 )
-			mesh.TexCoord( 0, vertex2Uv.x, vertex2Uv.y )
-			mesh.Normal( vertex2Normal )
-			mesh.AdvanceVertex()
-
-			mesh.Position( triangleVertex3 )
-			mesh.Color( 255, 255, 255, 255 )
-			mesh.BoneData( 0, vertex3Bone, 1 )
-			mesh.BoneData( 1, vertex3Bone, 0 )
-			mesh.TexCoord( 0, vertex3Uv.x, vertex3Uv.y )
-			mesh.Normal( vertex3Normal )
-			mesh.AdvanceVertex()
-		end
-		mesh.End()
-	end
-
-	--- @param renMesh MeshInstance
-	function STATIC.CreateSourceBones( renMesh )
-		local bones = {}
-		renMesh.SourceBones = bones
-
-		for boneIndex = 1, renMesh:GetNumBones() do
-			bones[boneIndex] = Matrix()
-		end
-	end
-
-	--- @param renMesh MeshInstance
-	function STATIC.UpdateSourceBones( renMesh )
-
-		if renMesh.UpdateSubObjectTransforms then
-			renMesh:UpdateSubObjectTransforms()
-		end
-
-		local bones = renMesh.SourceBones
-
-		for boneIndex = 1, renMesh:GetNumBones() do
-			local renBoneMatrix = renMesh:GetBoneTransform( boneIndex )
-			local sourceBoneMatrix = renBoneMatrix:AsVMatrix()
-
-			local translation = sourceBoneMatrix:GetTranslation() * unitConversionLib.MetersToSource
-			local angle 	  = sourceBoneMatrix:GetAngles()
-
-			local sourceBoneMatrix = bones[boneIndex]
-			sourceBoneMatrix:Identity()
-			sourceBoneMatrix:Translate( translation )
-			sourceBoneMatrix:SetAngles( angle )
-			sourceBoneMatrix:SetScale( Vector( 1, 1, 1 ) )
-		end
-	end
 
 	hook.Add( "PrePlayerDraw", "A1_Renegade_Debug_DrawPlayerSoldiers", function( ply )
 		if not CNC.HasPostGameInit then return end
@@ -321,55 +235,10 @@ if CLIENT then
 			return
 		end
 
-		local hotload = isHotload
-		if hotload then
-			isHotload = false
-		end
+		model:SetLodLevel( 3 )
 
-		if hotload or not model.SourceBones then
-			STATIC.CreateSourceBones( model )
-			STATIC.UpdateSourceBones( model )
-		end
-
-		local boneToDraw = 1
-		local subObjectToDraw = 6
-
-		local subObject = model:GetSubObjectOnBone( subObjectToDraw, boneToDraw )
-		if subObject == nil then
-			return
-		end
-
-		if subObject.Class == "AABoxRenderObjectInstance" or subObject.Class == "OBBoxRenderObjectInstance" then
-			return
-		end
-
-		if hotload or not subObject.SourceMesh then
-			STATIC.CreateSourceMesh( subObject --[[@as MeshInstance]] )
-		end
-
-		if hotload or subObject.SourceMaterial == nil then
-			subObject.SourceMaterial = Material( "data/renegade/always_dat/c_nod_sf_rsold.png", "smooth mips" )
-		end
-		render.SetMaterial( subObject.SourceMaterial )
-
-		-- Make the model do a turntable spin
-		local modelMatrix = Matrix( ply:GetWorldTransformMatrix() )
-		modelMatrix:Rotate( Angle( 0, CurTime() * 50, 0  ) )
-
-		render.OverrideDepthEnable( true, true )
-		cam.PushModelMatrix( modelMatrix )
-		render.CullMode( MATERIAL_CULLMODE_CW )
-		subObject.SourceMesh:DrawSkinned( model.SourceBones, true )
-		render.CullMode( MATERIAL_CULLMODE_CCW )
-		cam.PopModelMatrix()
-		render.OverrideDepthEnable( false, false )
+		model:Render( renderInfoClass.New( combatManagerClass.GetCamera() ) )
 
 		return true
 	end )
-end
-
---- @param ply Player
---- @return SoldierGameObjectInstance?
-function STATIC.GetPlayerSoldier( ply )
-	return STATIC.PlayerSoldiers[ ply ]
 end

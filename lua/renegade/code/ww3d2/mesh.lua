@@ -101,6 +101,7 @@ end
 --- @field UserLighting table
 --- @field PolygonRendererList any
 
+
 --- @param src MeshInstance?
 function INSTANCE:Renegade_Mesh( src )
     --- ()
@@ -169,10 +170,16 @@ end
 
 --- "Renders this mesh"
 --- @param renderInfo RenderInfoInstance
-function INSTANCE:Render( renderInfo )
+--- @param bones VMatrix[]
+function INSTANCE:Render( renderInfo, bones)
     if self:IsNotHiddenAtAll() == false then
         return
     end
+
+    self.Model:RenderSourceMesh( bones )
+
+    -- this is a debug thing to stop wrrors from later in the file while I try to fix soldier models not working
+    do return end
 
     -- "If static sort lists are enabled and this mesh has a sort level, put it on the list instead of rendering it."
     local sortLevel = self.Model:GetSortLevel()

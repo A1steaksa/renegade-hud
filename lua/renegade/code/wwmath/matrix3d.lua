@@ -49,6 +49,32 @@ INSTANCE.Static = STATIC
 	Some operations in this class assume that the matrix is orthogonal."
 --]]
 
+
+--[[ VMatrix Integration ]] do
+
+    -- Updates the metatable of VMatrix to add functions that help integrate Matrix3dInstance with VMatrix
+
+    --- @class VMatrix
+    local VMATRIX = FindMetaTable( "VMatrix" )
+
+    --- Updates the VMatrix to match the contents of the Matrix3dInstance
+    --- @param other Matrix3dInstance
+    function VMATRIX:SetMatrix3d( other )
+        local row = other.Row
+        local row1 = row[1]
+        local row2 = row[2]
+        local row3 = row[3]
+
+        self:SetUnpacked(
+            row1.x, row1.y, row1.z, row1.w,
+            row2.x, row2.y, row2.z, row2.w,
+            row3.x, row3.y, row3.z, row3.w,
+            0,  0, 0,  1
+        )
+    end
+end
+
+
 --[[ Static Functions and Variables ]] do
 
     --- Creates a new Matrix3dInstance

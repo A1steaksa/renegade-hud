@@ -108,9 +108,7 @@ end
 
 
 --- "This class encapsulates the geometry data for a triangle mesh."  
---- This is also the connection point where Renegade W3D meshes are replaced with Source MDL meshes
 --- @class MeshGeometryInstance
---- @field SourceModelPath string The path of the `.mdl` file for this mesh
 --- @field MeshName string
 --- @field UserText string
 --- @field Flags integer
@@ -181,26 +179,6 @@ function INSTANCE:ResetGeometry( polygonCount, vertexCount )
 	self.PolygonSurfaceType = {}
 	self.Vertex = {}
 	self.VertexNorm = {}
-end
-
-
---[[ Source Model Path ]] do
-
-	--- @param path string
-	function INSTANCE:SetSourceModelPath( path )
-		if self.SourceModelPath == path then
-			return
-		end
-
-		self.SourceModelPath = path
-
-		
-	end
-
-	--- @return string
-	function INSTANCE:GetSourceModelPath()
-		return self.SourceModelPath
-	end
 end
 
 --[[ Name ]] do

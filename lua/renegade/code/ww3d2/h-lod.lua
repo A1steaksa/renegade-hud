@@ -353,7 +353,15 @@ function INSTANCE:Render( renderInfo )
 
 	-- Render each object within the current LOD model
 	for i = 1, #self.Lod[self.CurrentLod] do
-		self.Lod[self.CurrentLod][i].Model:Render( renderInfo )
+		local lodNode = self.Lod[self.CurrentLod][i]
+		local lodModel = lodNode.Model
+
+		if typecheck.IsOfType( lodModel, "MeshInstance" ) then
+			--- @cast lodModel MeshInstance
+			lodModel:Render( renderInfo, self.HTree.SourceBones )
+		else
+			-- lodModel:Render( renderInfo )
+		end
 	end
 
 	if self:IsSubObjectsMatchLodEnabled() then
@@ -366,8 +374,6 @@ function INSTANCE:Render( renderInfo )
 			self.AdditionalModels[i].Model:Render( renderInfo )
 		end
 	end
-	
-	typecheck.NotImplementedError()
 end
 
 function INSTANCE:SpecialRender()

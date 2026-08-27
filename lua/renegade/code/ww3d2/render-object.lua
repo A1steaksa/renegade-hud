@@ -193,7 +193,6 @@ end
 --- @field Scene SceneInstance
 --- @field Container RenderObjectInstance
 --- @field UserData any
---- @field ConnectedEntity Entity The Source engine Entity this Render Object is connected to
 
 --- Constructs a new RenderObjectInstance
 --- @param src RenderObjectInstance? Another RenderObjectInstance to copy
@@ -241,24 +240,18 @@ end
 
 --[[ Source Engine Connection ]] do
 
+    --- @class MeshInstance
+    --- @field ConnectedEntity Entity The Source engine Entity this Render Object is connected to
+    --- @field SourceMaterial IMaterial The Source Engine Material that should be used with this model
+
     --- @param ent Entity
     function INSTANCE:SetConnectedEntity( ent )
         self.ConnectedEntity = ent
     end
 
-        --- @return Entity
+    --- @return Entity
     function INSTANCE:GetConnectedEntity()
         return self.ConnectedEntity
-    end
-
-    --- @param modelPath string
-    function INSTANCE:SetSourceModelPath( modelPath )
-        self.SourceModelPath = modelPath
-    end
-
-    --- @return string
-    function INSTANCE:GetSourceModelPath()
-        return self.SourceModelPath
     end
 end
 

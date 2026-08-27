@@ -1,7 +1,6 @@
 -- Based on Vector3 within Code/WWMath/vector3.h
 
 -- Updates the metatable of Vector to add functions from Vector3 that are missing
--- This isn't a well-established pattern within this codebase.  It is a one-off at time of writing.
 
 --- @class Vector
 local VECTOR = FindMetaTable( "Vector" )

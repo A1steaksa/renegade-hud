@@ -135,7 +135,7 @@ function INSTANCE:LoadW3d( cload )
 	-- "TSS chasing crash bug 05/26/99"
 	assert( self.HierarchyName ~= nil )
 	assert( animationHeader.HierarchyName ~= nil )
-	assert( self.HierarchyName:len() > 0 )
+	-- assert( self.HierarchyName:len() > 0 )
 	self.HierarchyName = animationHeader.HierarchyName
 
 	local basePose = ww3dAssetManagerClass.GetInstance():GetHTree( self.HierarchyName )

@@ -88,11 +88,6 @@ function INSTANCE:LoadW3d( cload )
     end
 
     if mesh:LoadW3d( cload ) ~= wW3dErrorTypeEnum.WW3D_ERROR_OK then
-
-        -- If we're able to load the model successfully, create a Source mesh for it
-        mesh:CreateSourceMesh()
-        mesh:CreateSourceBones()
-
         return
     else
         -- "Create the prototype and add it to the lists"

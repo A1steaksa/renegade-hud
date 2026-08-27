@@ -83,24 +83,25 @@ function INSTANCE:StartRecoil( recoilScale, recoilTime )
     end
 end
 
---- @param ent ArmedGameObjectInstance
-function INSTANCE:Update( ent )
+--- @param model RenderObjectInstance
+function INSTANCE:Update( model )
     if self.RecoilTimer <= 0.0 or not self.BoneIndex or self.BoneIndex <= 0 then
         return
     end
 
-    -- Omitted bone capture
+    -- "Since our timer is active, go ahead and capture the bone"
+    model:CaptureBone( self.BoneIndex )
 
     -- "Apply the recoil effect"
     local recoilScale = self.RecoilScale * self.RecoilTimer * self.OORecoilTime
     local recoilTransformationMatrix = matrix3dClass.New( 1 )
     recoilTransformationMatrix:TranslateX( -recoilScale )
-    ent:ControlBone( self.BoneIndex, recoilTransformationMatrix )
+    model:ControlBone( self.BoneIndex, recoilTransformationMatrix )
 
     -- "Decrement the recoil timer and release the bone if it expires"
     self.RecoilTimer = self.RecoilTimer - FrameTime()
     if self.RecoilTimer <= 0.0 then
         self.RecoilTimer = 0.0
-        -- Omitted bone release
+        model:ReleaseBone( self.BoneIndex )
     end
 end
