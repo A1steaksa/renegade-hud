@@ -242,7 +242,7 @@ end
 
         -- "If the definition calls for it, add a material effect to the object"
         if definition.UseCreationEffect then
-            local physicalObject = INSTANCE.PeekPhysicalObject( self )
+            local physicalObject = self:PeekPhysicalObject()
             if physicalObject then
                 -- Omitted transition effect
                 -- TODO: Implement transition effect
@@ -252,12 +252,11 @@ end
 
     --- @param definition PhysicalGameObjectDefinitionInstance
     function INSTANCE:CopySettings( definition )
-        section.Start( self.Class, " - ", INSTANCE.Class, " - Copy Settings" )
-
         -- "Release our hold on the physics object"
         if self.PhysicsObject then
             -- Omitted original logic
             INSTANCE.GetConnectedEntity( self ):PhysicsDestroy()
+            self.PhysicsObject = nil
         end
 
         -- "Set the Physical Object"
@@ -282,8 +281,6 @@ end
         INSTANCE.EnableHibernation( self, definition.DefaultHibernationEnable )
 
         INSTANCE.ResetRadarBlipShapeType( self )
-
-        section.End()
     end
 
     --- @param definition PhysicalGameObjectDefinitionInstance

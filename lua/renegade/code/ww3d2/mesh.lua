@@ -121,6 +121,7 @@ function INSTANCE:Renegade_Mesh( src )
 
         renderObjectClass.Instance.Renegade_RenderObject( self, src )
 
+
         self.Model = src.Model
         self.DecalMesh = nil
         self.LightEnvironment = nil

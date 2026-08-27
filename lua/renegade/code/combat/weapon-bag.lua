@@ -32,9 +32,10 @@ INSTANCE.IsWeaponBag = true
     --- @class WeaponBagClass
 
     --- Creates a new WeaponBagInstance
+	--- @param owner ArmedGameObjectInstance
     --- @return WeaponBagInstance
-    function STATIC.New()
-        return robustclass.New( "Renegade_WeaponBag" )
+    function STATIC.New( owner )
+        return robustclass.New( "Renegade_WeaponBag", owner )
     end
 
     --- @param arg any

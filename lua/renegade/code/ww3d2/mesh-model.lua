@@ -72,6 +72,9 @@ INSTANCE.IsMeshModel = true
 
 	--- @type ChunkIOClass
 	local chunkIOClass = CNC.Import( "code/wwlib/chunk-io.lua" )
+
+	--- @type UnitConversionLib
+	local unitConversionLib = CNC.Import( "sh_unit-conversion.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -117,6 +120,7 @@ end
 --- @field MaterialInfo MaterialInfoInstance "Collection of the unique materials in the mesh"
 --- @field GapFiller GapFillerInstance
 --- @field HasBeenInUse boolean "For debugging purposes!"
+
 
 --- @param that MeshModelInstance?
 function INSTANCE:Renegade_MeshModel( that )
@@ -164,6 +168,146 @@ function INSTANCE:Reset( polyCount, vertCount, passCount )
 
 	self.GapFiller = nil
 end
+
+
+--[[ Source Engine Integration ]] do
+
+	--- @class MeshModelInstance
+	--- @field SourceMesh IMesh? The Source engine IMesh that this Render Object uses for rendering
+
+    --- Creates, stores, and returns an `IMesh` for this MeshInstance  
+    --- Note: If there is already an IMesh, it will be re-used
+    function INSTANCE:CreateSourceMesh()
+        if self.SourceMatrix == nil then
+            self.SourceMatrix = Matrix()
+            self.SourceMatrix:Identity()
+        end
+
+        local vertices      = self:GetVertexArray()
+        local vertexWeights = self:GetVertexBoneLinks()
+        local triangles     = self:GetPolygonArray()
+        local normals       = self:GetVertexNormalArray()
+        local uvs 	        = self:GetUvArray()
+
+        local isSkeletalMesh = vertexWeights ~= nil and table.Count( vertexWeights ) ~= 0
+
+        local sourceMesh = self.SourceMesh
+        if sourceMesh == nil then
+            if isSkeletalMesh then
+                sourceMesh = Mesh( nil, 2 )
+            else
+                sourceMesh = Mesh( nil )
+            end
+
+            self.SourceMesh = sourceMesh
+        end
+
+		if vertices == nil or vertexWeights == nil or triangles == nil or normals == nil or uvs == nil then
+            return
+        end
+
+        mesh.Begin( sourceMesh, MATERIAL_TRIANGLES, #triangles )
+
+        for triangleIndex = 1, #triangles do
+            -- Each triangle is a Vector whose components are the triangle's three vertex indices
+            local triangleVertexIndices = triangles[triangleIndex]
+
+            -- Each of the triangle's vertex indices needs to be offset by 1 to correct for Lua arrays starting at 1
+            local vertex1Index = triangleVertexIndices[1] + 1
+            local vertex2Index = triangleVertexIndices[2] + 1
+            local vertex3Index = triangleVertexIndices[3] + 1
+
+            -- Each vertex needs to be converted to Source scale
+            local vertex1 = vertices[vertex1Index] * unitConversionLib.MetersToSource
+            local vertex2 = vertices[vertex2Index] * unitConversionLib.MetersToSource
+            local vertex3 = vertices[vertex3Index] * unitConversionLib.MetersToSource
+
+            --[[ Vertex 1 ]] do
+
+                mesh.Position( vertex1 )
+                mesh.Color( 255, 255, 255, 255 )
+                mesh.TexCoord( 0, uvs[vertex1Index].x, uvs[vertex1Index].y )
+                mesh.Normal( normals[vertex1Index] )
+
+                if isSkeletalMesh then
+                    local vertex1BoneIndex = vertexWeights[vertex1Index] + 1
+
+                    mesh.BoneData( 0, vertex1BoneIndex, 1 )
+                    mesh.BoneData( 1, vertex1BoneIndex, 0 )
+                end
+
+                mesh.AdvanceVertex()
+            end
+
+            --[[ Vertex 2 ]] do
+
+                mesh.Position( vertex2 )
+                mesh.Color( 255, 255, 255, 255 )
+                mesh.TexCoord( 0, uvs[vertex2Index].x, uvs[vertex2Index].y )
+                mesh.Normal( normals[vertex2Index] )
+
+                if isSkeletalMesh then
+                    local vertex2BoneIndex = vertexWeights[vertex2Index] + 1
+
+                    mesh.BoneData( 0, vertex2BoneIndex, 1 )
+                    mesh.BoneData( 1, vertex2BoneIndex, 0 )
+                end
+
+                mesh.AdvanceVertex()
+            end
+
+            --[[ Vertex 3 ]] do
+
+                mesh.Position( vertex3 )
+                mesh.Color( 255, 255, 255, 255 )
+                mesh.TexCoord( 0, uvs[vertex3Index].x, uvs[vertex3Index].y )
+                mesh.Normal( normals[vertex3Index] )
+
+                if isSkeletalMesh then
+                    local vertex3BoneIndex = vertexWeights[vertex3Index] + 1
+
+                    mesh.BoneData( 0, vertex3BoneIndex, 1 )
+                    mesh.BoneData( 1, vertex3BoneIndex, 0 )
+                end
+
+                mesh.AdvanceVertex()
+            end
+        end
+
+        mesh.End()
+    end
+
+
+	--- @param bones VMatrix[]? [Optional] The bone matrices to use for rendering if this is a skeletal mesh
+    function INSTANCE:RenderSourceMesh( bones )
+		-- Ensure we have a Source mesh to render
+		local mesh = self.SourceMesh
+        if mesh == nil then
+            self:CreateSourceMesh()
+            mesh = self.SourceMesh
+            if mesh == nil then
+                return
+            end
+        end
+
+		-- local material = self.CurrentMaterialDescription:GetSourceMaterial( 1, 1 )
+		-- render.SetMaterial( material )
+		render.SetColorMaterial()
+
+        render.OverrideDepthEnable( true, true )
+		render.CullMode( MATERIAL_CULLMODE_CW )
+
+		if bones ~= nil then
+			mesh:DrawSkinned( bones, false )
+		else
+			mesh:Draw()
+		end
+
+		render.CullMode( MATERIAL_CULLMODE_CCW )
+		render.OverrideDepthEnable( false, false )
+    end
+end
+
 
 function INSTANCE:RegisterForRendering()
 	typecheck.NotImplementedError()
@@ -577,7 +721,7 @@ function INSTANCE:ReadTexCoords( cload, context )
 	-- NOTE: this is an obsolete function.  Texture coordinates are now
 	-- loaded in the pass chunks
 	-- "  
-	for i = 0, self.VertexCount do
+	for i = 1, self.VertexCount do
 
 		local readByteCount, readBytes = cload:Read( structSize )
 		if readByteCount ~= structSize then
@@ -690,7 +834,7 @@ end
 --- @param context MeshLoadContextInstance
 --- @return WW3dErrorType
 function INSTANCE:ReadMaterialPass( cload, context )
-	context.CurrentTextureStage = 0
+	context.CurrentTextureStage = 1
 
 	local ids = w3dFileIds.W3D_CHUNK_TYPE
 

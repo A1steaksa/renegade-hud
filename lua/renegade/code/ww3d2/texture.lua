@@ -195,7 +195,7 @@ INSTANCE.IsTexture = true
 			local textureInfo
 			local hasTextureInfo = false
 
-			-- "Read in the texture filenam, and a possible texture info structure."
+			-- "Read in the texture filename, and a possible texture info structure."
 			while cload:OpenChunk() do
 				local chunkId = cload:CurChunkId()
 

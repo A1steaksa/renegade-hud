@@ -115,7 +115,7 @@ function INSTANCE:LoadW3d( cload )
 
     self.FirstFrame   = channel.FirstFrame
     self.LastFrame    = channel.LastFrame
-    self.VectorLength = channel.VectorLength
+    self.VectorLength = channel.VectorLength or 0
     self.Type         = channel.Flags
     self.PivotIndex   = channel.Pivot
 

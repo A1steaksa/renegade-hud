@@ -66,6 +66,12 @@ INSTANCE.IsSoldierGameObject = true
 
 	--- @type UnitConversionLib
 	local unitConversionLib = CNC.Import( "sh_unit-conversion.lua" )
+
+	--- @type HudClass
+	local hudClass = CNC.Import( "code/combat/hud.lua" )
+
+	--- @type NetworkObjectClass
+	local networkObjectClass = CNC.Import( "code/wwnet/network-object.lua" )
 --#endregion
 
 --#region Imported Enums
@@ -368,7 +374,7 @@ function INSTANCE:Think()
 		-- "  
 		local position
 		--[[ Coordination Zone ]] do
-			position = INSTANCE.GetPosition( self )
+			position = self:GetPosition()
 			if unitCoordinationZoneManagerClass.IsUnitInZone( position ) then
 				INSTANCE.EnableGhostCollision( self, true )
 			elseif INSTANCE.IsSafeToDisableGhostCollision( self, position ) then
@@ -902,16 +908,21 @@ end
 
 	--- @param onOff boolean
 	function INSTANCE:EnableGhostCollision( onOff )
-		local isUsingGhostCollision = INSTANCE.PeekPhysicalObject( self ):GetCollisionGroup() == collisionGroupTypeEnum.SOLDIER_GHOST_COLLISION_GROUP
+		local physicalObject = self:PeekPhysicalObject()
+		if physicalObject == nil then
+			return
+		end
+
+		local isUsingGhostCollision = physicalObject:GetCollisionGroup() == collisionGroupTypeEnum.SOLDIER_GHOST_COLLISION_GROUP
 		if onOff == isUsingGhostCollision then
 			return
 		end
 
 		-- "Change the collision group as necessary"
 		if onOff then
-			INSTANCE.PeekPhysicalObject( self ):SetCollisionGroup( collisionGroupTypeEnum.SOLDIER_GHOST_COLLISION_GROUP )
+			physicalObject:SetCollisionGroup( collisionGroupTypeEnum.SOLDIER_GHOST_COLLISION_GROUP )
 		else
-			INSTANCE.PeekPhysicalObject( self ):SetCollisionGroup( collisionGroupTypeEnum.SOLDIER_COLLISION_GROUP )
+			physicalObject:SetCollisionGroup( collisionGroupTypeEnum.SOLDIER_COLLISION_GROUP )
 		end
 	end
 

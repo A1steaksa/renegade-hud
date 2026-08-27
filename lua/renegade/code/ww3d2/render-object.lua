@@ -519,20 +519,15 @@ end
 --- @param bone string|integer
 --- @return boolean
 function INSTANCE:AddSubObjectToBone( subObject, bone )
-
     -- ( subObject: RenderObjectInstance, boneIndex: integer )
     if typecheck.IsOfType( bone, "number" ) then
         local boneIndex = bone --[[@as integer]]
-
-        section.Print( INSTANCE.Class, " - AddSubObjectToBone - Bone Index: ", boneIndex )
-
+        -- Empty in the original code
         return false
 
     -- ( subObject: RenderObjectInstance, boneName: string )
     else
         local boneName = bone --[[@as string]]
-
-        section.Print( INSTANCE.Class, " - AddSubObjectToBone - Bone Name: ", boneName )
 
         local boneIndex = self:GetBoneIndex( boneName )
         return self:AddSubObjectToBone( subObject, boneIndex )

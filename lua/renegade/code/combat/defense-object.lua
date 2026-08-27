@@ -122,13 +122,17 @@ end
 --- @param owner DamageableGameObjectInstance
 function INSTANCE:Init( def, owner )
 
-    self:SetHealthMax( def.HealthMax )
-    self:SetHealth( def.Health )
+    if SERVER then
+        self:SetHealthMax( def.HealthMax )
+        self:SetHealth( def.Health )
+    end
 
     self.Skin = def.Skin
 
-    self:SetShieldStrengthMax( def.ShieldStrengthMax )
-    self:SetShieldStrength( def.ShieldStrength )
+    if SERVER then
+        self:SetShieldStrengthMax( def.ShieldStrengthMax )
+        self:SetShieldStrength( def.ShieldStrength )
+    end
 
     self.ShieldType   = def.ShieldType
     self.DamagePoints = def.DamagePoints

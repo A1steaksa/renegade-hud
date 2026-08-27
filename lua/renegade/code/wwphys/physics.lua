@@ -33,9 +33,6 @@ INSTANCE.IsPhysics = true
 
 	--- @type Ww3dAssetManagerClass
 	local ww3dAssetManagerClass = CNC.Import( "code/ww3d2/ww3d-asset-manager.lua" )
-
-	--- @type Matrix3dClass
-	local matrix3dClass = CNC.Import( "code/wwmath/matrix3d.lua" )
 --#endregion
 
 --#region Imported Enums

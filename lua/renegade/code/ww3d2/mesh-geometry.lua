@@ -294,7 +294,7 @@ end
 	--- "Validates and returns the vertex normal array"
 	--- @return Vector[]
 	function INSTANCE:GetVertexNormalArray()
-		if self:GetFlag( meshGeometryFlagsTypeEnum.DIRTY_VNORMALS ) then
+		if tobool( self:GetFlag( meshGeometryFlagsTypeEnum.DIRTY_VNORMALS ) ) then
 			self:ComputeVertexNormals( self:GetVertexNormals() )
 		end
 

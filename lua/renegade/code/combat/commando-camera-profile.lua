@@ -103,7 +103,7 @@ INSTANCE.IsCommandoCameraProfile = true
                 STATIC.ProfileHash[name:lower()] = profile
             end
         else
-            section.Error( "Unablke to load ", STATIC.CAMERAS_INI_FILENAME )
+            section.Error( "Unable to load ", STATIC.CAMERAS_INI_FILENAME )
         end
 
         STATIC._ProfilesInitted = true

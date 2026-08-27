@@ -318,7 +318,7 @@ end
 
     function INSTANCE:RemoveAllObservers()
         while #self.Observers ~= 0 do
-            INSTANCE.RemoveObserver( self, self.Observers[0] )
+            INSTANCE.RemoveObserver( self, self.Observers[1] )
         end
     end
 
